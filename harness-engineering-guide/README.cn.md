@@ -73,6 +73,9 @@ Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin
 - AGENTS.md 质量分析（行数、文档链接、命令引用）
 - 技术债务密度扫描（TODO/FIXME/HACK）
 - Monorepo 自动检测和包发现
+- **蓝图模式**：缺口分析 + 优先级推荐 + 模板映射
+- **持久化模式**：将蓝图保存到 `harness-system/MASTER.md`，跨会话复用
+- **多输出格式**：JSON、Markdown、Blueprint
 
 ### 多平台模板
 - **CI**：GitHub Actions、GitLab CI、Azure DevOps
@@ -84,6 +87,7 @@ Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin
 ```
 harness-engineering-guide/
 ├── SKILL.md                           ← Agent 入口（薄指令层 + Quick Reference）
+├── skill.json                         ← Skill 元数据（名称、版本、平台、关键词）
 ├── README.md                          ← 英文版
 ├── README.cn.md                       ← 你在这里（中文版）
 ├── data/
@@ -118,7 +122,7 @@ harness-engineering-guide/
 ## 审计脚本用法
 
 ```bash
-# 基本审计（向后兼容）
+# 基本审计（JSON 输出，向后兼容）
 bash scripts/harness-audit.sh /path/to/repo
 
 # 指定项目类型
@@ -127,14 +131,25 @@ bash scripts/harness-audit.sh /path/to/repo --profile backend-api
 # 指定生命周期阶段
 bash scripts/harness-audit.sh /path/to/repo --stage bootstrap
 
+# Markdown 扫描报告
+bash scripts/harness-audit.sh /path/to/repo --format markdown
+
+# 蓝图：完整的缺口分析 + 推荐方案
+bash scripts/harness-audit.sh /path/to/repo --profile backend-api --stage growth --blueprint
+
+# 持久化：将蓝图保存到仓库的 harness-system/MASTER.md
+bash scripts/harness-audit.sh /path/to/repo --profile backend-api --stage growth --persist
+
 # Monorepo 模式
 bash scripts/harness-audit.sh /path/to/repo --monorepo
 
-# 组合使用并输出到文件
-bash scripts/harness-audit.sh /path/to/repo --profile backend-api --stage growth --output reports/
+# 输出到文件
+bash scripts/harness-audit.sh /path/to/repo --blueprint --output reports/
 
 # PowerShell 等价
 pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Profile backend-api -Stage growth
+pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Blueprint
+pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Persist
 ```
 
 ## 关键参考

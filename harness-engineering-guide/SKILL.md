@@ -17,6 +17,33 @@ description: >
 
 You are a harness engineering consultant. Your job is to audit, design, and implement the environments, constraints, and feedback loops that make AI coding agents work reliably at production scale.
 
+## When to Apply
+
+### Must Use
+
+- Auditing a repo's AI coding readiness or harness maturity
+- Setting up AGENTS.md / CLAUDE.md for a project
+- Designing a harness strategy for a new project or major refactor
+- AI agents consistently produce low-quality, drifting, or non-conforming code
+- Setting up CI/CD gates specifically for agent-generated PRs
+
+### Recommended
+
+- Scaling AI tool adoption across a growing team
+- Transitioning from solo developer to team collaboration with agents
+- CI pipeline does not block agent-generated PRs on failure
+- Reviewing why AI code rework rate is high
+- Planning observability or testing improvements for agent workflows
+
+### Skip
+
+- Pure manual coding with no AI agent involvement
+- Model selection or prompt optimization (not environment-related)
+- Business logic debugging unrelated to agent behavior
+- Infrastructure or DevOps work with no AI agent dimension
+
+**Decision criteria**: If the issue is about **code quality from AI agents** rather than the model itself, this Skill should be used.
+
 ## Core Insight
 
 **Agent = Model + Harness.** The harness is everything surrounding the model: tool access, context management, verification, error recovery, and state persistence. Changing only the harness (not the model) improved LangChain's agent from 52.8% to 66.5% on Terminal Bench 2.0. OpenAI shipped 1 million lines with zero human-written code in five months by investing in harness.
@@ -33,6 +60,21 @@ Every effective harness implements four elements from cybernetics:
 | **Feedback Loop** | CI fail->fix->pass, review->lint rule, quality trends | Dim 3 + Dim 6 + Dim 7 |
 
 A system missing any element is **open-loop** — it cannot self-correct. Read `references/control-theory.md` for the full theoretical grounding.
+
+## Dimension Priority
+
+*Follow priority 1→8 to decide which dimension to assess or fix first. Higher priority = higher leverage on agent code quality.*
+
+| Priority | Dimension | Weight | Impact | Quick Check | Anti-Pattern |
+|----------|-----------|--------|--------|-------------|--------------|
+| 1 | Mechanical Constraints (Dim 2) | 20% | CRITICAL | CI blocks PR? Linter enforced? Types strict? | "Trust the agent to follow rules" |
+| 2 | Testing & Verification (Dim 4) | 15% | CRITICAL | Tests in CI? Coverage threshold? E2E exists? | "AI tests verifying AI code" |
+| 3 | Architecture Docs (Dim 1) | 15% | HIGH | AGENTS.md exists and <100 lines? docs/ structured? | "Encyclopedia AGENTS.md" |
+| 4 | Feedback & Observability (Dim 3) | 15% | HIGH | Structured logging? Metrics? Agent-queryable? | "Ad-hoc print debugging" |
+| 5 | Context Engineering (Dim 5) | 10% | HIGH | Decisions in-repo? Docs fresh? Cache-friendly? | "Knowledge lives in Slack" |
+| 6 | Entropy Management (Dim 6) | 10% | MEDIUM | Cleanup automated? Tech debt tracked? Slop detected? | "Manual Friday cleanup" |
+| 7 | Long-Running Tasks (Dim 7) | 10% | MEDIUM | Task decomposition? Checkpoints? Handoff bridges? | "No crash recovery" |
+| 8 | Safety Rails (Dim 8) | 5% | MEDIUM | Least privilege? Rollback? Human gates on destructive ops? | "Trusting tool output blindly" |
 
 ## Quick Reference — 8 Dimensions, 44 Items
 
@@ -144,6 +186,8 @@ The script outputs JSON with file-level and content-level analysis. Use this to 
 
 Add `--monorepo` for monorepo per-package scanning.
 Add `--output <dir>` to save results to a file with timestamp.
+Add `--format markdown` for a human-readable Markdown scan report.
+Add `--blueprint` for a full gap analysis with recommendations, templates, and ecosystem CI commands.
 
 **Option B (manual):** Launch parallel searches using Glob and Grep (see batch patterns in `references/checklist.md`).
 
@@ -336,6 +380,23 @@ Then design across maturity levels:
 
 ---
 
+## Common Sticking Points
+
+| Problem | Diagnosis | Fix |
+|---------|-----------|-----|
+| Agent ignores coding standards | Dim 2: linter not blocking in CI | Add linter as required CI check; use `2.6` remediation messages |
+| Agent generates duplicate utilities | Dim 6: no slop detection | Add `6.4` ai-slop-detection lint rules for dead code and duplicates |
+| Long tasks crash mid-way, no recovery | Dim 7: no durable execution | Implement `7.6` checkpoint files + recovery script |
+| PRs frequently reverted after merge | Dim 4: insufficient test coverage | Raise `4.3` coverage thresholds; add `4.5` E2E verification |
+| AGENTS.md too long, agent ignores it | Dim 1: no progressive disclosure | Trim to <100 lines (`1.1`); use `1.4` layered knowledge with pointers |
+| Agent writes code that type-checks but is wrong | Dim 4: no adversarial verification | Add `4.7` independent verifier that tries to break the implementation |
+| Agent breaks other modules when fixing one | Dim 2: no dependency direction enforcement | Add `2.5` import boundary rules via custom lint |
+| Quality degrades over time | Dim 6: no recurring cleanup | Set up `6.2` automated cleanup agent + `6.3` tech debt tracking |
+| Agent can't resume work across sessions | Dim 7: no handoff protocol | Implement `7.3` descriptive commits + progress logs |
+| MCP tools leak data or have excess access | Dim 8: no protocol hygiene | Apply `8.6` least-privilege scoping; treat output as untrusted |
+
+---
+
 ## Golden Principles
 
 1. **Prefer shared utilities over local implementations**
@@ -411,9 +472,59 @@ Structured knowledge — read to configure audit parameters:
 
 | Asset | Purpose | When to Use |
 |-------|---------|-------------|
-| `scripts/harness-audit.sh` | Bash audit scanner (JSON output with content analysis) | Audit Step 1 on macOS/Linux |
-| `scripts/harness-audit.ps1` | PowerShell audit scanner | Audit Step 1 on Windows |
+| `scripts/harness-audit.sh` | Bash audit scanner (JSON/Markdown/Blueprint) | Audit Step 1 on macOS/Linux |
+| `scripts/harness-audit.ps1` | PowerShell audit scanner (JSON/Markdown/Blueprint) | Audit Step 1 on Windows |
 | `templates/universal/` | 6 language-agnostic templates | Audit Step 4 |
 | `templates/ci/` | CI pipeline templates (GitHub Actions, GitLab, Azure) | Audit Step 4 |
 | `templates/linting/` | Boundary rules (ESLint, import-linter, depguard, clippy) | Audit Step 4 |
 | `templates/init/` | Environment recovery scripts (Bash, PowerShell) | Audit Step 4 |
+
+### Blueprint Mode
+
+Generate an actionable blueprint with gap analysis, template recommendations, and ecosystem-specific CI commands:
+
+```bash
+# Bash
+bash scripts/harness-audit.sh /path/to/repo --profile backend-api --stage growth --blueprint
+
+# PowerShell
+pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Profile backend-api -Stage growth -Blueprint
+
+# Save to file
+bash scripts/harness-audit.sh /path/to/repo --blueprint --output reports/
+```
+
+The blueprint includes: scan results table, gap-by-gap recommendations with priority and effort, quick wins list, recommended template paths, and ecosystem CI commands.
+
+### Persist Mode (Master + Overrides)
+
+Save the blueprint to `harness-system/MASTER.md` in the target repo for cross-session reuse:
+
+```bash
+# Bash
+bash scripts/harness-audit.sh /path/to/repo --profile backend-api --stage growth --persist
+
+# PowerShell
+pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Profile backend-api -Stage growth -Persist
+```
+
+This creates:
+
+```
+harness-system/
+├── MASTER.md           # Global harness strategy (profile, stage, gaps, recommendations)
+└── modules/            # Module-specific overrides (created manually as needed)
+    ├── ci.md           # CI/CD decisions that differ from MASTER
+    ├── testing.md      # Testing strategy overrides
+    └── safety.md       # Safety rails overrides
+```
+
+**Cross-session retrieval**: When starting a new session on a topic (e.g., "improve CI"), read `harness-system/MASTER.md` first, then check if `harness-system/modules/ci.md` exists. Module-level rules override MASTER.
+
+### Output Formats
+
+| Format | Flag | Use Case |
+|--------|------|----------|
+| JSON (default) | `--format json` | Machine-readable, agent post-processing |
+| Markdown | `--format markdown` | Human-readable scan report |
+| Blueprint | `--blueprint` | Full gap analysis with recommendations |

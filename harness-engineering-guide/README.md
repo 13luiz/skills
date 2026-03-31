@@ -78,6 +78,9 @@ Content-level analysis beyond file existence:
 - AGENTS.md quality analysis (line count, doc links, command refs)
 - Tech debt density scanning (TODO/FIXME/HACK)
 - Monorepo auto-detection and package discovery
+- **Blueprint mode**: gap analysis with prioritized recommendations and template mappings
+- **Persist mode**: save blueprint to `harness-system/MASTER.md` for cross-session reuse
+- **Multiple output formats**: JSON, Markdown, Blueprint
 
 ### Multi-Platform Templates
 - **CI**: GitHub Actions, GitLab CI, Azure DevOps
@@ -89,6 +92,7 @@ Content-level analysis beyond file existence:
 ```
 harness-engineering-guide/
 ├── SKILL.md                           ← Agent entry point (thin orchestrator + Quick Reference)
+├── skill.json                         ← Skill metadata (name, version, platforms, keywords)
 ├── README.md                          ← You are here (English)
 ├── README.cn.md                       ← Chinese version
 ├── data/
@@ -131,7 +135,7 @@ harness-engineering-guide/
 ## Audit Script Usage
 
 ```bash
-# Basic audit (backward compatible)
+# Basic audit (JSON output, backward compatible)
 bash scripts/harness-audit.sh /path/to/repo
 
 # With project type profile
@@ -140,14 +144,25 @@ bash scripts/harness-audit.sh /path/to/repo --profile backend-api
 # With lifecycle stage
 bash scripts/harness-audit.sh /path/to/repo --stage bootstrap
 
+# Markdown scan report
+bash scripts/harness-audit.sh /path/to/repo --format markdown
+
+# Blueprint: full gap analysis with recommendations
+bash scripts/harness-audit.sh /path/to/repo --profile backend-api --stage growth --blueprint
+
+# Persist: save blueprint to harness-system/MASTER.md in the repo
+bash scripts/harness-audit.sh /path/to/repo --profile backend-api --stage growth --persist
+
 # Monorepo mode
 bash scripts/harness-audit.sh /path/to/repo --monorepo
 
-# Combined with output
-bash scripts/harness-audit.sh /path/to/repo --profile backend-api --stage growth --output reports/
+# Save to file
+bash scripts/harness-audit.sh /path/to/repo --blueprint --output reports/
 
-# PowerShell equivalent
+# PowerShell equivalents
 pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Profile backend-api -Stage growth
+pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Blueprint
+pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Persist
 ```
 
 ## Key References

@@ -1,18 +1,22 @@
 # harness-audit.ps1 — Enhanced harness engineering audit scanner
-# Usage: pwsh harness-audit.ps1 [-RepoRoot <path>] [-Profile <type>] [-Stage <stage>] [-Monorepo] [-Output <dir>] [-Format <fmt>]
+# Usage: pwsh harness-audit.ps1 [-RepoRoot <path>] [-Profile <type>] [-Stage <stage>] [-Monorepo] [-Output <dir>] [-Format <fmt>] [-Blueprint]
 # Options:
 #   -Profile <type>    Project type profile (see data/profiles.json)
 #   -Stage <stage>     Lifecycle stage: bootstrap | growth | mature
 #   -Monorepo          Enable monorepo per-package scanning
 #   -Output <dir>      Output directory for reports
 #   -Format <fmt>      Output format: json (default) | markdown
+#   -Blueprint         Generate actionable blueprint with gap analysis and template recommendations
+#   -Persist           Generate blueprint and save to harness-system/MASTER.md in the repo
 param(
     [string]$RepoRoot = ".",
     [string]$Profile = "",
     [string]$Stage = "",
     [switch]$Monorepo,
     [string]$Output = "",
-    [string]$Format = "json"
+    [string]$Format = "json",
+    [switch]$Blueprint,
+    [switch]$Persist
 )
 
 $ErrorActionPreference = "Stop"
@@ -358,14 +362,294 @@ $output = [ordered]@{
 
 Pop-Location
 
-if ($Output) {
-    New-Item -ItemType Directory -Path $Output -Force | Out-Null
-    $repoName = Split-Path $RepoAbs -Leaf
-    $dateStr = Get-Date -Format "yyyy-MM-dd"
-    $filename = "${dateStr}_${repoName}_audit.json"
-    $output | ConvertTo-Json -Depth 10 | Out-File "$Output/$filename" -Encoding utf8
-    Write-Host "Audit written to $Output/$filename"
+if ($Persist) { $Blueprint = [switch]::new($true) }
+if ($Blueprint) { $Format = "markdown" }
+
+# --- Gap analysis ---
+function Get-Gaps {
+    $gaps = @()
+    if (@($agentFiles).Count -eq 0) { $gaps += "NO_AGENT_FILE" }
+    if (-not $docsExists) { $gaps += "NO_DOCS_DIR" }
+    if (-not $docsHasArch) { $gaps += "NO_ARCHITECTURE_DOC" }
+    if (-not $hasDesignDocs) { $gaps += "NO_DESIGN_DOCS" }
+    if (@($ciConfigs).Count -eq 0) { $gaps += "NO_CI_PIPELINE" }
+    if (@($linterConfigs).Count -eq 0) { $gaps += "NO_LINTER" }
+    if (@($typeConfigs).Count -eq 0) { $gaps += "NO_TYPE_CHECKER" }
+    if (@($testDirs).Count -eq 0) { $gaps += "NO_TESTS" }
+    if (-not $hasQualityScore) { $gaps += "NO_TECH_DEBT_TRACKING" }
+    if (-not $hasInitScript) { $gaps += "NO_ENV_RECOVERY" }
+    if (-not $hasProgressTracking) { $gaps += "NO_PROGRESS_TRACKING" }
+    if (-not $hasCodeowners) { $gaps += "NO_CODEOWNERS" }
+    return $gaps
 }
-else {
-    $output | ConvertTo-Json -Depth 10
+
+function Get-StatusText([bool]$val) { if ($val) { "PASS" } else { "FAIL" } }
+function Get-ExistsText([bool]$val) { if ($val) { "exists" } else { "missing" } }
+
+function Format-Markdown {
+    $repoName = Split-Path $RepoAbs -Leaf
+    $afCount = @($agentFiles).Count
+    $ciCount = @($ciConfigs).Count
+    $lcCount = @($linterConfigs).Count
+    $tcCount = @($typeConfigs).Count
+    $tdCount = @($testDirs).Count
+
+    $md = @"
+# Harness Audit: $repoName
+
+**Date**: $Timestamp
+**Profile**: $(if ($Profile) { $Profile } else { "auto" }) | **Stage**: $(if ($Stage) { $Stage } else { "auto" }) | **Ecosystem**: $ecosystem
+**Assessment**: $quickAssessment
+
+## Scan Results
+
+| Dimension | Finding | Status |
+|-----------|---------|--------|
+| Agent instruction files | $afCount found | $(Get-StatusText ($afCount -gt 0)) |
+| docs/ directory | $(Get-ExistsText $docsExists) | $(Get-StatusText $docsExists) |
+| ARCHITECTURE.md | $(Get-ExistsText $docsHasArch) | $(Get-StatusText $docsHasArch) |
+| CI configs | $ciCount found | $(Get-StatusText ($ciCount -gt 0)) |
+| Linter configs | $lcCount found | $(Get-StatusText ($lcCount -gt 0)) |
+| Type checker configs | $tcCount found | $(Get-StatusText ($tcCount -gt 0)) |
+| Test directories | $tdCount found ($testFilesCount test files) | $(Get-StatusText ($tdCount -gt 0)) |
+| Tech debt tracking | $(Get-ExistsText $hasQualityScore) | $(Get-StatusText $hasQualityScore) |
+| Environment recovery | $(Get-ExistsText $hasInitScript) | $(Get-StatusText $hasInitScript) |
+| Progress tracking | $(Get-ExistsText $hasProgressTracking) | $(Get-StatusText $hasProgressTracking) |
+| CODEOWNERS | $(Get-ExistsText $hasCodeowners) | $(Get-StatusText $hasCodeowners) |
+
+## Detected Files
+
+**Agent files**: $(if ($afCount -gt 0) { ($agentFiles -join ", ") } else { "none" })
+**CI configs**: $(if ($ciCount -gt 0) { ($ciConfigs -join ", ") } else { "none" })
+**Linter configs**: $(if ($lcCount -gt 0) { ($linterConfigs -join ", ") } else { "none" })
+**Type configs**: $(if ($tcCount -gt 0) { ($typeConfigs -join ", ") } else { "none" })
+**Test dirs**: $(if ($tdCount -gt 0) { ($testDirs -join ", ") } else { "none" })
+"@
+    return $md
+}
+
+function Format-Blueprint {
+    $md = Format-Markdown
+    $gaps = Get-Gaps
+
+    $md += "`n`n---`n`n## Gap Analysis & Recommendations`n"
+
+    $gapDetails = @{
+        "NO_AGENT_FILE" = @"
+
+### Missing: Agent Instruction File (Dim 1)
+- **Impact**: Agents have no project-specific guidance — they guess at conventions
+- **Fix**: Create AGENTS.md using ``templates/universal/agents-md-scaffold.md``
+- **Effort**: 30 min | **Priority**: HIGH
+"@
+        "NO_DOCS_DIR" = @"
+
+### Missing: Structured docs/ Directory (Dim 1)
+- **Impact**: No organized knowledge base for agents to reference
+- **Fix**: Create ``docs/`` with an ``index.md`` and at least architecture + conventions subdocs
+- **Effort**: 1-2 hours | **Priority**: MEDIUM
+"@
+        "NO_ARCHITECTURE_DOC" = @"
+
+### Missing: Architecture Documentation (Dim 1)
+- **Impact**: Agents cannot understand domain boundaries or dependency rules
+- **Fix**: Create ``ARCHITECTURE.md`` with module boundaries, dependency directions, and key abstractions
+- **Effort**: 1-2 hours | **Priority**: HIGH
+"@
+        "NO_CI_PIPELINE" = @"
+
+### Missing: CI Pipeline (Dim 2)
+- **Impact**: No mechanical enforcement — agents can merge broken code
+- **Fix**: Add CI using ``templates/ci/github-actions/standard-pipeline.yml`` (or gitlab-ci.yml / azure-pipelines.yml)
+- **Effort**: 1 hour | **Priority**: CRITICAL
+"@
+        "NO_LINTER" = @"
+
+### Missing: Linter Configuration (Dim 2)
+- **Impact**: No style or correctness enforcement on agent-generated code
+- **Fix**: Add linter config for your ecosystem (see ``data/ecosystems.json`` for recommendations)
+- **Effort**: 30 min | **Priority**: CRITICAL
+"@
+        "NO_TYPE_CHECKER" = @"
+
+### Missing: Type Checker (Dim 2)
+- **Impact**: Agent can produce type-unsafe code that passes CI
+- **Fix**: Add type checking in strict mode (see ``data/ecosystems.json`` for ecosystem-specific setup)
+- **Effort**: 1 hour | **Priority**: CRITICAL
+"@
+        "NO_TESTS" = @"
+
+### Missing: Test Suite (Dim 4)
+- **Impact**: No regression detection — agent changes may silently break features
+- **Fix**: Create test directory and add initial tests for core modules
+- **Effort**: 2-4 hours | **Priority**: CRITICAL
+"@
+        "NO_TECH_DEBT_TRACKING" = @"
+
+### Missing: Tech Debt Tracking (Dim 6)
+- **Impact**: Quality degradation invisible until crisis
+- **Fix**: Add ``templates/universal/tech-debt-tracker.json`` to track quality scores per module
+- **Effort**: 15 min | **Priority**: LOW
+"@
+        "NO_ENV_RECOVERY" = @"
+
+### Missing: Environment Recovery Script (Dim 7)
+- **Impact**: Agents cannot reliably bootstrap development environment
+- **Fix**: Create init script using ``templates/init/init.sh`` or ``templates/init/init.ps1``
+- **Effort**: 30 min | **Priority**: MEDIUM
+"@
+        "NO_PROGRESS_TRACKING" = @"
+
+### Missing: Progress Tracking (Dim 7)
+- **Impact**: No structured handoff between agent sessions
+- **Fix**: Add execution plan template from ``templates/universal/execution-plan.md``
+- **Effort**: 15 min | **Priority**: LOW
+"@
+        "NO_CODEOWNERS" = @"
+
+### Missing: CODEOWNERS (Dim 8)
+- **Impact**: No enforced review for security-critical paths
+- **Fix**: Create ``.github/CODEOWNERS`` mapping critical paths to reviewers
+- **Effort**: 15 min | **Priority**: MEDIUM
+"@
+    }
+
+    foreach ($gap in $gaps) {
+        if ($gapDetails.ContainsKey($gap)) { $md += $gapDetails[$gap] }
+    }
+
+    # Quick wins
+    $md += "`n## Quick Wins (implement today)`n`n"
+    $winNum = 1
+    $criticalGaps = @("NO_AGENT_FILE", "NO_CI_PIPELINE", "NO_LINTER", "NO_TYPE_CHECKER", "NO_TESTS")
+    $winLabels = @{
+        "NO_AGENT_FILE" = "Create AGENTS.md from scaffold template"
+        "NO_CI_PIPELINE" = "Add CI pipeline from templates/ci/"
+        "NO_LINTER" = "Add linter config for $ecosystem ecosystem"
+        "NO_TYPE_CHECKER" = "Enable type checking in strict mode"
+        "NO_TESTS" = "Create initial test suite with CI integration"
+    }
+    foreach ($gap in $gaps) {
+        if ($criticalGaps -contains $gap) {
+            $md += "$winNum. $($winLabels[$gap])`n"
+            $winNum++
+        }
+    }
+    if ($winNum -eq 1) { $md += "No critical gaps found — focus on deepening existing checks.`n" }
+
+    # Recommended templates
+    $md += @"
+
+## Recommended Templates
+
+| Gap | Template Path |
+|-----|---------------|
+"@
+    $templateMap = @{
+        "NO_AGENT_FILE" = "| Agent instruction file | ``templates/universal/agents-md-scaffold.md`` |"
+        "NO_CI_PIPELINE" = "| CI pipeline (GitHub) | ``templates/ci/github-actions/standard-pipeline.yml`` |"
+        "NO_TECH_DEBT_TRACKING" = "| Tech debt tracker | ``templates/universal/tech-debt-tracker.json`` |"
+        "NO_ENV_RECOVERY" = "| Environment recovery | ``templates/init/init.sh`` / ``templates/init/init.ps1`` |"
+        "NO_PROGRESS_TRACKING" = "| Task decomposition | ``templates/universal/execution-plan.md`` |"
+    }
+    foreach ($gap in $gaps) {
+        if ($templateMap.ContainsKey($gap)) { $md += "`n$($templateMap[$gap])" }
+    }
+
+    # CI commands
+    $md += "`n`n## Ecosystem CI Commands ($ecosystem)`n`n"
+    $md += "Populate your CI pipeline with these commands (from ``data/ecosystems.json``):`n`n"
+
+    $ciCmds = @{
+        "node" = @"
+| Step | Command |
+|------|---------|
+| Install | ``npm ci --silent`` |
+| Lint | ``npx eslint . && npx biome check .`` |
+| Typecheck | ``npx tsc --noEmit`` |
+| Test | ``npx vitest run --coverage`` |
+| Build | ``npm run build`` |
+| Format check | ``npx biome format --check . || npx prettier --check .`` |
+"@
+        "python" = @"
+| Step | Command |
+|------|---------|
+| Install | ``pip install -e '.[dev]' || pip install -r requirements.txt`` |
+| Lint | ``ruff check .`` |
+| Typecheck | ``mypy src/`` |
+| Test | ``pytest --cov=src --cov-fail-under=80`` |
+| Format check | ``ruff format --check .`` |
+"@
+        "go" = @"
+| Step | Command |
+|------|---------|
+| Install | ``go mod download`` |
+| Lint | ``golangci-lint run`` |
+| Typecheck | ``go vet ./...`` |
+| Test | ``go test -race -coverprofile=coverage.out ./...`` |
+| Build | ``go build ./...`` |
+| Format check | ``gofmt -l . | (! grep .)`` |
+"@
+        "rust" = @"
+| Step | Command |
+|------|---------|
+| Install | ``cargo fetch`` |
+| Lint | ``cargo clippy -- -D warnings`` |
+| Typecheck | ``cargo check`` |
+| Test | ``cargo test`` |
+| Build | ``cargo build --release`` |
+| Format check | ``cargo fmt --check`` |
+"@
+    }
+
+    if ($ciCmds.ContainsKey($ecosystem)) {
+        $md += $ciCmds[$ecosystem]
+    } else {
+        $md += "See ``data/ecosystems.json`` for $ecosystem-specific commands.`n"
+    }
+
+    $md += @"
+
+---
+
+*Blueprint generated by harness-audit.ps1. For full scoring, run the agent-led audit (Mode 1 in SKILL.md).*
+*Profile and stage weight tables are in ``data/profiles.json`` and ``data/stages.json``.*
+"@
+
+    return $md
+}
+
+# --- Write output ---
+$repoName = Split-Path $RepoAbs -Leaf
+$dateStr = Get-Date -Format "yyyy-MM-dd"
+
+if ($Blueprint) {
+    $finalOutput = Format-Blueprint
+} elseif ($Format -eq "markdown") {
+    $finalOutput = Format-Markdown
+} else {
+    $finalOutput = $output | ConvertTo-Json -Depth 10
+}
+
+if ($Persist) {
+    $harnessDir = Join-Path $RepoAbs "harness-system"
+    New-Item -ItemType Directory -Path $harnessDir -Force | Out-Null
+    New-Item -ItemType Directory -Path (Join-Path $harnessDir "modules") -Force | Out-Null
+    $finalOutput | Out-File (Join-Path $harnessDir "MASTER.md") -Encoding utf8
+    Write-Host "Harness blueprint persisted to $harnessDir/MASTER.md"
+    Write-Host "Add module overrides in $harnessDir/modules/ (e.g. ci.md, testing.md)"
+} elseif ($Output) {
+    New-Item -ItemType Directory -Path $Output -Force | Out-Null
+    if ($Format -eq "markdown" -or $Blueprint) {
+        $ext = "md"
+        $suffix = if ($Blueprint) { "blueprint" } else { "audit" }
+    } else {
+        $ext = "json"
+        $suffix = "audit"
+    }
+    $filename = "${dateStr}_${repoName}_${suffix}.${ext}"
+    $finalOutput | Out-File "$Output/$filename" -Encoding utf8
+    Write-Host "Output written to $Output/$filename"
+} else {
+    $finalOutput
 }
