@@ -1,6 +1,6 @@
 # Harness Engineering Guide（治具工程指南）
 
-一个全面的技能，用于审计、设计和实施 AI 编码代理的环境约束和反馈循环。支持 **17 种项目类型**、**11 种语言生态** 和 **3 个生命周期阶段**。
+一个全面的技能，用于审计、设计和实施 AI 编码代理的环境约束和反馈循环。支持 **17 种项目类型**、**12 种语言生态** 和 **3 个生命周期阶段**。
 
 ## 什么是 Harness Engineering？
 
@@ -60,11 +60,11 @@
 | 阶段 | 活跃项 | 重点 |
 |------|--------|------|
 | **Bootstrap**（<2k LOC） | 9 项 | 仅基础项 |
-| **Growth**（2k-50k LOC） | 27 项 | 约束 + 测试 + 早期反馈循环 |
+| **Growth**（2k-50k LOC） | 29 项 | 约束 + 测试 + 早期反馈循环 |
 | **Mature**（50k+ LOC） | 44 项 | 全量审计 |
 
-### 多生态支持（11 种生态）
-Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin、Dart/Flutter
+### 多生态支持（12 种生态）
+Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin、Dart/Flutter、PHP
 
 ### 增强审计脚本
 超越文件存在性的内容级分析：

@@ -4,9 +4,9 @@
 # Options:
 #   --profile <type>    Project type profile (see data/profiles.json)
 #   --stage <stage>     Lifecycle stage: bootstrap | growth | mature
-#   --monorepo          Enable monorepo per-package scanning
+#   --monorepo          Enable monorepo detection (discovers packages; per-package audit requires agent iteration)
 #   --output <dir>      Output directory for reports (default: stdout)
-#   --format <fmt>      Output format: json (default) | markdown
+#   --format <fmt>      Output format: json (default). Note: markdown generation requires agent post-processing.
 # Output: JSON object with discovered harness artifacts and content analysis
 set -euo pipefail
 
@@ -182,10 +182,18 @@ ECOSYSTEMS_DETECTED=()
 [ -f "go.mod" ] && ECOSYSTEM="go" && ECOSYSTEMS_DETECTED+=("go")
 [ -f "Cargo.toml" ] && ECOSYSTEM="rust" && ECOSYSTEMS_DETECTED+=("rust")
 [ -f "Gemfile" ] && ECOSYSTEM="ruby" && ECOSYSTEMS_DETECTED+=("ruby")
-([ -f "pom.xml" ] || [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]) && ECOSYSTEMS_DETECTED+=("java")
-[ -f "*.csproj" ] 2>/dev/null || [ -f "*.sln" ] 2>/dev/null && ECOSYSTEMS_DETECTED+=("csharp")
+([ -f "pom.xml" ] || [ -f "build.gradle" ]) && ECOSYSTEMS_DETECTED+=("java")
+[ -f "build.gradle.kts" ] || [ -f "settings.gradle.kts" ] && {
+  if compgen -G "src/**/*.kt" >/dev/null 2>&1 || compgen -G "**/*.kt" >/dev/null 2>&1; then
+    ECOSYSTEMS_DETECTED+=("kotlin")
+  else
+    ECOSYSTEMS_DETECTED+=("java")
+  fi
+}
+compgen -G "*.csproj" >/dev/null 2>&1 || compgen -G "*.sln" >/dev/null 2>&1 || [ -f "global.json" ] && ECOSYSTEMS_DETECTED+=("csharp")
 [ -f "Package.swift" ] && ECOSYSTEMS_DETECTED+=("swift")
 [ -f "pubspec.yaml" ] && ECOSYSTEM="dart" && ECOSYSTEMS_DETECTED+=("dart")
+[ -f "composer.json" ] && ECOSYSTEM="php" && ECOSYSTEMS_DETECTED+=("php")
 
 # --- Content Analysis (new deep inspection) ---
 CONTENT_ANALYSIS=$(run_content_analysis "$REPO_ABS")
@@ -265,13 +273,11 @@ if [ -n "$OUTPUT_DIR" ]; then
   REPO_NAME=$(basename "$REPO_ABS")
   DATE_STR=$(date +%Y-%m-%d)
   FILENAME="${DATE_STR}_${REPO_NAME}_audit"
+  echo "$OUTPUT" > "$OUTPUT_DIR/${FILENAME}.json"
+  echo "Audit JSON written to $OUTPUT_DIR/${FILENAME}.json"
   if [ "$OUTPUT_FORMAT" = "markdown" ]; then
-    echo "$OUTPUT" > "$OUTPUT_DIR/${FILENAME}.json"
-    echo "Audit JSON written to $OUTPUT_DIR/${FILENAME}.json"
-    echo "Use the agent to generate a markdown report from this JSON."
-  else
-    echo "$OUTPUT" > "$OUTPUT_DIR/${FILENAME}.json"
-    echo "Audit written to $OUTPUT_DIR/${FILENAME}.json"
+    echo "Note: Markdown report generation requires agent post-processing of the JSON output."
+    echo "See examples/sample-audit-report.md for the expected report format."
   fi
 else
   echo "$OUTPUT"

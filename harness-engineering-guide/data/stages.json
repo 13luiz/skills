@@ -52,7 +52,7 @@
         "7.1", "7.2", "7.4", "7.5",
         "8.1", "8.3", "8.4"
       ],
-      "active_item_count": 28,
+      "active_item_count": 29,
       "weight_overrides": {
         "dim1_arch_docs": 0.15,
         "dim2_mechanical": 0.22,

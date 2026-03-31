@@ -335,39 +335,7 @@ A real limitation that cannot be fixed:
 
 ## Progressive Rollout for Verification Systems
 
-Deploy verification capabilities incrementally, not all-at-once:
-
-### Three-Stage Gating
-
-```
-Stage 1: Compile/build time
-  Feature flag controls whether verification code is included at all.
-  Allows dead-code elimination when disabled.
-
-Stage 2: Runtime remote config
-  A/B testing flag (e.g., GrowthBook, LaunchDarkly) controls activation.
-  Allows gradual rollout by percentage or user segment.
-
-Stage 3: Environment/user gating
-  Environment variable or user-type check for final access control.
-  Allows internal-only testing before broader release.
-```
-
-### Rollout Sequence
-
-1. **Internal dogfooding**: Enable for the team building the system
-2. **Power user opt-in**: Expose as an opt-in feature flag
-3. **Percentage rollout**: Gradually increase from 5% → 25% → 50% → 100%
-4. **Default-on**: Remove gates once stable
-
-### Monitoring During Rollout
-
-Track these metrics to validate the verification system itself:
-- Verification trigger rate vs skip rate
-- PASS / FAIL / PARTIAL distribution
-- False positive rate (FAILs that were incorrect)
-- Time cost of verification vs time saved by catching bugs
-- User satisfaction delta between verified and unverified completions
+Deploy verification incrementally: internal dogfood first → power user opt-in → percentage rollout (5% → 25% → 50% → 100%) → default-on. Track false positive rate and verification time cost to validate the system itself.
 
 ---
 

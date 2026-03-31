@@ -39,7 +39,7 @@ A system missing any element is **open-loop** — it cannot self-correct. Read `
 *Always-on context for rapid assessment. Use item IDs to cross-reference `references/checklist.md` for full PASS/PARTIAL/FAIL criteria. See `references/adversarial-verification.md` for the complete adversarial verification pattern (item 4.7).*
 
 ### Dim 1: Architecture Documentation & Knowledge Management (15%) — GOAL STATE
-- `1.1` **agent-instruction-file** — AGENTS.md/CLAUDE.md exists and concise (<150 lines)
+- `1.1` **agent-instruction-file** — AGENTS.md/CLAUDE.md exists and concise (<100 lines)
 - `1.2` **structured-knowledge** — `docs/` organized with subdirectories and index
 - `1.3` **architecture-docs** — ARCHITECTURE.md with domain boundaries and dependency rules
 - `1.4` **progressive-disclosure** — Knowledge layered: short entry point -> deeper docs
@@ -75,7 +75,7 @@ A system missing any element is **open-loop** — it cannot self-correct. Read `
 - `5.2` **doc-freshness** — Automated freshness checks (CI, doc-gardening agent)
 - `5.3` **machine-readable-refs** — llms.txt, curated reference docs for key dependencies
 - `5.4` **tech-composability** — Stable, well-known technologies; minimal opaque abstractions
-- `5.5` **cache-friendly-design** — AGENTS.md <150 lines; structured state files; artifact dirs
+- `5.5` **cache-friendly-design** — AGENTS.md <100 lines; structured state files; artifact dirs
 
 ### Dim 6: Entropy Management & Garbage Collection (10%) — FEEDBACK LOOP
 - `6.1` **golden-principles** — Core engineering principles documented and referenced
@@ -131,7 +131,7 @@ Available profiles: `frontend-spa`, `frontend-ssr`, `backend-api`, `backend-micr
 | Stage | LOC | Active Items | Focus |
 |-------|-----|-------------|-------|
 | **Bootstrap** | <2k | 9 items | Foundations: agent file, CI, lint, types, tests, env recovery |
-| **Growth** | 2k-50k | 27 items | Constraints + testing + early feedback loops |
+| **Growth** | 2k-50k | 29 items | Constraints + testing + early feedback loops |
 | **Mature** | 50k+ | 44 items (all) | Full audit with all dimensions |
 
 ### Step 1: Explore the Repository
@@ -319,7 +319,7 @@ Then design across maturity levels:
 ## Anti-Patterns to Flag
 
 1. **AI tests verifying AI code** — Circular verification. Tests should independently verify logic.
-2. **Encyclopedia AGENTS.md** — Files over 150 lines. Should be a TOC with pointers.
+2. **Encyclopedia AGENTS.md** — Files over 100 lines. Should be a TOC with pointers.
 3. **LLM-generated agent config** — Human-crafted instruction files outperform AI-generated ones.
 4. **Full test suite in agent context** — Floods context with passing output. Surface errors only.
 5. **Tool hoarding** — Dozens of MCP servers bloat context and break cache stability.
@@ -404,7 +404,7 @@ Structured knowledge — read to configure audit parameters:
 |------|---------|-------------|
 | `data/profiles.json` | 17 project type profiles with weight overrides | Audit Step 0 |
 | `data/stages.json` | 3 lifecycle stages with active item subsets | Audit Step 0 |
-| `data/ecosystems.json` | 11 ecosystem detection rules and tool mappings | Audit Step 1, Mode 2, Mode 3 |
+| `data/ecosystems.json` | 12 ecosystem detection rules and tool mappings | Audit Step 1, Mode 2, Mode 3 |
 | `data/checklist-items.json` | 44 items in machine-readable format | Programmatic audit processing |
 
 ## Executable Assets

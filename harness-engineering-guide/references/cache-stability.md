@@ -27,7 +27,7 @@ The most cache-friendly prompt ordering is:
 4. Recent messages and tool results
 5. Latest user turn
 
-**Harness implication**: AGENTS.md should be stable and concise (<150 lines). Volatile information belongs in separate files the agent reads on demand, not in the instruction file itself.
+**Harness implication**: AGENTS.md should be stable and concise (<100 lines). Volatile information belongs in separate files the agent reads on demand, not in the instruction file itself.
 
 ### 2. Fixed Tool Catalog Per Session
 Adding or removing tools mid-session invalidates the entire cache below the tool definitions. This is one of the most expensive mistakes in agent operations.
@@ -70,7 +70,7 @@ When agents hit context limits, the harness should support a tiered recovery str
 ### Checklist Item 5.5: Cache-Friendly Context Design
 
 When auditing, check for:
-- AGENTS.md size (<150 lines, stable content, no volatile data)
+- AGENTS.md size (<100 lines, stable content, no volatile data)
 - Artifact directories for large intermediate outputs
 - Structured state files (JSON/YAML) vs prose-only tracking
 - Documentation organized for search/read rather than bulk loading
@@ -78,7 +78,7 @@ When auditing, check for:
 
 ### Anti-Patterns
 
-- **Monolithic AGENTS.md** (>500 lines) — forces entire instruction set into every prompt
+- **Monolithic AGENTS.md** (>200 lines) — forces entire instruction set into every prompt
 - **No artifact directories** — large tool outputs stay in context permanently
 - **Prose-only progress tracking** — hard to search, easy to lose in compaction
 - **Dynamic tool catalog** — tools added/removed mid-session destroy cache

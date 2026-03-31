@@ -12,8 +12,8 @@ The primary scoring instrument. Go through each item, marking PASS / PARTIAL / F
 ### 1.1 Agent Instruction File Exists
 **What to check**: Does the repo have an AGENTS.md, CLAUDE.md, .cursorrules, .cursor/rules/, CODEX.md, or equivalent?
 
-- PASS: File exists and acts as a concise map (under ~150 lines) pointing to deeper docs
-- PARTIAL: File exists but is either a massive dump (>500 lines) or extremely minimal (<10 lines)
+- PASS: File exists and acts as a concise map (under ~100 lines) pointing to deeper docs
+- PARTIAL: File exists but is bloated (100-200 lines) or extremely minimal (<10 lines)
 - FAIL: No agent instruction file
 
 ### 1.2 Structured Knowledge Base
@@ -230,8 +230,8 @@ The primary scoring instrument. Go through each item, marking PASS / PARTIAL / F
 ### 5.5 Cache-Friendly Context Design
 **What to check**: Is the repository structured to support agent cache stability and avoid context overflow?
 
-- PASS: AGENTS.md under 150 lines with stable content; structured state files (JSON/YAML) for tracking; artifact directories for large outputs; documentation organized for search/read rather than bulk loading
-- PARTIAL: Some externalization but AGENTS.md is bloated (>300 lines) or no artifact directories
+- PASS: AGENTS.md under 100 lines with stable content; structured state files (JSON/YAML) for tracking; artifact directories for large outputs; documentation organized for search/read rather than bulk loading
+- PARTIAL: Some externalization but AGENTS.md is bloated (100-200 lines) or no artifact directories
 - FAIL: Monolithic instruction files, no structured state, agents must carry all context in prompt
 
 ---

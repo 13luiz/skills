@@ -45,38 +45,11 @@ Never start coding before verifying the environment is healthy.
 
 ## Memory Bridge Pattern
 
-### Progress File (progress.json)
-```json
-{
-  "last_session": "2026-03-31T10:00:00Z",
-  "current_feature": "auth-login",
-  "completed_features": ["project-setup", "database-schema"],
-  "blocked_features": [],
-  "environment_status": "healthy",
-  "notes": "Login API endpoint works. Need frontend form next.",
-  "next_steps": [
-    "Create login form component",
-    "Wire form to API endpoint",
-    "Add error handling for invalid credentials"
-  ]
-}
-```
+Use structured JSON files for session state. See `references/durable-execution.md` for progress file schemas, execution plan checkpointing, and crash recovery patterns.
 
-### Feature Tracker (features.json)
-```json
-{
-  "features": [
-    {
-      "id": "auth-login",
-      "description": "User can log in with email and password",
-      "priority": 1,
-      "status": false,
-      "e2e_verified": false,
-      "assigned_session": null
-    }
-  ]
-}
-```
+Key files:
+- **progress.json** — current feature, completed features, next steps, environment status
+- **features.json** — feature list with machine-readable status (`status`, `e2e_verified`)
 
 Rules:
 - Agents may set `status: true` only after tests pass

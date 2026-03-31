@@ -187,34 +187,10 @@ This pattern is especially important for adversarial verification systems, where
 
 ## Anti-Patterns to Avoid
 
-### AP-1: The Giant AGENTS.md
-2000-line instruction manual. Crowds out task context, causes local pattern-matching, rots instantly.
-**Instead**: Under 150 lines. Use as TOC pointing to deeper docs.
+See the full anti-pattern catalog (15 items) in the "Anti-Patterns to Flag" section of `SKILL.md`. The most critical ones for improvement planning:
 
-### AP-2: Documentation Without Enforcement
-Beautiful architecture docs nobody follows because no mechanical check.
-**Instead**: For every rule, ask "can I lint this?" If yes, write the rule.
-
-### AP-3: Optimizing Prompts Instead of Harness
-Days rewriting prompts when the environment is underspecified.
-**Instead**: Ask "what capability is missing?" not "how do I phrase this better?"
-
-### AP-4: Manual Garbage Collection
-20% of engineering time manually cleaning AI slop every Friday.
-**Instead**: Encode golden principles + automated cleanup agents.
-
-### AP-5: Trusting Agent Self-Evaluation
-Letting agents judge their own "done." They reliably rate themselves too highly.
-**Instead**: External verification — separate evaluators, mechanical tests, browser-driven E2E.
-
-### AP-6: Dynamic Tool Catalog Mid-Session
-Adding or removing MCP tools during a session invalidates the prompt cache and wastes tokens.
-**Instead**: Fix the tool catalog at session start. Use deferred loading for rarely-needed tools.
-
-### AP-7: No Crash Recovery for Multi-Step Tasks
-Agent crashes at step 15 of 20 and starts over from step 1.
-**Instead**: Structured progress files after each meaningful step. `init.sh` reads state on restart.
-
-### AP-8: Tool Output Trusted Blindly
-MCP server returns crafted output that manipulates agent behavior.
-**Instead**: Treat all tool output as untrusted. Validate results before taking action.
+1. **Giant AGENTS.md** — Over 100 lines. Use as TOC pointing to deeper docs.
+2. **Documentation without enforcement** — For every rule, ask "can I lint this?"
+3. **Optimizing prompts instead of harness** — Ask "what capability is missing?"
+4. **Trusting agent self-evaluation** — Use external verification, not self-assessment.
+5. **No crash recovery** — Structured progress files after each meaningful step.

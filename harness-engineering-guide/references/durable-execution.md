@@ -46,27 +46,17 @@ Combine structured progress with a phased execution plan (see `templates/executi
 
 **When to use**: Small teams, multi-day features, any task requiring more than one agent session.
 
-### 3. Journal-Based Replay (Advanced)
-Record each completed step in an append-only log. On crash, replay the log to reconstruct state without re-executing side effects.
+### 3. Journal-Based Replay (Advanced — rare)
 
-Requirements for journal-based replay:
-- **Idempotent operations**: Replaying a step must not duplicate its effects
-- **Step boundaries**: Clear demarcation of what constitutes a single step
-- **Side-effect wrapping**: External calls wrapped so replay skips already-completed ones
+> Most projects only need mechanisms 1-2 above. Journal replay is for production agent platforms with external API calls where re-execution has real costs (payments, deployments, notifications).
 
-**When to use**: Production organizations, agent workflows with external API calls, tasks where re-execution has real costs (payments, deployments, notifications).
+Record each completed step in an append-only log. On crash, replay the log to reconstruct state without re-executing side effects. Requires idempotent operations, clear step boundaries, and side-effect wrapping.
 
-### 4. Saga Pattern for Compensating Rollbacks
-When a multi-step task partially fails, the saga pattern provides automatic compensating actions:
+### 4. Saga Pattern (Advanced — rare)
 
-```
-Step 1: Create migration → (compensate: delete migration)
-Step 2: Update models → (compensate: revert models)
-Step 3: Update tests → (compensate: revert tests)
-Step 4: Run CI → (if fail: execute compensations in reverse order)
-```
+> Only relevant when partial completion is worse than no completion (e.g., multi-service DB migrations).
 
-**When to use**: Tasks where partial completion is worse than no completion. Database migrations, multi-service changes, deployment pipelines.
+When a multi-step task partially fails, define compensating actions per step and execute them in reverse order on failure.
 
 ---
 

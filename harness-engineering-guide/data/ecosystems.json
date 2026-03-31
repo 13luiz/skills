@@ -319,6 +319,45 @@
       "e2e_tools": ["Espresso", "UIAutomator"],
       "boundary_template": null
     },
+    "php": {
+      "name": "PHP",
+      "detect": ["composer.json"],
+      "detect_laravel": ["artisan", "config/app.php"],
+      "detect_symfony": ["symfony.lock", "config/bundles.php"],
+      "linters": {
+        "recommended": ["phpstan", "psalm"],
+        "configs": ["phpstan.neon", "phpstan.neon.dist", "psalm.xml", "psalm.xml.dist"]
+      },
+      "formatters": {
+        "recommended": ["php-cs-fixer", "pint"],
+        "configs": [".php-cs-fixer.php", ".php-cs-fixer.dist.php", "pint.json"]
+      },
+      "type_checkers": {
+        "recommended": ["phpstan", "psalm"],
+        "configs": ["phpstan.neon", "psalm.xml"],
+        "strict_indicators": ["level: max", "level: 9", "totallyTyped: true"]
+      },
+      "test_frameworks": {
+        "recommended": ["phpunit", "pest"],
+        "patterns": ["*Test.php", "*_test.php"],
+        "dirs": ["tests", "test"]
+      },
+      "ci_commands": {
+        "install": "composer install --no-interaction --prefer-dist",
+        "lint": "vendor/bin/phpstan analyse",
+        "typecheck": "vendor/bin/phpstan analyse --level=max",
+        "test": "vendor/bin/phpunit --coverage-text",
+        "build": "composer dump-autoload --optimize",
+        "security": "composer audit",
+        "format_check": "vendor/bin/pint --test || vendor/bin/php-cs-fixer fix --dry-run --diff"
+      },
+      "logging_frameworks": ["monolog", "Illuminate\\Support\\Facades\\Log"],
+      "observability": ["opentelemetry-php", "sentry-laravel", "datadog"],
+      "e2e_tools": ["Laravel Dusk", "playwright", "cypress"],
+      "boundary_template": null,
+      "monorepo_markers": [],
+      "monorepo_workspace_field": null
+    },
     "dart": {
       "name": "Dart / Flutter",
       "detect": ["pubspec.yaml"],

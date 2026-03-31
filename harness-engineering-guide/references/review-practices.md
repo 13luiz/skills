@@ -59,40 +59,7 @@ Rules:
 
 ## Three-Party Verification Chain
 
-For high-stakes changes, no single party's judgment is sufficient — not the implementer's, not even an independent verifier's. The three-party chain adds an auditor who verifies the verifier:
-
-```
-Implementer (writes code)
-    → Verifier (tries to break it, read-only, produces structured report)
-        → Auditor (re-runs 2-3 commands from verifier's report)
-```
-
-### How It Works
-
-1. **Implementer** completes the feature and hands off to a verification agent
-2. **Verifier** (read-only, adversarial) runs commands, probes edge cases, produces a report with `Command run` / `Output observed` / `Result` per check, ending with a VERDICT
-3. **Auditor** (main agent or human) receives the report and:
-   - Confirms every PASS check has a command-run block with actual output
-   - Re-runs 2-3 commands and compares output to what the verifier reported
-   - If any PASS lacks evidence or output diverges, sends the verifier back with specifics
-
-### When to Use
-
-- 3+ files changed
-- Backend/API or infrastructure changes
-- Any change where a subtle bug would be hard to detect later
-- When the implementer and verifier are both LLMs (trust deficit compounds)
-
-### On FAIL Handling
-
-When the verifier issues FAIL:
-1. Implementer fixes the reported issues
-2. Verifier is resumed (not restarted) with the fix context
-3. Cycle repeats until PASS or the issue is escalated to a human
-
-### On PARTIAL Handling
-
-PARTIAL means environment limitations prevented full verification (missing tools, server won't start). Report what passed and what couldn't be verified with specific blockers. PARTIAL is not for "unsure if this is a bug."
+For high-stakes changes (3+ files, backend/API, infrastructure), use the three-party chain: Implementer → Verifier (read-only, adversarial) → Auditor (spot-checks verifier's report). See `references/adversarial-verification.md` for the complete pattern including permission isolation, anti-rationalization engineering, structured output format, and type-specialized verification strategies.
 
 ## Spec-Driven Review
 

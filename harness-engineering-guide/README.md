@@ -1,6 +1,6 @@
 # Harness Engineering Guide
 
-A comprehensive skill for auditing, designing, and implementing environment constraints and feedback loops for AI coding agents. Supports **17 project types**, **11 language ecosystems**, and **3 lifecycle stages**.
+A comprehensive skill for auditing, designing, and implementing environment constraints and feedback loops for AI coding agents. Supports **17 project types**, **12 language ecosystems**, and **3 lifecycle stages**.
 
 ## What is Harness Engineering?
 
@@ -64,12 +64,12 @@ Reduces audit scope for projects at different maturity levels:
 | Stage | Active Items | Focus |
 |-------|-------------|-------|
 | **Bootstrap** (<2k LOC) | 9 items | Foundations only |
-| **Growth** (2k-50k LOC) | 27 items | Constraints + testing + early feedback |
+| **Growth** (2k-50k LOC) | 29 items | Constraints + testing + early feedback |
 | **Mature** (50k+ LOC) | 44 items | Full audit |
 
-### Multi-Ecosystem Support (11 ecosystems)
+### Multi-Ecosystem Support (12 ecosystems)
 Detection rules, tool recommendations, and CI commands for:
-Node.js/TypeScript, Python, Go, Rust, Ruby, Java, C#/.NET, Swift, Kotlin, Dart/Flutter
+Node.js/TypeScript, Python, Go, Rust, Ruby, Java, C#/.NET, Swift, Kotlin, Dart/Flutter, PHP
 
 ### Enhanced Audit Scripts
 Content-level analysis beyond file existence:

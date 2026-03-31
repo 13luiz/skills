@@ -68,7 +68,7 @@ The key question: **would this practice catch an agent going off the rails?**
 
 - CI runs linter but almost no rules enabled -> PARTIAL (infrastructure there, teeth missing)
 - CI runs linter with comprehensive rules and blocks PRs -> PASS
-- AGENTS.md exists but is 2000 lines -> PARTIAL (violates progressive disclosure)
+- AGENTS.md exists but is 200+ lines -> PARTIAL (violates progressive disclosure)
 
 ---
 
@@ -134,10 +134,7 @@ Profiles may also specify:
 - **`substitute_items`**: Alternative criteria when the standard item doesn't fit (e.g., "Can the agent see CLI output?" instead of "Browser automation configured").
 - **`critical_items`**: Items that receive extra emphasis in the report even if the dimension weight is standard.
 
-When applying profile overrides:
-1. Start with default weights from `_meta.default_weights`
-2. Apply `weight_overrides` from the selected profile
-3. Normalize remaining weights so they sum to 1.0
+All profile `weights` are explicit (all 8 dimensions specified, summing to 1.0). No normalization is needed.
 
 ---
 
@@ -148,7 +145,7 @@ When a lifecycle stage is selected (from `data/stages.json`), only the active it
 | Stage | Active Items | Focus |
 |-------|-------------|-------|
 | **Bootstrap** (<2k LOC) | 9 items | Foundations: agent file, CI, lint, types, tests, env recovery, security baseline |
-| **Growth** (2k-50k LOC) | 27 items | All foundations + architecture, testing depth, early feedback loops |
+| **Growth** (2k-50k LOC) | 29 items | All foundations + architecture, testing depth, early feedback loops |
 | **Mature** (50k+ LOC) | 44 items | Full audit with all dimensions |
 
 Inactive items are excluded from the dimension score calculation. Only active items contribute to the score:
@@ -158,6 +155,19 @@ dimension_score = (sum of active item points / number of active items in dimensi
 ```
 
 If a dimension has zero active items for the selected stage (e.g., Dim 3 in Bootstrap), it receives a score of N/A and its weight is redistributed proportionally among active dimensions.
+
+---
+
+## Combining Profile and Stage
+
+When both a project type profile and a lifecycle stage are selected:
+
+1. **Start with the profile's `weights`** — these are the base dimension weights (all 8 explicit, sum = 1.0).
+2. **Apply the stage's active item filter** — only items in the stage's `active_items` array are scored. If a dimension has zero active items, its weight becomes 0.
+3. **Redistribute zeroed weights** — any weight freed by zeroed dimensions is distributed proportionally among the remaining active dimensions so the total stays at 1.0.
+4. **If the stage also defines `weight_overrides`** — stage weight overrides take precedence over the profile weights for the specified dimensions. After applying, normalize the result back to 1.0.
+
+In short: **Profile sets the base weights. Stage filters the scope and may override specific weights. Final weights are always normalized to 1.0.**
 
 ---
 

@@ -43,30 +43,14 @@ MCP is the most relevant protocol for harness auditing because it defines what t
 
 ---
 
-## ACP: Client Integration Standards
+## ACP and A2A (Future Reference)
 
-ACP standardizes how IDEs and clients communicate with agent runtimes. For harness engineering, the key insight is that your internal event model should be ACP-compatible even if you don't expose ACP directly:
+Two emerging protocols complement MCP but do not yet map to audit checklist items:
 
-- Typed events for tool calls, approvals, and state changes
-- Session IDs for correlation and replay
-- Permission request events for human-in-the-loop workflows
-- File operation events for observability
+- **ACP** (Agent Client Protocol): Standardizes IDE/client-to-agent communication — typed events, session management, approval flows. Design your internal event model to be ACP-compatible.
+- **A2A** (Agent-to-Agent Protocol): Enables task delegation to remote specialized agents via Agent Cards and artifact-based outputs. Relevant for production organizations with specialized agent roles.
 
----
-
-## A2A: Remote Agent Coordination
-
-A2A enables agents to delegate tasks to remote specialized agents. For harness engineering at Level 3:
-
-- **Agent Cards** declare capabilities and authentication requirements for discovery
-- **Task-based execution** with artifacts as outputs (not chat messages)
-- **Streaming support** for long-running delegated tasks
-- Explicit separation of messages (ephemeral) and artifacts (durable)
-
-### When A2A Matters for Harness Design
-- Production organizations with specialized agent roles (security auditor, release engineer)
-- Cross-team agent delegation where context isolation is critical
-- Multi-service architectures where different agents own different domains
+These protocols are complementary, not competing: MCP handles agent-to-tools (vertical), A2A handles agent-to-agent (horizontal), ACP handles user-to-agent.
 
 ---
 
