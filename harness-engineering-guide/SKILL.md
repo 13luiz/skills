@@ -176,6 +176,8 @@ Available profiles: `frontend-spa`, `frontend-ssr`, `backend-api`, `backend-micr
 | **Growth** | 2k-50k | 29 items | Constraints + testing + early feedback loops |
 | **Mature** | 50k+ | 44 items (all) | Full audit with all dimensions |
 
+**Report Language** — Detect the language the user is communicating in. The full audit report (Step 3) and all prose must be written in that language. Record the ISO 639-1 code (`en`, `zh`, `ja`, `ko`, `es`, `fr`, etc.) as an audit parameter — it also determines the report filename suffix (see Step 3).
+
 ### Step 1: Explore the Repository
 
 **Option A (preferred):** Run the audit script for a quick preliminary scan:
@@ -246,6 +248,22 @@ Generate the report:
 ```
 
 Read `references/improvement-patterns.md` for proven patterns when writing the roadmap.
+
+**Save the report** — After generating the report, write it to a file inside this skill's `reports/` directory:
+
+```
+reports/<YYYY-MM-DD>_<repo-name>_audit[.<lang>].md
+```
+
+- English reports omit the language suffix: `2026-04-01_acme_audit.md`
+- Non-English reports include the ISO 639-1 suffix: `2026-04-01_acme_audit.zh.md`
+- Use the language code determined in Step 0
+
+Also add the `Language` row to the Audit Parameters table in the report:
+
+```markdown
+| Language | [language name] ([code]) |
+```
 
 ### Step 4: Provide Templates
 
@@ -430,7 +448,7 @@ Then design across maturity levels:
 3. **Progressive improvement.** Quick wins first, then strategic investments.
 4. **Harness over model.** Improve the harness before upgrading the model.
 5. **Mechanical over cultural.** Prefer CI/linter enforcement over code review conventions.
-6. **Match the user's language.** Write reports in whatever language the user communicates in.
+6. **Match the user's language.** Detect the user's communication language in Step 0, write the entire audit report in that language, and use the corresponding language suffix in the saved filename (see Step 3).
 
 ---
 
