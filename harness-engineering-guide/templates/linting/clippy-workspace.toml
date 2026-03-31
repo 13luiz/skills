@@ -1,0 +1,26 @@
+# clippy.toml — Rust workspace-level clippy configuration
+# Place at the workspace root for consistent enforcement across all crates.
+#
+# Run: cargo clippy -- -D warnings
+# CI: cargo clippy -- -D warnings (fails on any warning)
+
+# Enforce explicit error handling
+disallowed-methods = [
+    { path = "std::result::Result::unwrap", reason = "Use `?` operator or explicit error handling instead of unwrap(). See docs/ARCHITECTURE.md for error patterns." },
+    { path = "std::result::Result::expect", reason = "Use `?` operator with context via anyhow/thiserror. See docs/ARCHITECTURE.md." },
+    { path = "std::option::Option::unwrap", reason = "Use `if let`, `match`, or `unwrap_or_default()` instead." },
+]
+
+# Complexity thresholds
+cognitive-complexity-threshold = 25
+too-many-arguments-threshold = 7
+too-many-lines-threshold = 100
+type-complexity-threshold = 250
+
+# For workspace-wide deny in Cargo.toml, add:
+# [workspace.lints.clippy]
+# pedantic = "warn"
+# unwrap_used = "deny"
+# expect_used = "deny"
+# panic = "deny"
+# todo = "warn"

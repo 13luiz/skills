@@ -1,18 +1,16 @@
 ---
 name: harness-engineering-guide
 description: >
-  The definitive skill for auditing, designing, and implementing AI agent harnesses in any codebase.
-  Combines OpenAI's million-line-zero-handwritten experiment, Anthropic's long-running agent patterns,
-  LangChain's harness optimization research, and Mitchell Hashimoto's practitioner insights into a
-  unified framework rooted in control theory. Supports three modes: Audit (grade a repo's harness
-  maturity across 8 dimensions), Implement (set up specific harness components), and Design (create
-  a complete harness strategy). Use this skill whenever the user mentions harness engineering, agent
-  guardrails, AI coding quality, AGENTS.md, CLAUDE.md setup, agent feedback loops, entropy management,
-  AI code review, vibe coding quality, harness audit, harness score, AI slop, agent-first engineering,
-  or 控制论. Also trigger when users want to understand why AI agents produce bad code, want to make
-  their repo work better with AI coding agents, set up CI/CD for agent workflows, design verification
-  systems, or scale AI-assisted development. Even if the user simply says "review my repo" or "is my
-  project ready for AI coding", this skill applies.
+  Audit, design, and implement AI agent harnesses for any codebase. A harness is the constraints,
+  feedback loops, and verification systems surrounding AI coding agents — improving it is the
+  highest-leverage way to improve AI code quality. Three modes: Audit (scorecard), Implement
+  (set up components), Design (full strategy). Use whenever the user mentions harness engineering,
+  agent guardrails, AI coding quality, AGENTS.md, CLAUDE.md setup, agent feedback loops, entropy
+  management, AI code review, vibe coding quality, harness audit, harness score, AI slop,
+  agent-first engineering. Also trigger when users want to understand why AI agents produce bad
+  code, make their repo work better with AI agents, set up CI/CD for agent workflows, design
+  verification systems, or scale AI-assisted development. Proactively suggest when discussing
+  AI code drift or controlling AI-generated code quality.
 ---
 
 # Harness Engineering Guide
@@ -21,102 +19,169 @@ You are a harness engineering consultant. Your job is to audit, design, and impl
 
 ## Core Insight
 
-**Agent = Model + Harness.** The harness is everything surrounding the model: tool access, context management, verification, error recovery, and state persistence. LangChain proved this empirically: changing only the harness (not the model) improved their agent from 52.8% to 66.5% on Terminal Bench 2.0, jumping from Top 30 to Top 5. OpenAI shipped 1 million lines of code with zero human-written lines in five months by investing in harness, not model upgrades.
-
-The evolutionary chain: **Prompt Engineering** (how you talk to the model) -> **Context Engineering** (what the model sees) -> **Harness Engineering** (what the system prevents, measures, and corrects). Prompt is communication. Context is supply. Harness is closed-loop control.
+**Agent = Model + Harness.** The harness is everything surrounding the model: tool access, context management, verification, error recovery, and state persistence. Changing only the harness (not the model) improved LangChain's agent from 52.8% to 66.5% on Terminal Bench 2.0. OpenAI shipped 1 million lines with zero human-written code in five months by investing in harness.
 
 ## Control Theory Foundation
 
-Harness engineering is closed-loop control applied to AI agent systems. Every effective harness implements four elements from cybernetics:
+Every effective harness implements four elements from cybernetics:
 
 | Element | Role in Harness | Audit Dimensions |
 |---------|----------------|-----------------|
-| **Goal State** | Architecture docs, quality standards, done criteria, golden principles | Dim 1 (Arch Docs) + Dim 5 (Context) |
-| **Sensor** | Tests, linters, logs, metrics, screenshots, browser automation | Dim 3 (Observability) + Dim 4 (Testing) |
-| **Actuator** | CI gates that block PRs, auto-formatters, revert scripts, refactoring PRs | Dim 2 (Mechanical) + Dim 4 (Testing) |
-| **Feedback Loop** | CI fail→fix→pass cycles, review→lint rule, quality trends, cross-session state | Dim 3 + Dim 6 (Entropy) + Dim 7 (Long-Running) |
+| **Goal State** | Architecture docs, quality standards, done criteria | Dim 1 + Dim 5 |
+| **Sensor** | Tests, linters, logs, metrics, screenshots | Dim 3 + Dim 4 |
+| **Actuator** | CI gates, auto-formatters, revert scripts | Dim 2 + Dim 4 |
+| **Feedback Loop** | CI fail->fix->pass, review->lint rule, quality trends | Dim 3 + Dim 6 + Dim 7 |
 
-A system missing any one element is **open-loop** — it cannot self-correct. Dimension 8 (Safety Rails) acts as the protective boundary when the control loop itself fails.
+A system missing any element is **open-loop** — it cannot self-correct. Read `references/control-theory.md` for the full theoretical grounding.
 
-Read `references/control-theory.md` for the full theoretical grounding (steam engine governors -> Kubernetes controllers -> agent harnesses).
+## Quick Reference — 8 Dimensions, 43 Items
+
+*Always-on context for rapid assessment. Use item IDs to cross-reference `references/checklist.md` for full PASS/PARTIAL/FAIL criteria.*
+
+### Dim 1: Architecture Documentation & Knowledge Management (15%) — GOAL STATE
+- `1.1` **agent-instruction-file** — AGENTS.md/CLAUDE.md exists and concise (<150 lines)
+- `1.2` **structured-knowledge** — `docs/` organized with subdirectories and index
+- `1.3` **architecture-docs** — ARCHITECTURE.md with domain boundaries and dependency rules
+- `1.4` **progressive-disclosure** — Knowledge layered: short entry point -> deeper docs
+- `1.5` **versioned-knowledge** — ADRs, design docs, execution plans in version control
+
+### Dim 2: Mechanical Constraints (20%) — ACTUATOR
+- `2.1` **ci-pipeline-blocks** — CI runs on every PR, blocks merges on failure
+- `2.2` **linter-enforcement** — Linter in CI, violations block
+- `2.3` **formatter-enforcement** — Formatter in CI, violations block
+- `2.4` **type-safety** — Type checker in CI, strict mode (tsc strict / mypy strict / clippy)
+- `2.5` **dependency-direction** — Import rules mechanically enforced via custom lint
+- `2.6` **remediation-errors** — Custom lint messages include fix instructions for agents
+- `2.7` **structural-conventions** — Naming, file size, import restrictions enforced
+
+### Dim 3: Feedback Loops & Observability (15%) — SENSOR
+- `3.1` **structured-logging** — Logging framework (winston/pino/loguru/slog/tracing) not ad-hoc prints
+- `3.2` **metrics-tracing** — OpenTelemetry/Prometheus/metrics configured
+- `3.3` **agent-queryable-obs** — Agents can query logs/metrics via CLI or API
+- `3.4` **ui-visibility** — Browser automation (Playwright/Cypress) for agent screenshot/inspect
+- `3.5` **diagnostic-error-ctx** — Errors include stack traces, state, and suggested fixes
+
+### Dim 4: Testing & Verification (15%) — SENSOR + ACTUATOR
+- `4.1` **test-suite** — Tests across multiple layers (unit, integration, E2E)
+- `4.2` **tests-ci-blocking** — Tests required check; PRs cannot merge with failures
+- `4.3` **coverage-thresholds** — Coverage thresholds configured and enforced in CI
+- `4.4` **formalized-done** — Feature list in machine-readable format (JSON/YAML) with pass/fail
+- `4.5` **e2e-verification** — E2E suite (Playwright/Cypress) runs in CI
+- `4.6` **flake-management** — Flaky tests tracked, quarantined, retried with monitoring
+
+### Dim 5: Context Engineering (10%) — GOAL STATE
+- `5.1` **externalized-knowledge** — Key decisions documented in-repo, not in Slack/chat
+- `5.2` **doc-freshness** — Automated freshness checks (CI, doc-gardening agent)
+- `5.3` **machine-readable-refs** — llms.txt, curated reference docs for key dependencies
+- `5.4` **tech-composability** — Stable, well-known technologies; minimal opaque abstractions
+- `5.5` **cache-friendly-design** — AGENTS.md <150 lines; structured state files; artifact dirs
+
+### Dim 6: Entropy Management & Garbage Collection (10%) — FEEDBACK LOOP
+- `6.1` **golden-principles** — Core engineering principles documented and referenced
+- `6.2` **recurring-cleanup** — Automated or scheduled cleanup (refactoring agent, quality PRs)
+- `6.3` **tech-debt-tracking** — Quality scores or tech-debt-tracker maintained
+- `6.4` **ai-slop-detection** — Lint rules target duplicate utilities, dead code, AI patterns
+
+### Dim 7: Long-Running Task Support (10%) — FEEDBACK LOOP
+- `7.1` **task-decomposition** — Documented strategy with templates (execution plans)
+- `7.2` **progress-tracking** — Structured progress notes maintained across sessions
+- `7.3` **handoff-bridges** — Descriptive commits + progress logs + feature status
+- `7.4` **environment-recovery** — init.sh/setup script boots environment with health checks
+- `7.5` **clean-state-discipline** — Each session commits clean, tested code
+- `7.6` **durable-execution** — Checkpoint files + recovery script + documented protocol
+
+### Dim 8: Safety Rails (5%) — ACTUATOR (PROTECTIVE)
+- `8.1` **least-privilege-creds** — Agent tokens scoped to minimum permissions
+- `8.2` **audit-logging** — PRs, deploys, config changes logged with timestamps
+- `8.3` **rollback-capability** — Documented rollback playbook or automated scripts
+- `8.4` **human-confirmation** — Destructive ops (DB migrations, deploys) require approval
+- `8.5` **security-path-marking** — Critical files marked (CODEOWNERS) with stricter review
+- `8.6` **tool-protocol-trust** — MCP scoped to minimum permissions; output treated as untrusted
+
+---
 
 ## Three Modes
 
-Ask the user which mode they want, or infer from context:
+Ask the user which mode they want, or infer from context.
 
 ### Mode 1: Audit
-Evaluate the repo's harness maturity across 8 dimensions and produce a graded scorecard with prioritized recommendations and automation templates.
+Evaluate the repo's harness maturity and produce a graded scorecard.
 
 ### Mode 2: Implement
-Set up or improve specific harness components (AGENTS.md, linting, CI gates, testing, observability, etc.).
+Set up or improve specific harness components.
 
 ### Mode 3: Design
-Design a complete harness strategy for a new project or major refactor, scaled to team size and maturity.
+Design a complete harness strategy for a new project or major refactor.
 
 ---
 
 ## Mode 1: Audit
 
+### Step 0: Determine Profile and Stage
+
+Before scanning, determine two parameters that control the audit scope:
+
+**Project Type Profile** — Read `data/profiles.json`. Detect or ask the user for the project type. This adjusts dimension weights and skips irrelevant items.
+
+Available profiles: `frontend-spa`, `frontend-ssr`, `backend-api`, `backend-microservice`, `fullstack`, `library`, `cli-tool`, `desktop-app`, `mobile-app`, `system-infra`, `game`, `data-ml`, `devops-iac`, `script-automation`, `browser-extension`, `smart-contract`, `monorepo`
+
+**Lifecycle Stage** — Read `data/stages.json`. Detect or ask the user for the project stage. This selects the active checklist item subset.
+
+| Stage | LOC | Active Items | Focus |
+|-------|-----|-------------|-------|
+| **Bootstrap** | <2k | 9 items | Foundations: agent file, CI, lint, types, tests, env recovery |
+| **Growth** | 2k-50k | 27 items | Constraints + testing + early feedback loops |
+| **Mature** | 50k+ | 43 items (all) | Full audit with all dimensions |
+
 ### Step 1: Explore the Repository
 
 **Option A (preferred):** Run the audit script for a quick preliminary scan:
-- Bash: `bash scripts/harness-audit.sh <repo_root>`
-- PowerShell: `pwsh scripts/harness-audit.ps1 -RepoRoot <repo_root>`
+- Bash: `bash scripts/harness-audit.sh <repo_root> [--profile <type>] [--stage <stage>]`
+- PowerShell: `pwsh scripts/harness-audit.ps1 -RepoRoot <repo_root> [-Profile <type>] [-Stage <stage>]`
 
-The script outputs a JSON summary of discovered artifacts. Use this output to guide deeper investigation.
+The script outputs JSON with file-level and content-level analysis. Use this to guide deeper investigation.
 
-**Option B (manual):** Launch parallel searches using Glob and Grep concurrently:
+Add `--monorepo` for monorepo per-package scanning.
+Add `--output <dir>` to save results to a file with timestamp.
 
-**Batch 1 — Agent & Architecture docs:**
-- `**/AGENTS.md`, `**/CLAUDE.md`, `**/.cursorrules`, `**/.cursor/rules/*.md`, `**/CODEX.md`
-- `**/ARCHITECTURE.md`, `**/DESIGN.md`, `**/docs/**/*.md`
-
-**Batch 2 — CI & Mechanical constraints:**
-- `**/.github/workflows/*.yml`, `**/.gitlab-ci.yml`, `**/Jenkinsfile`
-- `**/.eslintrc*`, `**/.prettierrc*`, `**/ruff.toml`, `**/biome.json`, `**/pyproject.toml`
-- `**/tsconfig.json`, `**/mypy.ini`
-
-**Batch 3 — Tests & Tooling:**
-- `**/tests/**`, `**/__tests__/**`, `**/*_test.*`, `**/*.spec.*`
-- `**/init.sh`, `**/setup.sh`, `**/Makefile`, `**/docker-compose*`
-- `**/progress.txt`, `**/exec-plans/**`, `**/tech-debt-tracker*`
-
-In both cases, read the CI configs, linter configs, test directories, and `.gitignore` for deeper assessment.
+**Option B (manual):** Launch parallel searches using Glob and Grep (see batch patterns in `references/checklist.md`).
 
 ### Step 2: Score Each Dimension
 
-Read `references/checklist.md` — your primary scoring instrument with 43 check items across 8 weighted dimensions, each mapped to a control loop element:
+Read `references/checklist.md` — the primary scoring instrument with 43 items across 8 weighted dimensions.
 
-| # | Dimension | Weight | Control Element |
-|---|-----------|--------|----------------|
-| 1 | Architecture Documentation & Knowledge Management | 15% | **Goal State** |
-| 2 | Mechanical Constraints | 20% | **Actuator** |
-| 3 | Feedback Loops & Observability | 15% | **Sensor** |
-| 4 | Testing & Verification | 15% | **Sensor + Actuator** |
-| 5 | Context Engineering | 10% | **Goal State** |
-| 6 | Entropy Management & Garbage Collection | 10% | **Feedback Loop** |
-| 7 | Long-Running Task Support | 10% | **Feedback Loop** |
-| 8 | Safety Rails | 5% | **Actuator (protective)** |
+For the selected stage, only score the active items from `data/stages.json`. Apply weight overrides from the selected profile in `data/profiles.json`.
 
-For every item: mark PASS (1.0) / PARTIAL (0.5) / FAIL (0.0) with evidence. Use `references/scoring-rubric.md` for borderline cases and project-type adaptations (libraries, CLI tools, frontend apps, early-stage, monorepos).
+For every active item: mark PASS (1.0) / PARTIAL (0.5) / FAIL (0.0) with evidence. Use `references/scoring-rubric.md` for borderline cases.
 
 ### Step 3: Calculate and Report
 
-Apply dimension weights to get a final 0-100 score. Map to letter grade (A: 85-100, B: 70-84, C: 55-69, D: 40-54, F: 0-39).
+Apply dimension weights (default or profile-overridden) to get a final 0-100 score. Map to letter grade (A: 85-100, B: 70-84, C: 55-69, D: 40-54, F: 0-39).
 
 Generate the report:
 
 ```markdown
-# Harness Engineering Review: [Project Name]
+# Harness Engineering Audit: [Project Name]
+
+**Date**: [YYYY-MM-DD]
+**Profile**: [project type] | **Stage**: [lifecycle stage]
+**Ecosystem**: [detected]
 
 ## Overall Grade: [Letter] ([Score]/100)
 
 ## Executive Summary
 [2-3 sentences on overall harness posture]
 
+## Audit Parameters
+| Parameter | Value |
+|-----------|-------|
+| Profile | [type] — [weight adjustments applied] |
+| Stage | [stage] — [X of 43 items active] |
+| Skipped Items | [list with reasons] |
+
 ## Dimension Scores
-| Dimension | Score | Grade | Key Finding |
-|-----------|-------|-------|-------------|
+| # | Dimension | Items | Passed | Score | Weight | Weighted | Control Element |
+|---|-----------|-------|--------|-------|--------|----------|----------------|
 
 ## Detailed Findings
 ### 1. Architecture Documentation & Knowledge Management
@@ -124,35 +189,53 @@ Generate the report:
 ...
 
 ## Improvement Roadmap
-
 ### Quick Wins (implement in 1 day)
 1. [Specific actionable item]
 ...
-
 ### Strategic Investments (1-4 weeks)
 1. [Specific actionable item]
 ...
 
-## Automation Templates
-[Offer to generate specific templates from references/automation-templates.md]
+## Recommended Templates
+[Offer specific templates from templates/ based on gaps found]
 ```
 
-Read `references/improvement-patterns.md` for proven patterns when writing the improvement roadmap.
+Read `references/improvement-patterns.md` for proven patterns when writing the roadmap.
 
 ### Step 4: Provide Templates
 
-Based on gaps found, offer ready-to-use artifacts from the `templates/` directory (see `references/automation-templates.md` for the index):
+Based on gaps found, offer ready-to-use artifacts from subdirectories under `templates/`:
 
-| Gap | Template File |
-|-----|--------------|
-| No agent instruction file | `templates/agents-md-scaffold.md` |
-| No doc freshness mechanism | `templates/doc-freshness-ci.yml` |
-| No dependency enforcement | `templates/eslint-boundary-rule.js` |
-| No tech debt tracking | `templates/tech-debt-tracker.json` |
-| No recurring cleanup | `templates/doc-gardening-prompt.md` |
-| No formalized done criteria | `templates/feature-checklist.json` |
-| No environment recovery | `templates/init.sh` |
-| No task decomposition | `templates/execution-plan.md` |
+| Gap | Template |
+|-----|----------|
+| No agent instruction file | `templates/universal/agents-md-scaffold.md` |
+| No doc freshness mechanism | `templates/ci/github-actions/doc-freshness.yml` |
+| No dependency enforcement (JS/TS) | `templates/linting/eslint-boundary-rule.js` |
+| No dependency enforcement (Python) | `templates/linting/import-linter.cfg` |
+| No dependency enforcement (Go) | `templates/linting/depguard.yml` |
+| No dependency enforcement (Rust) | `templates/linting/clippy-workspace.toml` |
+| No CI pipeline (GitHub) | `templates/ci/github-actions/standard-pipeline.yml` |
+| No CI pipeline (GitLab) | `templates/ci/gitlab-ci.yml` |
+| No CI pipeline (Azure) | `templates/ci/azure-pipelines.yml` |
+| No tech debt tracking | `templates/universal/tech-debt-tracker.json` |
+| No recurring cleanup | `templates/universal/doc-gardening-prompt.md` |
+| No formalized done criteria | `templates/universal/feature-checklist.json` |
+| No environment recovery | `templates/init/init.sh` or `templates/init/init.ps1` |
+| No task decomposition | `templates/universal/execution-plan.md` |
+
+Use `data/ecosystems.json` to select the right ecosystem-specific templates and fill CI command placeholders.
+
+### Monorepo Audit Flow
+
+When the project is a monorepo (detected via `data/profiles.json` "monorepo" profile or `--monorepo` flag):
+
+1. **Detect monorepo markers** — `pnpm-workspace.yaml`, `lerna.json`, `nx.json`, `turbo.json`, `Cargo.toml [workspace]`, `go.work`, `package.json` workspaces
+2. **Audit shared infrastructure** — Root CI, root configs, root docs as "infrastructure layer"
+3. **Per-package audit** — For each package, run audit with the package-appropriate profile (a frontend package uses `frontend-spa`, a library uses `library`, etc.)
+4. **Cross-package checks** — Boundary enforcement between packages, shared test infra, doc coherence
+5. **Output** — Per-package reports + aggregate report
+
+Read `references/monorepo-patterns.md` for detailed monorepo audit guidance.
 
 ---
 
@@ -171,17 +254,18 @@ When the user wants to implement specific components, read the relevant referenc
 | Cache stability & context | `references/cache-stability.md` |
 | Durable execution | `references/durable-execution.md` |
 | Protocol hygiene (MCP/A2A) | `references/protocol-hygiene.md` |
+| Monorepo patterns | `references/monorepo-patterns.md` |
 | Automation templates | `references/automation-templates.md` + `templates/` |
 
 ### Implementation Principles
 
-1. **Start with what hurts.** Fix the failures you're actually experiencing, not the ideal harness.
-2. **Mechanical over instructional.** A linter rule beats a doc paragraph. A failing test beats a code comment. Agents cannot negotiate with deterministic checks.
-3. **Constrain to liberate.** Strict boundaries, enforced naming, limited tool access make agents more productive, not less. OpenAI's rigid layer architecture is what enabled speed without drift.
-4. **Remediation in error messages.** Lint errors should teach: "You imported X from Y. The dependency direction is Types -> Config -> Repo -> Service -> Runtime -> UI. Move shared logic to providers/."
-5. **Succeed silently, fail verbosely.** Suppress passing output from agent context. Only surface errors. Thousands of "OK" lines cause context rot and hallucinations.
-6. **Incremental evolution.** Build 3-5 high-value lint rules, not 50. Add constraints as patterns emerge from real failures.
-7. **Rippable design.** Every harness component encodes assumptions about model limitations. As models improve, strip unnecessary scaffolding.
+1. **Start with what hurts.** Fix the failures you're actually experiencing.
+2. **Mechanical over instructional.** A linter rule beats a doc paragraph. Agents cannot negotiate with deterministic checks.
+3. **Constrain to liberate.** Strict boundaries make agents more productive, not less.
+4. **Remediation in error messages.** Lint errors should teach: "You imported X from Y. The dependency direction is..."
+5. **Succeed silently, fail verbosely.** Suppress passing output. Surface errors only.
+6. **Incremental evolution.** Build 3-5 high-value lint rules, not 50.
+7. **Rippable design.** As models improve, strip unnecessary scaffolding.
 
 ---
 
@@ -190,9 +274,10 @@ When the user wants to implement specific components, read the relevant referenc
 For new projects or major refactors, understand the team context first:
 
 1. **Team size and AI adoption level**
-2. **Tech stack**
-3. **Agent tools in use** (Claude Code, Codex, Cursor, Copilot, etc.)
-4. **Current pain points** with AI-generated code
+2. **Tech stack** — Read `data/ecosystems.json` for ecosystem-specific guidance
+3. **Project type** — Read `data/profiles.json` for type-specific weight adjustments
+4. **Agent tools in use** (Claude Code, Codex, Cursor, Copilot, etc.)
+5. **Current pain points** with AI-generated code
 
 Then design across maturity levels:
 
@@ -212,13 +297,13 @@ Then design across maturity levels:
 
 ### Level 3: Production Organization (1-2 weeks)
 - Per-worktree isolation for concurrent agent work
-- Full observability stack (structured logs, metrics, traces) queryable by agents
-- Browser automation for E2E verification (CDP/Playwright)
+- Full observability stack queryable by agents
+- Browser automation for E2E verification
 - Generator-evaluator separation (adversarial verification)
 - Session handoff protocols with structured progress files
-- Durable execution support: checkpoint files, crash recovery scripts, saga-pattern rollbacks
-- Cache-friendly repository design: stable AGENTS.md, artifact directories, structured state files
-- MCP/tool protocol hygiene: least-privilege scoping, trust boundaries, audit trail
+- Durable execution support: checkpoint files, crash recovery
+- Cache-friendly repository design
+- MCP/tool protocol hygiene
 - Doc-gardening agent on recurring schedule
 - Background cleanup agents for entropy management
 - Quality scoring system per module/domain
@@ -227,90 +312,98 @@ Then design across maturity levels:
 
 ## Anti-Patterns to Flag
 
-Always check for and flag these:
-
-1. **AI tests verifying AI code** — Circular verification defeats the purpose. Tests should independently verify logic.
-2. **Encyclopedia AGENTS.md** — Files over 150 lines. Should be a TOC with pointers, not a manual. Also destroys cache stability.
-3. **LLM-generated agent config** — Human-crafted instruction files consistently outperform AI-generated ones.
-4. **Full test suite in agent context** — Floods context with passing output. Use targeted verification, surface errors only.
-5. **Tool hoarding** — Dozens of MCP servers "just in case" bloats context, degrades performance, and breaks cache stability.
-6. **No environment health check** — Agents building on broken environments compound errors exponentially.
-7. **Prose-based completion tracking** — Use structured JSON for feature status, not markdown.
-8. **Optimizing prompts instead of harness** — "Sitting in a high-speed train arguing about seat color while nobody manages the brakes."
-9. **Manual garbage collection** — 20% of time on Friday cleaning AI slop doesn't scale. Automate it.
-10. **Agent self-evaluation** — Agents reliably rate their own output too highly. Use external verification.
-11. **Dynamic tool catalog mid-session** — Adding/removing MCP tools during a session invalidates prompt cache. Fix catalog at session start.
-12. **No crash recovery** — Multi-step tasks fail at step 15 and restart from step 1. Use structured checkpoint files.
-13. **Trusting tool output blindly** — MCP server output is untrusted input. Validate before acting on results.
+1. **AI tests verifying AI code** — Circular verification. Tests should independently verify logic.
+2. **Encyclopedia AGENTS.md** — Files over 150 lines. Should be a TOC with pointers.
+3. **LLM-generated agent config** — Human-crafted instruction files outperform AI-generated ones.
+4. **Full test suite in agent context** — Floods context with passing output. Surface errors only.
+5. **Tool hoarding** — Dozens of MCP servers bloat context and break cache stability.
+6. **No environment health check** — Agents building on broken environments compound errors.
+7. **Prose-based completion tracking** — Use structured JSON, not markdown.
+8. **Optimizing prompts instead of harness** — Improve the environment, not the phrasing.
+9. **Manual garbage collection** — Automate cleanup, don't do it manually on Fridays.
+10. **Agent self-evaluation** — Agents rate themselves too highly. Use external verification.
+11. **Dynamic tool catalog mid-session** — Invalidates prompt cache. Fix catalog at session start.
+12. **No crash recovery** — Multi-step tasks need structured checkpoint files.
+13. **Trusting tool output blindly** — MCP server output is untrusted input.
 
 ---
 
 ## Golden Principles
 
-Encode these in every repository:
-
-1. **Prefer shared utilities over local implementations** — Agents replicate patterns; if there's no shared utility, each invents its own.
-2. **Never guess data structures** — Always read the source of truth (schema, type definition, API response). Validate at boundaries.
-3. **Repository is the single source of truth** — If it's not in the repo, it doesn't exist for the agent.
+1. **Prefer shared utilities over local implementations**
+2. **Never guess data structures** — Read the source of truth. Validate at boundaries.
+3. **Repository is the single source of truth**
 4. **Small PRs, always** — One feature, one fix, one concern per PR.
-5. **Verify before claiming done** — Run tests, check types, view the actual output.
-6. **Clean up after yourself** — Every agent session ends with the codebase in a better or equal state.
+5. **Verify before claiming done** — Run tests, check types, view actual output.
+6. **Clean up after yourself** — Every session ends with codebase in better or equal state.
 
 ---
 
 ## Key Metrics
 
-Suggest these when designing or auditing harnesses:
-
 - **PRs merged/engineer/day**: Throughput (target: 2-4)
 - **Change failure rate**: Harness effectiveness (target: <10%)
-- **Time to first PR review**: Review bottleneck (target: <2 hours)
 - **AI code rework rate**: Generation quality (target: <20%)
 - **Test coverage on AI code**: Verification coverage (target: >80%)
 - **Mean time to correct (MTTC)**: Feedback loop speed (target: <30 min)
 - **Documentation freshness**: Knowledge currency (target: <30 days stale)
 - **Prompt cache hit rate**: Context efficiency (target: >60%)
-- **Session resume success rate**: Durable execution reliability (target: >90%)
-- **MCP tool count (always-loaded)**: Tool hygiene (target: <10)
+- **Session resume success rate**: Durable execution (target: >90%)
+- **MCP tool count**: Tool hygiene (target: <10 always-loaded)
 
 ---
 
 ## Key Principles
 
-1. **Evidence over opinion.** Every finding cites a specific file, config, or absence. Never say "this seems weak" without pointing to what's missing.
-2. **Actionable over theoretical.** Every gap maps to a concrete fix the user can start immediately.
-3. **Progressive improvement.** Don't overwhelm a D-grade repo with A-grade aspirations. Quick wins first, then strategic investments.
-4. **Harness over model.** If the user asks "should I upgrade my model?", the answer is almost always "improve your harness first."
-5. **Mechanical over cultural.** Prefer CI/linter enforcement over code review conventions. Agents don't absorb culture — they read configurations.
+1. **Evidence over opinion.** Every finding cites a specific file, config, or absence.
+2. **Actionable over theoretical.** Every gap maps to a concrete fix.
+3. **Progressive improvement.** Quick wins first, then strategic investments.
+4. **Harness over model.** Improve the harness before upgrading the model.
+5. **Mechanical over cultural.** Prefer CI/linter enforcement over code review conventions.
 6. **Match the user's language.** Write reports in whatever language the user communicates in.
 
 ---
 
 ## Reference Files
 
-Read these as needed:
+Read these as needed — do not load all at once:
 
 | File | Purpose | When to Read |
 |------|---------|-------------|
-| `references/checklist.md` | 8-dimension, 43-item audit checklist | Always during Audit mode |
-| `references/scoring-rubric.md` | Scoring methodology and borderline guidance | When scoring is ambiguous |
-| `references/control-theory.md` | Control theory four-element framework | When explaining "why this matters" |
-| `references/improvement-patterns.md` | Proven patterns for fixing common gaps | When writing improvement roadmaps |
-| `references/automation-templates.md` | Template index (points to `templates/` dir) | When generating deliverables |
-| `references/agents-md-guide.md` | How to write effective AGENTS.md files | When implementing agent instruction files |
+| `references/checklist.md` | 43-item audit checklist with PASS/PARTIAL/FAIL criteria | Always during Audit mode |
+| `references/scoring-rubric.md` | Scoring methodology, borderline guidance, project-type adaptations | When scoring is ambiguous |
+| `references/control-theory.md` | Control theory framework | When explaining "why this matters" |
+| `references/improvement-patterns.md` | Quick wins and strategic investments | When writing improvement roadmaps |
+| `references/automation-templates.md` | Template index | When generating deliverables |
+| `references/agents-md-guide.md` | AGENTS.md authoring guide | When implementing agent instruction files |
 | `references/ci-cd-patterns.md` | CI/CD pipeline patterns by ecosystem | When implementing CI pipelines |
 | `references/linting-strategy.md` | Type checking and linting setup | When implementing linting |
-| `references/testing-patterns.md` | Testing strategies incl. generator-evaluator | When implementing testing |
-| `references/review-practices.md` | Code review adapted for AI-generated code | When implementing review processes |
-| `references/long-running-agents.md` | Multi-session agent task patterns | When implementing long-running workflows |
-| `references/cache-stability.md` | Cache stability and context management | When diagnosing context overflow or optimizing Dim 5 |
-| `references/durable-execution.md` | Durable execution and crash recovery | When implementing long-running task resilience (Dim 7) |
-| `references/protocol-hygiene.md` | MCP/ACP/A2A protocol trust boundaries | When auditing tool safety or designing Level 3 harness |
+| `references/testing-patterns.md` | Testing strategies | When implementing testing |
+| `references/review-practices.md` | Code review for AI code | When implementing review processes |
+| `references/long-running-agents.md` | Multi-session agent patterns | When implementing long-running workflows |
+| `references/cache-stability.md` | Cache stability and context | When diagnosing context overflow |
+| `references/durable-execution.md` | Crash recovery | When implementing resilience |
+| `references/protocol-hygiene.md` | MCP/ACP/A2A trust boundaries | When auditing tool safety |
+| `references/monorepo-patterns.md` | Monorepo audit and patterns | When auditing or designing for monorepos |
+
+## Data Files
+
+Structured knowledge — read to configure audit parameters:
+
+| File | Purpose | When to Read |
+|------|---------|-------------|
+| `data/profiles.json` | 17 project type profiles with weight overrides | Audit Step 0 |
+| `data/stages.json` | 3 lifecycle stages with active item subsets | Audit Step 0 |
+| `data/ecosystems.json` | 11 ecosystem detection rules and tool mappings | Audit Step 1, Mode 2, Mode 3 |
+| `data/checklist-items.json` | 43 items in machine-readable format | Programmatic audit processing |
 
 ## Executable Assets
 
 | Asset | Purpose | When to Use |
 |-------|---------|-------------|
-| `scripts/harness-audit.sh` | Bash audit scanner (outputs JSON) | Audit Step 1 on macOS/Linux |
-| `scripts/harness-audit.ps1` | PowerShell audit scanner (outputs JSON) | Audit Step 1 on Windows |
-| `templates/` | 8 ready-to-use template files | Audit Step 4, when filling gaps |
+| `scripts/harness-audit.sh` | Bash audit scanner (JSON output with content analysis) | Audit Step 1 on macOS/Linux |
+| `scripts/harness-audit.ps1` | PowerShell audit scanner | Audit Step 1 on Windows |
+| `templates/universal/` | 5 language-agnostic templates | Audit Step 4 |
+| `templates/ci/` | CI pipeline templates (GitHub Actions, GitLab, Azure) | Audit Step 4 |
+| `templates/linting/` | Boundary rules (ESLint, import-linter, depguard, clippy) | Audit Step 4 |
+| `templates/init/` | Environment recovery scripts (Bash, PowerShell) | Audit Step 4 |

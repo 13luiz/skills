@@ -1,0 +1,97 @@
+# .github/workflows/ci.yml — Standard CI Pipeline for AI-Assisted Development
+# Replace [ECOSYSTEM_COMMANDS] placeholders with commands from data/ecosystems.json
+name: CI
+
+on:
+  pull_request:
+    branches: [main, master]
+  push:
+    branches: [main, master]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # [ECOSYSTEM: node]
+      # - uses: actions/setup-node@v4
+      #   with: { node-version: '20' }
+      # - run: npm ci --silent
+      # - run: npx eslint . && npx biome check .
+
+      # [ECOSYSTEM: python]
+      # - uses: actions/setup-python@v5
+      #   with: { python-version: '3.12' }
+      # - run: pip install -e '.[dev]'
+      # - run: ruff check . && ruff format --check .
+
+      # [ECOSYSTEM: go]
+      # - uses: actions/setup-go@v5
+      #   with: { go-version: '1.22' }
+      # - run: golangci-lint run
+
+      # [ECOSYSTEM: rust]
+      # - uses: dtolnay/rust-toolchain@stable
+      #   with: { components: clippy, rustfmt }
+      # - run: cargo clippy -- -D warnings && cargo fmt --check
+
+      - run: echo "Replace this with your lint command"
+
+  typecheck:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # [ECOSYSTEM: node] - run: npx tsc --noEmit
+      # [ECOSYSTEM: python] - run: mypy src/
+      # [ECOSYSTEM: go] - run: go vet ./...
+      # [ECOSYSTEM: rust] - run: cargo check
+
+      - run: echo "Replace this with your typecheck command"
+
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # [ECOSYSTEM: node] - run: npx vitest run --coverage
+      # [ECOSYSTEM: python] - run: pytest --cov=src --cov-fail-under=80
+      # [ECOSYSTEM: go] - run: go test -race -coverprofile=coverage.out ./...
+      # [ECOSYSTEM: rust] - run: cargo test
+
+      - run: echo "Replace this with your test command"
+
+  build:
+    runs-on: ubuntu-latest
+    needs: [lint, typecheck, test]
+    steps:
+      - uses: actions/checkout@v4
+
+      # [ECOSYSTEM: node] - run: npm run build
+      # [ECOSYSTEM: python] - run: python -m build
+      # [ECOSYSTEM: go] - run: go build ./...
+      # [ECOSYSTEM: rust] - run: cargo build --release
+
+      - run: echo "Replace this with your build command"
+
+  # AI-Specific: PR size enforcement
+  check-pr-size:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Check PR size
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          ADDITIONS=$(gh pr view ${{ github.event.pull_request.number }} --json additions -q '.additions')
+          if [ "$ADDITIONS" -gt 500 ]; then
+            echo "::warning::PR has $ADDITIONS additions. Consider splitting into smaller PRs for better AI agent review."
+          fi

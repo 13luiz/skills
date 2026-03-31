@@ -1,12 +1,47 @@
 #!/usr/bin/env bash
-# harness-audit.sh — Scan a repository for harness engineering readiness
-# Usage: bash harness-audit.sh [repo_root]
-# Output: JSON object with discovered harness artifacts
+# harness-audit.sh — Enhanced harness engineering audit scanner
+# Usage: bash harness-audit.sh [repo_root] [options]
+# Options:
+#   --profile <type>    Project type profile (see data/profiles.json)
+#   --stage <stage>     Lifecycle stage: bootstrap | growth | mature
+#   --monorepo          Enable monorepo per-package scanning
+#   --output <dir>      Output directory for reports (default: stdout)
+#   --format <fmt>      Output format: json (default) | markdown
+# Output: JSON object with discovered harness artifacts and content analysis
 set -euo pipefail
 
-REPO="${1:-.}"
-cd "$REPO"
+SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+SKILL_ROOT="$(dirname "$SCRIPT_DIR")"
 
+# Source content analyzers
+source "$SCRIPT_DIR/utils/content-analyzers.sh"
+
+# --- Parse arguments ---
+REPO=""
+PROFILE=""
+STAGE=""
+MONOREPO_MODE=false
+OUTPUT_DIR=""
+OUTPUT_FORMAT="json"
+
+while [ $# -gt 0 ]; do
+  case "$1" in
+    --profile) PROFILE="$2"; shift 2 ;;
+    --stage) STAGE="$2"; shift 2 ;;
+    --monorepo) MONOREPO_MODE=true; shift ;;
+    --output) OUTPUT_DIR="$2"; shift 2 ;;
+    --format) OUTPUT_FORMAT="$2"; shift 2 ;;
+    -*) echo "Unknown option: $1" >&2; exit 1 ;;
+    *) REPO="$1"; shift ;;
+  esac
+done
+
+REPO="${REPO:-.}"
+cd "$REPO"
+REPO_ABS="$(pwd)"
+TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date +%Y-%m-%dT%H:%M:%SZ)"
+
+# --- Helper functions ---
 json_array() {
   local arr=("$@")
   if [ ${#arr[@]} -eq 0 ]; then
@@ -56,6 +91,12 @@ if [ -d "docs" ]; then
   done
 fi
 
+# Check for ADR/design doc directories
+HAS_DESIGN_DOCS=false
+for dd in docs/design-docs docs/adr docs/adrs docs/decisions docs/exec-plans; do
+  [ -d "$dd" ] && HAS_DESIGN_DOCS=true && break
+done
+
 # --- Dimension 2: CI Configs ---
 CI_CONFIGS=()
 while IFS= read -r f; do
@@ -77,6 +118,11 @@ for name in .eslintrc .eslintrc.js .eslintrc.json .eslintrc.yml eslint.config.js
   ruff.toml .flake8 .pylintrc \
   .golangci.yml .golangci.yaml \
   clippy.toml .clippy.toml \
+  .rubocop.yml \
+  checkstyle.xml \
+  .swiftlint.yml \
+  analysis_options.yaml \
+  detekt.yml \
   .editorconfig; do
   while IFS= read -r f; do
     [ -n "$f" ] && LINTER_CONFIGS+=("$f")
@@ -113,12 +159,13 @@ done
 
 # --- Dimension 7: Long-Running Support ---
 HAS_INIT_SCRIPT=false
-for name in init.sh setup.sh Makefile docker-compose.yml docker-compose.yaml; do
+for name in init.sh setup.sh Makefile docker-compose.yml docker-compose.yaml devcontainer.json; do
   [ -f "$name" ] && HAS_INIT_SCRIPT=true && break
 done
+[ -d ".devcontainer" ] && HAS_INIT_SCRIPT=true
 
 HAS_PROGRESS_TRACKING=false
-for name in progress.txt progress.md; do
+for name in progress.txt progress.md progress.json; do
   [ -f "$name" ] && HAS_PROGRESS_TRACKING=true && break
 done
 [ -d "exec-plans" ] || [ -d "docs/exec-plans" ] && HAS_PROGRESS_TRACKING=true
@@ -129,23 +176,54 @@ HAS_CODEOWNERS=false
 
 # --- Package Ecosystem ---
 ECOSYSTEM="unknown"
-[ -f "package.json" ] && ECOSYSTEM="node"
-[ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -f "setup.py" ] && ECOSYSTEM="python"
-[ -f "go.mod" ] && ECOSYSTEM="go"
-[ -f "Cargo.toml" ] && ECOSYSTEM="rust"
-[ -f "Gemfile" ] && ECOSYSTEM="ruby"
+ECOSYSTEMS_DETECTED=()
+[ -f "package.json" ] && ECOSYSTEM="node" && ECOSYSTEMS_DETECTED+=("node")
+([ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -f "setup.py" ] || [ -f "Pipfile" ]) && ECOSYSTEM="python" && ECOSYSTEMS_DETECTED+=("python")
+[ -f "go.mod" ] && ECOSYSTEM="go" && ECOSYSTEMS_DETECTED+=("go")
+[ -f "Cargo.toml" ] && ECOSYSTEM="rust" && ECOSYSTEMS_DETECTED+=("rust")
+[ -f "Gemfile" ] && ECOSYSTEM="ruby" && ECOSYSTEMS_DETECTED+=("ruby")
+([ -f "pom.xml" ] || [ -f "build.gradle" ] || [ -f "build.gradle.kts" ]) && ECOSYSTEMS_DETECTED+=("java")
+[ -f "*.csproj" ] 2>/dev/null || [ -f "*.sln" ] 2>/dev/null && ECOSYSTEMS_DETECTED+=("csharp")
+[ -f "Package.swift" ] && ECOSYSTEMS_DETECTED+=("swift")
+[ -f "pubspec.yaml" ] && ECOSYSTEM="dart" && ECOSYSTEMS_DETECTED+=("dart")
+
+# --- Content Analysis (new deep inspection) ---
+CONTENT_ANALYSIS=$(run_content_analysis "$REPO_ABS")
+
+# --- Quick Assessment ---
+score=0
+[ ${#AGENT_FILES[@]} -gt 0 ] && score=$((score + 1))
+[ ${#CI_CONFIGS[@]} -gt 0 ] && score=$((score + 1))
+[ ${#LINTER_CONFIGS[@]} -gt 0 ] && score=$((score + 1))
+[ ${#TYPE_CONFIGS[@]} -gt 0 ] && score=$((score + 1))
+[ ${#TEST_DIRS[@]} -gt 0 ] && score=$((score + 1))
+[ "$DOCS_EXISTS" = true ] && score=$((score + 1))
+
+if [ $score -ge 5 ]; then
+  QUICK_ASSESSMENT="Good foundation — proceed to detailed audit"
+elif [ $score -ge 3 ]; then
+  QUICK_ASSESSMENT="Partial harness — significant gaps likely"
+else
+  QUICK_ASSESSMENT="Minimal harness — expect low scores across most dimensions"
+fi
 
 # --- Output JSON ---
-cat <<EOF
+OUTPUT=$(cat <<EOF
 {
-  "repo_root": "$(pwd)",
+  "repo_root": "$REPO_ABS",
+  "timestamp": "$TIMESTAMP",
   "ecosystem": "$ECOSYSTEM",
+  "ecosystems_detected": $(json_array "${ECOSYSTEMS_DETECTED[@]+"${ECOSYSTEMS_DETECTED[@]}"}"),
+  "profile": "${PROFILE:-auto}",
+  "stage": "${STAGE:-auto}",
+  "monorepo_mode": $MONOREPO_MODE,
   "dimensions": {
     "1_architecture_docs": {
       "agent_instruction_files": $(json_array "${AGENT_FILES[@]+"${AGENT_FILES[@]}"}"),
       "docs_exists": $DOCS_EXISTS,
       "docs_has_index": $DOCS_HAS_INDEX,
-      "docs_has_architecture": $DOCS_HAS_ARCH
+      "docs_has_architecture": $DOCS_HAS_ARCH,
+      "has_design_docs": $HAS_DESIGN_DOCS
     },
     "2_mechanical_constraints": {
       "ci_configs": $(json_array "${CI_CONFIGS[@]+"${CI_CONFIGS[@]}"}"),
@@ -167,6 +245,7 @@ cat <<EOF
       "has_codeowners": $HAS_CODEOWNERS
     }
   },
+  "content_analysis": $CONTENT_ANALYSIS,
   "summary": {
     "agent_files_count": ${#AGENT_FILES[@]},
     "ci_configs_count": ${#CI_CONFIGS[@]},
@@ -174,19 +253,26 @@ cat <<EOF
     "type_configs_count": ${#TYPE_CONFIGS[@]},
     "test_dirs_count": ${#TEST_DIRS[@]},
     "test_files_count": $TEST_FILES_COUNT,
-    "quick_assessment": "$(
-      score=0
-      [ ${#AGENT_FILES[@]} -gt 0 ] && score=$((score + 1))
-      [ ${#CI_CONFIGS[@]} -gt 0 ] && score=$((score + 1))
-      [ ${#LINTER_CONFIGS[@]} -gt 0 ] && score=$((score + 1))
-      [ ${#TYPE_CONFIGS[@]} -gt 0 ] && score=$((score + 1))
-      [ ${#TEST_DIRS[@]} -gt 0 ] && score=$((score + 1))
-      [ "$DOCS_EXISTS" = true ] && score=$((score + 1))
-      if [ $score -ge 5 ]; then echo "Good foundation — proceed to detailed audit"
-      elif [ $score -ge 3 ]; then echo "Partial harness — significant gaps likely"
-      else echo "Minimal harness — expect low scores across most dimensions"
-      fi
-    )"
+    "quick_assessment": "$QUICK_ASSESSMENT"
   }
 }
 EOF
+)
+
+# --- Write output ---
+if [ -n "$OUTPUT_DIR" ]; then
+  mkdir -p "$OUTPUT_DIR"
+  REPO_NAME=$(basename "$REPO_ABS")
+  DATE_STR=$(date +%Y-%m-%d)
+  FILENAME="${DATE_STR}_${REPO_NAME}_audit"
+  if [ "$OUTPUT_FORMAT" = "markdown" ]; then
+    echo "$OUTPUT" > "$OUTPUT_DIR/${FILENAME}.json"
+    echo "Audit JSON written to $OUTPUT_DIR/${FILENAME}.json"
+    echo "Use the agent to generate a markdown report from this JSON."
+  else
+    echo "$OUTPUT" > "$OUTPUT_DIR/${FILENAME}.json"
+    echo "Audit written to $OUTPUT_DIR/${FILENAME}.json"
+  fi
+else
+  echo "$OUTPUT"
+fi

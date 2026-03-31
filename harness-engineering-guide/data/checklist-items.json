@@ -1,0 +1,720 @@
+{
+  "_meta": {
+    "description": "Machine-readable version of all 43 audit checklist items from references/checklist.md.",
+    "usage": "Cross-reference with stages.json for active items and profiles.json for skip/substitute items.",
+    "scoring": "PASS=1.0, PARTIAL=0.5, FAIL=0.0. dimension_score = (sum / count) * 100. final = sum(dim_score * weight)."
+  },
+  "items": [
+    {
+      "id": "1.1",
+      "dimension": 1,
+      "dimension_name": "Architecture Documentation & Knowledge Management",
+      "name": "Agent Instruction File Exists",
+      "control_element": "goal_state",
+      "stages": ["bootstrap", "growth", "mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": ["AGENTS.md", "CLAUDE.md", "CODEX.md", ".cursorrules", ".cursor/rules/*.md"],
+        "pass": "File exists and < 150 lines",
+        "partial": "File exists but > 500 lines or < 10 lines",
+        "fail": "No file found"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "1.2",
+      "dimension": 1,
+      "dimension_name": "Architecture Documentation & Knowledge Management",
+      "name": "Structured Knowledge Base",
+      "control_element": "goal_state",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": ["docs/"],
+        "pass": "docs/ exists with subdirectories and index file",
+        "partial": "docs/ exists but flat or no index",
+        "fail": "No docs/ directory"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "1.3",
+      "dimension": 1,
+      "dimension_name": "Architecture Documentation & Knowledge Management",
+      "name": "Architecture Documentation",
+      "control_element": "goal_state",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": ["ARCHITECTURE.md", "docs/ARCHITECTURE.md", "docs/architecture.md"],
+        "pass": "Architecture doc with domain boundaries and dependency rules",
+        "partial": "Some architectural notes exist but incomplete",
+        "fail": "No architecture documentation"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "1.4",
+      "dimension": 1,
+      "dimension_name": "Architecture Documentation & Knowledge Management",
+      "name": "Progressive Disclosure",
+      "control_element": "goal_state",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Agent instruction file is a TOC with pointers to deeper docs",
+        "pass": "Entry point < 150 lines with explicit links to deeper docs",
+        "partial": "Some layering but navigation unclear",
+        "fail": "Monolithic file or no structured navigation"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "1.5",
+      "dimension": 1,
+      "dimension_name": "Architecture Documentation & Knowledge Management",
+      "name": "Versioned Knowledge Artifacts",
+      "control_element": "goal_state",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": ["docs/design-docs/", "docs/adr/", "docs/adrs/", "docs/decisions/", "docs/exec-plans/"],
+        "pass": "Design docs and ADRs in repo",
+        "partial": "Some docs in-repo but key decisions outside",
+        "fail": "Most knowledge outside repo"
+      },
+      "requires_content_analysis": false
+    },
+    {
+      "id": "2.1",
+      "dimension": 2,
+      "dimension_name": "Mechanical Constraints",
+      "name": "CI Pipeline Exists and Blocks",
+      "control_element": "actuator",
+      "stages": ["bootstrap", "growth", "mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": [".github/workflows/*.yml", ".github/workflows/*.yaml", ".gitlab-ci.yml", "Jenkinsfile", "azure-pipelines.yml", ".circleci/config.yml"],
+        "pass": "CI runs on every PR with required status checks",
+        "partial": "CI exists but doesn't block merges",
+        "fail": "No CI pipeline"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "2.2",
+      "dimension": 2,
+      "dimension_name": "Mechanical Constraints",
+      "name": "Linter Enforcement",
+      "control_element": "actuator",
+      "stages": ["bootstrap", "growth", "mature"],
+      "auto_detect": {
+        "type": "glob+content",
+        "patterns": [".eslintrc*", "eslint.config.*", "biome.json*", "ruff.toml", ".flake8", ".pylintrc", ".golangci.yml", ".golangci.yaml", "clippy.toml", ".clippy.toml"],
+        "content_check": "Linter referenced in CI config",
+        "pass": "Linter runs in CI and blocks",
+        "partial": "Linter configured but not in CI",
+        "fail": "No linter"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "2.3",
+      "dimension": 2,
+      "dimension_name": "Mechanical Constraints",
+      "name": "Formatter Enforcement",
+      "control_element": "actuator",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "glob+content",
+        "patterns": [".prettierrc*", "prettier.config.*", "biome.json*", "rustfmt.toml", ".rustfmt.toml"],
+        "content_check": "Formatter referenced in CI config",
+        "pass": "Formatter runs in CI and blocks",
+        "partial": "Formatter configured but not in CI",
+        "fail": "No formatter"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "2.4",
+      "dimension": 2,
+      "dimension_name": "Mechanical Constraints",
+      "name": "Type Safety",
+      "control_element": "actuator",
+      "stages": ["bootstrap", "growth", "mature"],
+      "auto_detect": {
+        "type": "glob+content",
+        "patterns": ["tsconfig.json", "mypy.ini", ".mypy.ini", "pyrightconfig.json"],
+        "content_check": "Type checker in CI; strict mode indicators",
+        "pass": "Type checker runs in CI and blocks (strict mode)",
+        "partial": "Type checking exists but permissive",
+        "fail": "No type checking"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "2.5",
+      "dimension": 2,
+      "dimension_name": "Mechanical Constraints",
+      "name": "Dependency Direction Rules",
+      "control_element": "actuator",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Custom linter rules or structural tests enforcing import direction",
+        "pass": "Custom rules enforce dependency direction in CI",
+        "partial": "Rules documented but not mechanically enforced",
+        "fail": "No dependency rules"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "2.6",
+      "dimension": 2,
+      "dimension_name": "Mechanical Constraints",
+      "name": "Remediation-Aware Error Messages",
+      "control_element": "actuator",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Custom lint messages contain fix instructions",
+        "pass": "Errors include specific remediation steps",
+        "partial": "Some helpful messages but most generic",
+        "fail": "Only default framework messages"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "2.7",
+      "dimension": 2,
+      "dimension_name": "Mechanical Constraints",
+      "name": "Structural Conventions Enforced",
+      "control_element": "actuator",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Naming, file size, import restrictions via lint or CI",
+        "pass": "At least 2 conventions enforced via lint or CI",
+        "partial": "Conventions documented but not enforced",
+        "fail": "No structural conventions"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "3.1",
+      "dimension": 3,
+      "dimension_name": "Feedback Loops & Observability",
+      "name": "Structured Logging",
+      "control_element": "sensor",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "grep for logging framework imports (winston, pino, loguru, slog, tracing, etc.)",
+        "pass": "Structured logging framework with consistent patterns",
+        "partial": "Mixed structured and unstructured logging",
+        "fail": "Only ad-hoc print statements"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "3.2",
+      "dimension": 3,
+      "dimension_name": "Feedback Loops & Observability",
+      "name": "Metrics and Tracing",
+      "control_element": "sensor",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "grep for OpenTelemetry, Prometheus, metrics packages",
+        "pass": "Metrics and/or tracing configured",
+        "partial": "Basic metrics but tracing absent",
+        "fail": "No metrics or tracing"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "3.3",
+      "dimension": 3,
+      "dimension_name": "Feedback Loops & Observability",
+      "name": "Agent-Queryable Observability",
+      "control_element": "sensor",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "manual",
+        "check": "Can agents query logs/metrics via CLI, APIs, or local interfaces?",
+        "pass": "Agents can access data programmatically",
+        "partial": "Data exists but requires manual dashboard",
+        "fail": "No programmatic access"
+      },
+      "requires_content_analysis": false
+    },
+    {
+      "id": "3.4",
+      "dimension": 3,
+      "dimension_name": "Feedback Loops & Observability",
+      "name": "UI Visibility for Agents",
+      "control_element": "sensor",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "grep for Playwright, Puppeteer, CDP, Cypress config",
+        "pass": "Browser automation configured and agents can screenshot/inspect",
+        "partial": "Some UI testing exists but agents can't use it",
+        "fail": "No UI visibility tooling"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "3.5",
+      "dimension": 3,
+      "dimension_name": "Feedback Loops & Observability",
+      "name": "Diagnostic Error Context",
+      "control_element": "sensor",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Error handling patterns: stack traces, relevant state, suggested fixes",
+        "pass": "Errors include context and suggested fixes",
+        "partial": "Standard error handling but lacks diagnostic context",
+        "fail": "Errors swallowed or generic"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "4.1",
+      "dimension": 4,
+      "dimension_name": "Testing & Verification",
+      "name": "Test Suite Exists",
+      "control_element": "sensor_actuator",
+      "stages": ["bootstrap", "growth", "mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": ["tests/", "__tests__/", "test/", "spec/", "*.test.*", "*.spec.*", "*_test.*", "test_*"],
+        "pass": "Tests across multiple layers",
+        "partial": "Some tests but very low coverage",
+        "fail": "No test suite"
+      },
+      "requires_content_analysis": false
+    },
+    {
+      "id": "4.2",
+      "dimension": 4,
+      "dimension_name": "Testing & Verification",
+      "name": "Tests Run in CI and Block",
+      "control_element": "sensor_actuator",
+      "stages": ["bootstrap", "growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Test command in CI config as required check",
+        "pass": "Tests are required check; PRs cannot merge with failures",
+        "partial": "Tests run but don't block",
+        "fail": "Tests don't run in CI"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "4.3",
+      "dimension": 4,
+      "dimension_name": "Testing & Verification",
+      "name": "Coverage Thresholds",
+      "control_element": "sensor_actuator",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Coverage threshold config (--cov-fail-under, coverageThreshold, etc.)",
+        "pass": "Thresholds configured and enforced in CI",
+        "partial": "Coverage measured but no thresholds",
+        "fail": "No coverage measurement"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "4.4",
+      "dimension": 4,
+      "dimension_name": "Testing & Verification",
+      "name": "Formalized Done Criteria",
+      "control_element": "sensor_actuator",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": ["features.json", "feature-checklist.json", "docs/features.json"],
+        "pass": "Feature list in machine-readable format with pass/fail",
+        "partial": "Done criteria in human-readable form",
+        "fail": "No formalized criteria"
+      },
+      "requires_content_analysis": false
+    },
+    {
+      "id": "4.5",
+      "dimension": 4,
+      "dimension_name": "Testing & Verification",
+      "name": "End-to-End Verification",
+      "control_element": "sensor_actuator",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "glob+content",
+        "patterns": ["playwright.config.*", "cypress.config.*", "cypress.json", "e2e/"],
+        "content_check": "E2E framework in dependencies and CI",
+        "pass": "E2E suite exists and runs in CI",
+        "partial": "Some E2E tests but not comprehensive or not in CI",
+        "fail": "No E2E tests"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "4.6",
+      "dimension": 4,
+      "dimension_name": "Testing & Verification",
+      "name": "Test Flake Management",
+      "control_element": "sensor_actuator",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Retry config, quarantine labels, flake tracking",
+        "pass": "Flakes tracked, quarantined, or retried with monitoring",
+        "partial": "Some awareness but not systematic",
+        "fail": "Flakes routinely block or silently ignored"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "5.1",
+      "dimension": 5,
+      "dimension_name": "Context Engineering",
+      "name": "Externalized Knowledge",
+      "control_element": "goal_state",
+      "stages": ["bootstrap", "growth", "mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": ["docs/", "ARCHITECTURE.md", "AGENTS.md"],
+        "pass": "Key decisions documented in-repo",
+        "partial": "Some externalized but gaps remain",
+        "fail": "Most knowledge in external channels"
+      },
+      "requires_content_analysis": false
+    },
+    {
+      "id": "5.2",
+      "dimension": 5,
+      "dimension_name": "Context Engineering",
+      "name": "Documentation Freshness Mechanism",
+      "control_element": "goal_state",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Doc freshness CI job, doc-gardening agent, expiry metadata",
+        "pass": "Automated freshness checks",
+        "partial": "Manual review exists but inconsistent",
+        "fail": "No freshness mechanism"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "5.3",
+      "dimension": 5,
+      "dimension_name": "Context Engineering",
+      "name": "Machine-Readable References",
+      "control_element": "goal_state",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": ["llms.txt", "llms-full.txt", "docs/references/"],
+        "pass": "llms.txt or curated reference docs available",
+        "partial": "Some references but incomplete",
+        "fail": "Agents must fetch external docs with no local guidance"
+      },
+      "requires_content_analysis": false
+    },
+    {
+      "id": "5.4",
+      "dimension": 5,
+      "dimension_name": "Context Engineering",
+      "name": "Technology Composability",
+      "control_element": "goal_state",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "manual",
+        "check": "Stack uses well-documented, composable tools agents can reason about",
+        "pass": "Stable, widely-known technologies; minimal custom abstractions",
+        "partial": "Mostly standard but some opaque dependencies",
+        "fail": "Heavy reliance on obscure or undocumented frameworks"
+      },
+      "requires_content_analysis": false
+    },
+    {
+      "id": "5.5",
+      "dimension": 5,
+      "dimension_name": "Context Engineering",
+      "name": "Cache-Friendly Context Design",
+      "control_element": "goal_state",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "AGENTS.md line count, structured state files, artifact directories",
+        "pass": "AGENTS.md < 150 lines; structured state files; artifact dirs",
+        "partial": "Some externalization but AGENTS.md bloated (>300 lines)",
+        "fail": "Monolithic instruction files; no structured state"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "6.1",
+      "dimension": 6,
+      "dimension_name": "Entropy Management & Garbage Collection",
+      "name": "Codified Golden Principles",
+      "control_element": "feedback_loop",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "grep for 'principles', 'golden rules', conventions in AGENTS.md or docs/",
+        "pass": "Principles documented and referenced from agent instructions",
+        "partial": "Some principles exist but not connected to agent workflows",
+        "fail": "No codified principles"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "6.2",
+      "dimension": 6,
+      "dimension_name": "Entropy Management & Garbage Collection",
+      "name": "Recurring Cleanup Process",
+      "control_element": "feedback_loop",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Scheduled cleanup jobs, refactoring agent config, quality PRs",
+        "pass": "Automated or scheduled cleanup",
+        "partial": "Ad-hoc cleanup but not systematic",
+        "fail": "No cleanup process"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "6.3",
+      "dimension": 6,
+      "dimension_name": "Entropy Management & Garbage Collection",
+      "name": "Tech Debt Tracking",
+      "control_element": "feedback_loop",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "glob+content",
+        "patterns": ["QUALITY_SCORE.md", "quality-score.md", "tech-debt-tracker.json", "docs/QUALITY_SCORE.md"],
+        "content_check": "File has meaningful content (not just placeholder)",
+        "pass": "Quality scores or tech-debt-tracker maintained",
+        "partial": "Tracking via TODO comments or issue labels",
+        "fail": "No tech debt tracking"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "6.4",
+      "dimension": 6,
+      "dimension_name": "Entropy Management & Garbage Collection",
+      "name": "AI Slop Detection",
+      "control_element": "feedback_loop",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Lint rules targeting duplicate utilities, dead code, AI-generated patterns",
+        "pass": "Lint rules or review patterns target common AI slop",
+        "partial": "General review catches some but nothing AI-specific",
+        "fail": "No AI slop awareness"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "7.1",
+      "dimension": 7,
+      "dimension_name": "Long-Running Task Support",
+      "name": "Task Decomposition Strategy",
+      "control_element": "feedback_loop",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": ["docs/exec-plans/", "exec-plans/", "EXECUTION_PLAN.md"],
+        "pass": "Documented strategy with templates",
+        "partial": "Informal decomposition",
+        "fail": "No decomposition; full-scope prompts"
+      },
+      "requires_content_analysis": false
+    },
+    {
+      "id": "7.2",
+      "dimension": 7,
+      "dimension_name": "Long-Running Task Support",
+      "name": "Progress Tracking Artifacts",
+      "control_element": "feedback_loop",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": ["progress.txt", "progress.md", "progress.json"],
+        "pass": "Structured progress notes maintained across sessions",
+        "partial": "Git commit messages as only progress record",
+        "fail": "No progress tracking"
+      },
+      "requires_content_analysis": false
+    },
+    {
+      "id": "7.3",
+      "dimension": 7,
+      "dimension_name": "Long-Running Task Support",
+      "name": "Handoff Bridges",
+      "control_element": "feedback_loop",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Descriptive commits + progress logs + feature status",
+        "pass": "Complete handoff: commits + logs + status",
+        "partial": "Some handoff info but significant orientation needed",
+        "fail": "No structured handoff"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "7.4",
+      "dimension": 7,
+      "dimension_name": "Long-Running Task Support",
+      "name": "Environment Recovery",
+      "control_element": "feedback_loop",
+      "stages": ["bootstrap", "growth", "mature"],
+      "auto_detect": {
+        "type": "glob",
+        "patterns": ["init.sh", "setup.sh", "Makefile", "docker-compose.yml", "docker-compose.yaml", "devcontainer.json", ".devcontainer/"],
+        "pass": "Init script boots environment with health checks",
+        "partial": "Setup instructions exist but require manual steps",
+        "fail": "No recovery mechanism"
+      },
+      "requires_content_analysis": false
+    },
+    {
+      "id": "7.5",
+      "dimension": 7,
+      "dimension_name": "Long-Running Task Support",
+      "name": "Clean State Discipline",
+      "control_element": "feedback_loop",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Clean state expectation documented in AGENTS.md or contributing guide",
+        "pass": "Documented; each session commits clean, tested code",
+        "partial": "Implicitly expected but not enforced",
+        "fail": "Sessions routinely leave broken code"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "7.6",
+      "dimension": 7,
+      "dimension_name": "Long-Running Task Support",
+      "name": "Durable Execution Support",
+      "control_element": "feedback_loop",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "glob+content",
+        "patterns": ["progress.json", "exec-plans/", "init.sh"],
+        "content_check": "Checkpoint files + recovery protocol documented",
+        "pass": "Structured checkpoints + recovery script + documented protocol",
+        "partial": "Some progress tracking but no formal recovery",
+        "fail": "No progress persistence; interruptions mean restart"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "8.1",
+      "dimension": 8,
+      "dimension_name": "Safety Rails",
+      "name": "Least-Privilege Credentials",
+      "control_element": "actuator_protective",
+      "stages": ["bootstrap", "growth", "mature"],
+      "auto_detect": {
+        "type": "manual",
+        "check": "Agent tokens scoped to minimum permissions",
+        "pass": "Tokens scoped to minimum required permissions",
+        "partial": "Some scoping but broader than needed",
+        "fail": "Full admin credentials or not addressed"
+      },
+      "requires_content_analysis": false
+    },
+    {
+      "id": "8.2",
+      "dimension": 8,
+      "dimension_name": "Safety Rails",
+      "name": "Audit Logging",
+      "control_element": "actuator_protective",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "PRs, deployments, config changes logged with timestamps",
+        "pass": "Actions logged with timestamps and attribution",
+        "partial": "Some logging but incomplete",
+        "fail": "No audit trail"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "8.3",
+      "dimension": 8,
+      "dimension_name": "Safety Rails",
+      "name": "Rollback Capability",
+      "control_element": "actuator_protective",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Rollback playbook or automated scripts",
+        "pass": "Documented rollback playbook or scripts",
+        "partial": "Rollback possible but ad-hoc",
+        "fail": "No rollback strategy"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "8.4",
+      "dimension": 8,
+      "dimension_name": "Safety Rails",
+      "name": "Human Confirmation Gates",
+      "control_element": "actuator_protective",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Approval gates for destructive operations in CI/deployment config",
+        "pass": "DB migrations, deploys, force pushes require confirmation",
+        "partial": "Some gates but incomplete",
+        "fail": "Agents can perform destructive ops without approval"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "8.5",
+      "dimension": 8,
+      "dimension_name": "Safety Rails",
+      "name": "Security-Critical Path Marking",
+      "control_element": "actuator_protective",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "glob+content",
+        "patterns": ["CODEOWNERS", ".github/CODEOWNERS", "docs/CODEOWNERS"],
+        "content_check": "Security-sensitive paths have stricter review requirements",
+        "pass": "Critical files marked with stricter review",
+        "partial": "Some awareness but no explicit marking",
+        "fail": "No distinction between critical and regular code"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "8.6",
+      "dimension": 8,
+      "dimension_name": "Safety Rails",
+      "name": "Tool Protocol Trust Boundaries",
+      "control_element": "actuator_protective",
+      "stages": ["mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "MCP configs scoped, tool output treated as untrusted, audit trail",
+        "pass": "MCP scoped to minimum permissions; output untrusted; audit trail",
+        "partial": "Some MCP config but broad permissions",
+        "fail": "No tool trust boundary awareness"
+      },
+      "requires_content_analysis": true
+    }
+  ]
+}

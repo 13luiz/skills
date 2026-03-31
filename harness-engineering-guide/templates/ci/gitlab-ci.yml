@@ -1,0 +1,61 @@
+# .gitlab-ci.yml — Standard CI Pipeline for AI-Assisted Development
+# Replace [ECOSYSTEM_COMMANDS] placeholders with commands from data/ecosystems.json
+
+stages:
+  - lint
+  - typecheck
+  - test
+  - build
+
+variables:
+  GIT_DEPTH: "50"
+
+# --- Templates ---
+# Uncomment the appropriate ecosystem block below
+
+lint:
+  stage: lint
+  script:
+    # [ECOSYSTEM: node]
+    # - npm ci --silent
+    # - npx eslint . && npx biome check .
+    # [ECOSYSTEM: python]
+    # - pip install -e '.[dev]'
+    # - ruff check . && ruff format --check .
+    # [ECOSYSTEM: go]
+    # - golangci-lint run
+    # [ECOSYSTEM: rust]
+    # - cargo clippy -- -D warnings && cargo fmt --check
+    - echo "Replace with your lint command"
+
+typecheck:
+  stage: typecheck
+  script:
+    # [ECOSYSTEM: node] - npx tsc --noEmit
+    # [ECOSYSTEM: python] - mypy src/
+    # [ECOSYSTEM: go] - go vet ./...
+    # [ECOSYSTEM: rust] - cargo check
+    - echo "Replace with your typecheck command"
+
+test:
+  stage: test
+  script:
+    # [ECOSYSTEM: node] - npx vitest run --coverage
+    # [ECOSYSTEM: python] - pytest --cov=src --cov-fail-under=80
+    # [ECOSYSTEM: go] - go test -race -coverprofile=coverage.out ./...
+    # [ECOSYSTEM: rust] - cargo test
+    - echo "Replace with your test command"
+  coverage: '/Lines\s*:\s*(\d+\.?\d*)%/'
+
+build:
+  stage: build
+  script:
+    # [ECOSYSTEM: node] - npm run build
+    # [ECOSYSTEM: python] - python -m build
+    # [ECOSYSTEM: go] - go build ./...
+    # [ECOSYSTEM: rust] - cargo build --release
+    - echo "Replace with your build command"
+  artifacts:
+    paths:
+      - dist/
+    expire_in: 1 week

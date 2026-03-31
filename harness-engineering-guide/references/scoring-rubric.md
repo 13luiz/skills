@@ -123,6 +123,44 @@ Use PARTIAL scores where applicable — count as 0.5 in the "Passed" column.
 
 ---
 
+## Profile-Based Weight Adjustments
+
+When a project type profile is selected (from `data/profiles.json`), dimension weights are adjusted to reflect what matters most for that type. The `weight_overrides` field in the profile replaces the default weights for specified dimensions. Weights must still sum to 1.0.
+
+For example, the `library` profile shifts weight from Dim 3 (Observability, reduced to 5%) to Dim 2 (Mechanical, increased to 25%) and Dim 4 (Testing, increased to 25%), because libraries need strong testing and type safety but don't need service-level observability.
+
+Profiles may also specify:
+- **`skip_items`**: Items that don't apply (e.g., 3.4 UI Visibility for CLI tools). Skipped items are excluded from the dimension item count.
+- **`substitute_items`**: Alternative criteria when the standard item doesn't fit (e.g., "Can the agent see CLI output?" instead of "Browser automation configured").
+- **`critical_items`**: Items that receive extra emphasis in the report even if the dimension weight is standard.
+
+When applying profile overrides:
+1. Start with default weights from `_meta.default_weights`
+2. Apply `weight_overrides` from the selected profile
+3. Normalize remaining weights so they sum to 1.0
+
+---
+
+## Lifecycle Stage Adjustments
+
+When a lifecycle stage is selected (from `data/stages.json`), only the active items for that stage are scored:
+
+| Stage | Active Items | Focus |
+|-------|-------------|-------|
+| **Bootstrap** (<2k LOC) | 9 items | Foundations: agent file, CI, lint, types, tests, env recovery, security baseline |
+| **Growth** (2k-50k LOC) | 27 items | All foundations + architecture, testing depth, early feedback loops |
+| **Mature** (50k+ LOC) | 43 items | Full audit with all dimensions |
+
+Inactive items are excluded from the dimension score calculation. Only active items contribute to the score:
+
+```
+dimension_score = (sum of active item points / number of active items in dimension) * 100
+```
+
+If a dimension has zero active items for the selected stage (e.g., Dim 3 in Bootstrap), it receives a score of N/A and its weight is redistributed proportionally among active dimensions.
+
+---
+
 ## Score Interpretation
 
 **A (85-100): "Ship confidently with agents"**

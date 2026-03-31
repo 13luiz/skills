@@ -1,0 +1,55 @@
+# golangci-lint depguard configuration — Go architectural boundary enforcement
+# Add this to your .golangci.yml under linters-settings:
+#
+# Dependency direction: models -> repository -> service -> handler -> cmd
+# Each layer may only import from layers to its left.
+
+linters-settings:
+  depguard:
+    rules:
+      handler-deps:
+        # Handlers can import service, repository, models
+        files:
+          - "**/handler/**"
+          - "**/handlers/**"
+        deny:
+          - pkg: "*/cmd/*"
+            desc: "handler must not import from cmd layer. Use dependency injection."
+
+      service-deps:
+        # Services can import repository and models, not handlers
+        files:
+          - "**/service/**"
+          - "**/services/**"
+        deny:
+          - pkg: "*/handler/*"
+            desc: "service must not import from handler layer. Dependency direction: models -> repo -> service -> handler."
+          - pkg: "*/cmd/*"
+            desc: "service must not import from cmd layer."
+
+      repository-deps:
+        # Repositories can only import models
+        files:
+          - "**/repository/**"
+          - "**/repositories/**"
+        deny:
+          - pkg: "*/service/*"
+            desc: "repository must not import from service layer. Move shared logic to a shared package."
+          - pkg: "*/handler/*"
+            desc: "repository must not import from handler layer."
+          - pkg: "*/cmd/*"
+            desc: "repository must not import from cmd layer."
+
+      model-deps:
+        # Models should have no internal dependencies
+        files:
+          - "**/model/**"
+          - "**/models/**"
+          - "**/domain/**"
+        deny:
+          - pkg: "*/repository/*"
+            desc: "models must not import from repository layer."
+          - pkg: "*/service/*"
+            desc: "models must not import from service layer."
+          - pkg: "*/handler/*"
+            desc: "models must not import from handler layer."

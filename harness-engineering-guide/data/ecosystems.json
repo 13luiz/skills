@@ -1,0 +1,357 @@
+{
+  "_meta": {
+    "description": "Ecosystem detection rules, tool recommendations, CI commands, and template mappings.",
+    "usage": "Match detect files to determine ecosystem. Use tool/command info to fill CI templates and guide recommendations."
+  },
+  "ecosystems": {
+    "node": {
+      "name": "Node.js / JavaScript / TypeScript",
+      "detect": ["package.json"],
+      "detect_typescript": ["tsconfig.json"],
+      "linters": {
+        "recommended": ["eslint", "biome"],
+        "configs": [".eslintrc", ".eslintrc.js", ".eslintrc.json", ".eslintrc.yml", "eslint.config.js", "eslint.config.mjs", "biome.json", "biome.jsonc"]
+      },
+      "formatters": {
+        "recommended": ["prettier", "biome"],
+        "configs": [".prettierrc", ".prettierrc.json", ".prettierrc.yml", "prettier.config.js", "biome.json"]
+      },
+      "type_checkers": {
+        "recommended": ["tsc"],
+        "configs": ["tsconfig.json"],
+        "strict_indicators": ["\"strict\": true", "\"noImplicitAny\": true"]
+      },
+      "test_frameworks": {
+        "recommended": ["vitest", "jest"],
+        "patterns": ["*.test.ts", "*.test.tsx", "*.test.js", "*.spec.ts", "*.spec.js"],
+        "dirs": ["__tests__", "tests", "test", "spec"]
+      },
+      "ci_commands": {
+        "install": "npm ci --silent",
+        "lint": "npx eslint . && npx biome check .",
+        "typecheck": "npx tsc --noEmit",
+        "test": "npx vitest run --coverage",
+        "build": "npm run build",
+        "security": "npx audit-ci --moderate",
+        "format_check": "npx biome format --check . || npx prettier --check ."
+      },
+      "logging_frameworks": ["winston", "pino", "bunyan", "consola", "log4js"],
+      "observability": ["@opentelemetry", "prom-client", "newrelic", "datadog"],
+      "e2e_tools": ["playwright", "cypress", "puppeteer"],
+      "boundary_template": "templates/linting/eslint-boundary-rule.js",
+      "monorepo_markers": ["pnpm-workspace.yaml", "lerna.json", "nx.json", "turbo.json"],
+      "monorepo_workspace_field": "workspaces"
+    },
+    "python": {
+      "name": "Python",
+      "detect": ["pyproject.toml", "requirements.txt", "setup.py", "setup.cfg", "Pipfile"],
+      "linters": {
+        "recommended": ["ruff"],
+        "configs": ["ruff.toml", ".flake8", ".pylintrc", "pyproject.toml"]
+      },
+      "formatters": {
+        "recommended": ["ruff"],
+        "configs": ["ruff.toml", "pyproject.toml", ".style.yapf", "setup.cfg"]
+      },
+      "type_checkers": {
+        "recommended": ["mypy", "pyright"],
+        "configs": ["mypy.ini", ".mypy.ini", "pyrightconfig.json", "pyproject.toml"],
+        "strict_indicators": ["strict = true", "strict = True", "typeCheckingMode = \"strict\""]
+      },
+      "test_frameworks": {
+        "recommended": ["pytest"],
+        "patterns": ["test_*.py", "*_test.py"],
+        "dirs": ["tests", "test"]
+      },
+      "ci_commands": {
+        "install": "pip install -e '.[dev]' || pip install -r requirements.txt",
+        "lint": "ruff check .",
+        "typecheck": "mypy src/",
+        "test": "pytest --cov=src --cov-fail-under=80",
+        "build": "python -m build",
+        "security": "pip-audit && bandit -r src/",
+        "format_check": "ruff format --check ."
+      },
+      "logging_frameworks": ["loguru", "structlog", "logging"],
+      "observability": ["opentelemetry", "prometheus_client", "sentry-sdk", "datadog"],
+      "e2e_tools": ["playwright", "selenium"],
+      "boundary_template": "templates/linting/import-linter.cfg",
+      "monorepo_markers": [],
+      "monorepo_workspace_field": null
+    },
+    "go": {
+      "name": "Go",
+      "detect": ["go.mod"],
+      "linters": {
+        "recommended": ["golangci-lint"],
+        "configs": [".golangci.yml", ".golangci.yaml", ".golangci.json"]
+      },
+      "formatters": {
+        "recommended": ["gofmt", "goimports"],
+        "configs": []
+      },
+      "type_checkers": {
+        "recommended": ["go vet"],
+        "configs": [],
+        "strict_indicators": []
+      },
+      "test_frameworks": {
+        "recommended": ["go test"],
+        "patterns": ["*_test.go"],
+        "dirs": []
+      },
+      "ci_commands": {
+        "install": "go mod download",
+        "lint": "golangci-lint run",
+        "typecheck": "go vet ./...",
+        "test": "go test -race -coverprofile=coverage.out ./...",
+        "build": "go build ./...",
+        "security": "gosec ./...",
+        "format_check": "gofmt -l . | (! grep .)"
+      },
+      "logging_frameworks": ["slog", "zap", "logrus", "zerolog"],
+      "observability": ["go.opentelemetry.io", "prometheus/client_golang"],
+      "e2e_tools": ["chromedp", "playwright"],
+      "boundary_template": "templates/linting/depguard.yml",
+      "monorepo_markers": [],
+      "monorepo_workspace_field": null
+    },
+    "rust": {
+      "name": "Rust",
+      "detect": ["Cargo.toml"],
+      "linters": {
+        "recommended": ["clippy"],
+        "configs": ["clippy.toml", ".clippy.toml"]
+      },
+      "formatters": {
+        "recommended": ["rustfmt"],
+        "configs": ["rustfmt.toml", ".rustfmt.toml"]
+      },
+      "type_checkers": {
+        "recommended": ["cargo check"],
+        "configs": [],
+        "strict_indicators": ["#![deny(warnings)]", "#![deny(unsafe_code)]"]
+      },
+      "test_frameworks": {
+        "recommended": ["cargo test"],
+        "patterns": ["*_test.rs"],
+        "dirs": ["tests"]
+      },
+      "ci_commands": {
+        "install": "cargo fetch",
+        "lint": "cargo clippy -- -D warnings",
+        "typecheck": "cargo check",
+        "test": "cargo test",
+        "build": "cargo build --release",
+        "security": "cargo audit",
+        "format_check": "cargo fmt --check"
+      },
+      "logging_frameworks": ["tracing", "log", "env_logger", "slog"],
+      "observability": ["opentelemetry", "prometheus", "metrics"],
+      "e2e_tools": [],
+      "boundary_template": "templates/linting/clippy-workspace.toml",
+      "monorepo_markers": [],
+      "monorepo_workspace_field": "[workspace]"
+    },
+    "ruby": {
+      "name": "Ruby",
+      "detect": ["Gemfile"],
+      "detect_rails": ["config/routes.rb", "bin/rails"],
+      "linters": {
+        "recommended": ["rubocop"],
+        "configs": [".rubocop.yml"]
+      },
+      "formatters": {
+        "recommended": ["rubocop"],
+        "configs": [".rubocop.yml"]
+      },
+      "type_checkers": {
+        "recommended": ["sorbet", "steep"],
+        "configs": ["sorbet/config", "Steepfile"]
+      },
+      "test_frameworks": {
+        "recommended": ["rspec", "minitest"],
+        "patterns": ["*_spec.rb", "*_test.rb"],
+        "dirs": ["spec", "test"]
+      },
+      "ci_commands": {
+        "install": "bundle install",
+        "lint": "bundle exec rubocop",
+        "typecheck": "bundle exec srb tc",
+        "test": "bundle exec rspec",
+        "build": "bundle exec rake build",
+        "security": "bundle exec brakeman -q"
+      },
+      "logging_frameworks": ["Rails.logger", "Logger", "semantic_logger"],
+      "observability": ["opentelemetry-ruby", "prometheus-client"],
+      "e2e_tools": ["capybara", "playwright"],
+      "boundary_template": null
+    },
+    "java": {
+      "name": "Java",
+      "detect": ["pom.xml", "build.gradle", "build.gradle.kts"],
+      "linters": {
+        "recommended": ["checkstyle", "spotbugs", "pmd"],
+        "configs": ["checkstyle.xml", "pmd-ruleset.xml"]
+      },
+      "formatters": {
+        "recommended": ["google-java-format", "spotless"],
+        "configs": []
+      },
+      "type_checkers": {
+        "recommended": ["javac"],
+        "configs": [],
+        "strict_indicators": ["-Xlint:all"]
+      },
+      "test_frameworks": {
+        "recommended": ["junit5", "testng"],
+        "patterns": ["*Test.java", "*Tests.java", "*IT.java"],
+        "dirs": ["src/test"]
+      },
+      "ci_commands": {
+        "install": "mvn dependency:resolve || gradle dependencies",
+        "lint": "mvn checkstyle:check || gradle checkstyleMain",
+        "typecheck": "mvn compile",
+        "test": "mvn test || gradle test",
+        "build": "mvn package -DskipTests || gradle build",
+        "security": "mvn org.owasp:dependency-check-maven:check"
+      },
+      "logging_frameworks": ["slf4j", "logback", "log4j2"],
+      "observability": ["micrometer", "opentelemetry-java"],
+      "e2e_tools": ["selenium", "playwright"],
+      "boundary_template": null
+    },
+    "csharp": {
+      "name": "C# / .NET",
+      "detect": ["*.csproj", "*.sln", "global.json"],
+      "linters": {
+        "recommended": ["dotnet-format", "roslyn-analyzers"],
+        "configs": [".editorconfig", "Directory.Build.props"]
+      },
+      "formatters": {
+        "recommended": ["dotnet-format"],
+        "configs": [".editorconfig"]
+      },
+      "type_checkers": {
+        "recommended": ["dotnet build"],
+        "configs": [],
+        "strict_indicators": ["<Nullable>enable</Nullable>", "<TreatWarningsAsErrors>true</TreatWarningsAsErrors>"]
+      },
+      "test_frameworks": {
+        "recommended": ["xunit", "nunit", "mstest"],
+        "patterns": ["*Tests.cs", "*Test.cs"],
+        "dirs": ["*.Tests", "tests"]
+      },
+      "ci_commands": {
+        "install": "dotnet restore",
+        "lint": "dotnet format --verify-no-changes",
+        "typecheck": "dotnet build --no-restore",
+        "test": "dotnet test --no-build",
+        "build": "dotnet publish -c Release",
+        "security": "dotnet list package --vulnerable"
+      },
+      "logging_frameworks": ["Serilog", "NLog", "Microsoft.Extensions.Logging"],
+      "observability": ["OpenTelemetry.NET", "Prometheus.NET"],
+      "e2e_tools": ["Playwright", "Selenium.WebDriver"],
+      "boundary_template": null
+    },
+    "swift": {
+      "name": "Swift",
+      "detect": ["Package.swift", "*.xcodeproj", "*.xcworkspace"],
+      "linters": {
+        "recommended": ["swiftlint"],
+        "configs": [".swiftlint.yml"]
+      },
+      "formatters": {
+        "recommended": ["swift-format", "swiftformat"],
+        "configs": [".swift-format", ".swiftformat"]
+      },
+      "type_checkers": {
+        "recommended": ["swift build"],
+        "configs": []
+      },
+      "test_frameworks": {
+        "recommended": ["XCTest", "swift-testing"],
+        "patterns": ["*Tests.swift"],
+        "dirs": ["Tests"]
+      },
+      "ci_commands": {
+        "install": "swift package resolve",
+        "lint": "swiftlint lint --strict",
+        "typecheck": "swift build",
+        "test": "swift test",
+        "build": "swift build -c release"
+      },
+      "logging_frameworks": ["os.log", "swift-log", "CocoaLumberjack"],
+      "observability": [],
+      "e2e_tools": ["XCUITest"],
+      "boundary_template": null
+    },
+    "kotlin": {
+      "name": "Kotlin",
+      "detect": ["build.gradle.kts", "settings.gradle.kts"],
+      "linters": {
+        "recommended": ["ktlint", "detekt"],
+        "configs": [".editorconfig", "detekt.yml"]
+      },
+      "formatters": {
+        "recommended": ["ktlint"],
+        "configs": [".editorconfig"]
+      },
+      "type_checkers": {
+        "recommended": ["kotlinc"],
+        "configs": []
+      },
+      "test_frameworks": {
+        "recommended": ["junit5", "kotest"],
+        "patterns": ["*Test.kt", "*Tests.kt", "*Spec.kt"],
+        "dirs": ["src/test"]
+      },
+      "ci_commands": {
+        "install": "gradle dependencies",
+        "lint": "gradle ktlintCheck detekt",
+        "typecheck": "gradle compileKotlin",
+        "test": "gradle test",
+        "build": "gradle build"
+      },
+      "logging_frameworks": ["slf4j", "logback", "kotlin-logging"],
+      "observability": ["micrometer", "opentelemetry-kotlin"],
+      "e2e_tools": ["Espresso", "UIAutomator"],
+      "boundary_template": null
+    },
+    "dart": {
+      "name": "Dart / Flutter",
+      "detect": ["pubspec.yaml"],
+      "detect_flutter": ["lib/main.dart", "android/", "ios/"],
+      "linters": {
+        "recommended": ["dart analyze"],
+        "configs": ["analysis_options.yaml"]
+      },
+      "formatters": {
+        "recommended": ["dart format"],
+        "configs": []
+      },
+      "type_checkers": {
+        "recommended": ["dart analyze"],
+        "configs": ["analysis_options.yaml"],
+        "strict_indicators": ["strict-casts: true", "strict-inference: true"]
+      },
+      "test_frameworks": {
+        "recommended": ["flutter_test", "test"],
+        "patterns": ["*_test.dart"],
+        "dirs": ["test"]
+      },
+      "ci_commands": {
+        "install": "flutter pub get || dart pub get",
+        "lint": "dart analyze --fatal-infos",
+        "typecheck": "dart analyze",
+        "test": "flutter test --coverage || dart test",
+        "build": "flutter build apk || dart compile exe"
+      },
+      "logging_frameworks": ["logger", "logging"],
+      "observability": ["sentry_flutter", "firebase_analytics"],
+      "e2e_tools": ["integration_test", "patrol"],
+      "boundary_template": null
+    }
+  }
+}

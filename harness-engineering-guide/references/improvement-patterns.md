@@ -6,8 +6,10 @@ Proven patterns for fixing common harness engineering gaps. Organized by effort 
 
 ## Quick Wins (1 day or less)
 
+*Stage annotations: [B]=Bootstrap, [G]=Growth, [M]=Mature. Items marked [B] should be prioritized first for early-stage projects.*
+
 ### QW-1: Create a Minimal AGENTS.md
-**Fixes**: 1.1, 1.4 | **Effort**: 30 minutes | **Impact**: High
+**Fixes**: 1.1, 1.4 | **Effort**: 30 minutes | **Impact**: High | **Stage**: [B][G][M]
 
 Write a 50-100 line AGENTS.md as table of contents:
 - Project description (2-3 sentences)
@@ -20,7 +22,7 @@ Write a 50-100 line AGENTS.md as table of contents:
 Do not dump everything into this file. See `agents-md-guide.md` for detailed guidance.
 
 ### QW-2: Enable Strict Linting in CI
-**Fixes**: 2.2, 2.3 | **Effort**: 1-2 hours | **Impact**: High
+**Fixes**: 2.2, 2.3 | **Effort**: 1-2 hours | **Impact**: High | **Stage**: [B][G][M]
 
 Add linter to CI as blocking check:
 - JavaScript/TypeScript: ESLint + Prettier
@@ -31,17 +33,17 @@ Add linter to CI as blocking check:
 Making lint a required status check for merges is the single most impactful change.
 
 ### QW-3: Add Coverage Measurement
-**Fixes**: 4.3 | **Effort**: 1-2 hours | **Impact**: Medium
+**Fixes**: 4.3 | **Effort**: 1-2 hours | **Impact**: Medium | **Stage**: [G][M]
 
 Add coverage reporting to CI. Don't enforce a threshold yet — just make it visible. After one week, set a threshold slightly below the average.
 
 ### QW-4: Enable Strict Type Checking
-**Fixes**: 2.4 | **Effort**: 1 hour to 1 day | **Impact**: High
+**Fixes**: 2.4 | **Effort**: 1 hour to 1 day | **Impact**: High | **Stage**: [B][G][M]
 
 TypeScript: `"strict": true`. Python: `mypy --strict`. Fix resulting errors. Agents benefit enormously from type checking because it catches structural mistakes instantly.
 
 ### QW-5: Document Architecture Boundaries
-**Fixes**: 1.3, 2.5 | **Effort**: 2-4 hours | **Impact**: High
+**Fixes**: 1.3, 2.5 | **Effort**: 2-4 hours | **Impact**: High | **Stage**: [G][M]
 
 Write ARCHITECTURE.md with:
 - Module/domain boundaries
@@ -56,7 +58,7 @@ Even without mechanical enforcement, documented boundaries give agents a referen
 ## Strategic Investments (1-4 weeks)
 
 ### SI-1: Build a Structured Documentation System
-**Fixes**: 1.2, 1.4, 1.5, 5.1 | **Effort**: 1-2 weeks | **Impact**: Transformative
+**Fixes**: 1.2, 1.4, 1.5, 5.1 | **Effort**: 1-2 weeks | **Impact**: Transformative | **Stage**: [G][M]
 
 Create `docs/` following OpenAI's structure:
 ```
@@ -78,26 +80,26 @@ docs/
 Externalize knowledge from Slack, Notion, Google Docs. Add an index at each level.
 
 ### SI-2: Implement Custom Architectural Linters
-**Fixes**: 2.5, 2.6, 2.7 | **Effort**: 1-2 weeks | **Impact**: High
+**Fixes**: 2.5, 2.6, 2.7 | **Effort**: 1-2 weeks | **Impact**: High | **Stage**: [G][M]
 
 Write custom rules enforcing dependency direction. Error messages should teach: "You imported UserService from UI. Use UserProvider from providers/ instead."
 
 Tools: ESLint custom rules, `dependency-cruiser` (JS/TS), `import-linter` (Python), `depguard` (Go).
 
 ### SI-3: Add E2E Testing with Browser Automation
-**Fixes**: 3.4, 4.5 | **Effort**: 1-2 weeks | **Impact**: High
+**Fixes**: 3.4, 4.5 | **Effort**: 1-2 weeks | **Impact**: High | **Stage**: [G][M]
 
 Set up Playwright or Cypress for critical user journeys. Configure so agents can use browser automation during development (screenshots, DOM inspection). This is the "hardest sensor" — verifies real user experience.
 
 ### SI-4: Implement Doc-Gardening Automation
-**Fixes**: 5.2, 6.2 | **Effort**: 3-5 days | **Impact**: Medium-high
+**Fixes**: 5.2, 6.2 | **Effort**: 3-5 days | **Impact**: Medium-high | **Stage**: [G][M]
 
 Two approaches:
 1. **CI freshness check**: Scan docs for metadata, flag stale content
 2. **Doc-gardening agent**: Scheduled task scanning docs vs codebase, opening fix PRs
 
 ### SI-5: Build Tech Debt Tracking
-**Fixes**: 6.1-6.4 | **Effort**: 1 week | **Impact**: Medium
+**Fixes**: 6.1-6.4 | **Effort**: 1 week | **Impact**: Medium | **Stage**: [M]
 
 Create a quality scoring system per module:
 - Test coverage, doc freshness, lint violations, dependency violations
@@ -105,7 +107,7 @@ Create a quality scoring system per module:
 - Add AI slop detection rules (duplicated utilities, dead code, over-abstraction)
 
 ### SI-6: Implement Long-Running Task Infrastructure
-**Fixes**: 7.1-7.5 | **Effort**: 1-2 weeks | **Impact**: High
+**Fixes**: 7.1-7.5 | **Effort**: 1-2 weeks | **Impact**: High | **Stage**: [G][M]
 
 Build multi-session scaffolding:
 1. Execution plan templates
@@ -115,7 +117,7 @@ Build multi-session scaffolding:
 5. Feature list template with machine-readable status
 
 ### SI-7: Implement Agent-Queryable Observability
-**Fixes**: 3.1-3.3 | **Effort**: 1-2 weeks | **Impact**: High
+**Fixes**: 3.1-3.3 | **Effort**: 1-2 weeks | **Impact**: High | **Stage**: [M]
 
 Set up:
 - Structured JSON logging with correlation IDs
@@ -126,7 +128,7 @@ Set up:
 Agents that can see their own logs diagnose their own problems.
 
 ### SI-8: Implement Cache-Friendly Repository Design
-**Fixes**: 5.5 | **Effort**: 1-2 days | **Impact**: Medium-high
+**Fixes**: 5.5 | **Effort**: 1-2 days | **Impact**: Medium-high | **Stage**: [G][M]
 
 Restructure for cache stability:
 - Trim AGENTS.md to <150 lines (move verbose content to docs/)
@@ -136,7 +138,7 @@ Restructure for cache stability:
 - Organize docs for search/read access rather than bulk loading
 
 ### SI-9: Implement Durable Execution Infrastructure
-**Fixes**: 7.6 | **Effort**: 1 week | **Impact**: High
+**Fixes**: 7.6 | **Effort**: 1 week | **Impact**: High | **Stage**: [M]
 
 Build multi-session resilience:
 1. Define `progress.json` schema and convention in AGENTS.md
@@ -146,7 +148,7 @@ Build multi-session resilience:
 5. Add rollback procedures for partially-completed multi-step changes
 
 ### SI-10: Implement Tool Protocol Hygiene
-**Fixes**: 8.6 | **Effort**: 1-3 days | **Impact**: Medium
+**Fixes**: 8.6 | **Effort**: 1-3 days | **Impact**: Medium | **Stage**: [M]
 
 Harden tool access:
 - Audit all MCP server configurations for permission scope

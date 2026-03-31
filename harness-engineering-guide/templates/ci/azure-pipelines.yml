@@ -1,0 +1,55 @@
+# azure-pipelines.yml — Standard CI Pipeline for AI-Assisted Development
+# Replace [ECOSYSTEM_COMMANDS] placeholders with commands from data/ecosystems.json
+
+trigger:
+  branches:
+    include:
+      - main
+      - master
+
+pr:
+  branches:
+    include:
+      - main
+      - master
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+stages:
+  - stage: Validate
+    jobs:
+      - job: Lint
+        steps:
+          # [ECOSYSTEM: node]
+          # - task: NodeTool@0
+          #   inputs: { versionSpec: '20.x' }
+          # - script: npm ci --silent
+          # - script: npx eslint . && npx biome check .
+
+          # [ECOSYSTEM: python]
+          # - task: UsePythonVersion@0
+          #   inputs: { versionSpec: '3.12' }
+          # - script: pip install -e '.[dev]'
+          # - script: ruff check . && ruff format --check .
+
+          - script: echo "Replace with your lint command"
+            displayName: 'Lint'
+
+      - job: TypeCheck
+        steps:
+          - script: echo "Replace with your typecheck command"
+            displayName: 'Type Check'
+
+      - job: Test
+        steps:
+          - script: echo "Replace with your test command"
+            displayName: 'Test'
+
+  - stage: Build
+    dependsOn: Validate
+    jobs:
+      - job: Build
+        steps:
+          - script: echo "Replace with your build command"
+            displayName: 'Build'
