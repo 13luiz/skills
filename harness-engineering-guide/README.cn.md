@@ -30,7 +30,7 @@
 ## 三种模式
 
 ### 模式 1：审计
-评估仓库的 harness 成熟度，覆盖 8 个维度、43 个检查项。可按**项目类型配置文件**和**生命周期阶段**进行配置。输出 A-F 分级报告和改进路线图。支持 monorepo 逐包审计。
+评估仓库的 harness 成熟度，覆盖 8 个维度、44 个检查项。可按**项目类型配置文件**和**生命周期阶段**进行配置。输出 A-F 分级报告和改进路线图。支持 monorepo 逐包审计。
 
 ### 模式 2：实施
 按需设置具体的 harness 组件：AGENTS.md、CI 流水线、lint 规则、测试策略等。提供多个 CI 平台和语言生态的模板。
@@ -61,7 +61,7 @@
 |------|--------|------|
 | **Bootstrap**（<2k LOC） | 9 项 | 仅基础项 |
 | **Growth**（2k-50k LOC） | 27 项 | 约束 + 测试 + 早期反馈循环 |
-| **Mature**（50k+ LOC） | 43 项 | 全量审计 |
+| **Mature**（50k+ LOC） | 44 项 | 全量审计 |
 
 ### 多生态支持（11 种生态）
 Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin、Dart/Flutter
@@ -90,7 +90,7 @@ harness-engineering-guide/
 │   ├── profiles.json                  ← 17 种项目类型配置及权重覆盖
 │   ├── stages.json                    ← 3 个生命周期阶段及活跃审查项子集
 │   ├── ecosystems.json                ← 11 种生态检测规则和工具映射
-│   └── checklist-items.json           ← 43 项机器可读格式
+│   └── checklist-items.json           ← 44 项机器可读格式
 ├── scripts/
 │   ├── harness-audit.sh               ← 增强版 Bash 审计（内容分析 + 配置/阶段）
 │   ├── harness-audit.ps1              ← 增强版 PowerShell 审计
@@ -104,7 +104,7 @@ harness-engineering-guide/
 ├── reports/                           ← 审计报告输出目录
 ├── examples/                          ← 示例审计报告（占位）
 ├── references/                        ← 深度参考文档（15 个文件）
-│   ├── checklist.md                   ← 8 维度 43 项审计清单
+│   ├── checklist.md                   ← 8 维度 44 项审计清单
 │   ├── scoring-rubric.md              ← 评分方法论和配置/阶段调整
 │   ├── control-theory.md              ← 控制论基础
 │   ├── improvement-patterns.md        ← 快速改进和战略投资（带阶段标注）

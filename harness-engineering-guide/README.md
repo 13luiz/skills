@@ -30,7 +30,7 @@ Say any of the following to an AI agent to trigger this skill:
 ## Three Modes
 
 ### Mode 1: Audit
-Evaluate the repo's harness maturity across 8 dimensions with 43 check items. Configurable by **project type profile** and **lifecycle stage**. Outputs an A–F graded report with an improvement roadmap. Supports monorepo per-package auditing.
+Evaluate the repo's harness maturity across 8 dimensions with 44 check items. Configurable by **project type profile** and **lifecycle stage**. Outputs an A–F graded report with an improvement roadmap. Supports monorepo per-package auditing.
 
 ### Mode 2: Implement
 Set up specific harness components on demand: AGENTS.md, CI pipelines, lint rules, testing strategies, and more. Templates available for multiple CI platforms and language ecosystems.
@@ -65,7 +65,7 @@ Reduces audit scope for projects at different maturity levels:
 |-------|-------------|-------|
 | **Bootstrap** (<2k LOC) | 9 items | Foundations only |
 | **Growth** (2k-50k LOC) | 27 items | Constraints + testing + early feedback |
-| **Mature** (50k+ LOC) | 43 items | Full audit |
+| **Mature** (50k+ LOC) | 44 items | Full audit |
 
 ### Multi-Ecosystem Support (11 ecosystems)
 Detection rules, tool recommendations, and CI commands for:
@@ -95,7 +95,7 @@ harness-engineering-guide/
 │   ├── profiles.json                  ← 17 project type profiles with weight overrides
 │   ├── stages.json                    ← 3 lifecycle stages with active item subsets
 │   ├── ecosystems.json                ← 11 ecosystem detection rules and tool mappings
-│   └── checklist-items.json           ← 43 items in machine-readable format
+│   └── checklist-items.json           ← 44 items in machine-readable format
 ├── scripts/
 │   ├── harness-audit.sh               ← Enhanced Bash audit (content analysis + profiles/stages)
 │   ├── harness-audit.ps1              ← Enhanced PowerShell audit
@@ -109,7 +109,7 @@ harness-engineering-guide/
 ├── reports/                           ← Audit report output directory
 ├── examples/                          ← Example audit reports (placeholder)
 ├── references/                        ← Deep-dive reference docs (15 files)
-│   ├── checklist.md                   ← 8-dimension, 43-item audit checklist
+│   ├── checklist.md                   ← 8-dimension, 44-item audit checklist
 │   ├── scoring-rubric.md              ← Scoring methodology & profile/stage adjustments
 │   ├── control-theory.md              ← Control theory foundation
 │   ├── improvement-patterns.md        ← Quick wins & strategic investments (with stage tags)

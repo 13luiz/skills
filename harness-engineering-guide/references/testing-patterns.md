@@ -24,6 +24,32 @@ The evaluator:
 - Reports specific, actionable failures
 - Has no knowledge of what the generator was told to do
 
+## Test Results Are Context, Not Evidence
+
+A passing test suite tells you what the implementer *intended* to verify. It does not prove the system works correctly. When the implementer is an LLM, its tests may be:
+
+- **Heavy on mocks** — testing that the mock behaves as coded, not that the system works
+- **Circular assertions** — the test asserts the exact output the implementation produces, rather than independently computing the expected result
+- **Happy-path only** — 100% coverage on normal inputs, 0% on error paths, edge cases, and concurrent access
+
+Run the test suite and note results — then move on to independent verification. The suite is input to your assessment, not the assessment itself.
+
+### Verification Signal Hierarchy
+
+Signals are not equal. Rank evidence by independence from the implementer:
+
+| Tier | Signal | Independence | Why |
+|------|--------|-------------|-----|
+| 1 | Type checks, linters | Highest | Deterministic, predates implementation, cannot be gamed |
+| 2 | Human-written tests | High | Independent author with different assumptions |
+| 3 | E2E / browser tests hitting real endpoints | High | Exercises actual system behavior end-to-end |
+| 4 | Adversarial verifier probes | High | Deliberately targets failure modes |
+| 5 | AI-written tests (reviewed) | Medium | Subject to same biases but human-validated |
+| 6 | AI-written tests (unreviewed) | Low | Circular — same model, same blind spots |
+| 7 | Agent self-assessment ("looks correct") | None | Models confidently praise their own output |
+
+A robust verification strategy combines signals from tiers 1-4. Relying solely on tier 6-7 is open-loop verification.
+
 ## Anti-Pattern: AI Tests for AI Code
 
 AI-generated tests validating AI-generated code defeats verification. Same biases that produce wrong code produce wrong tests.
@@ -32,6 +58,7 @@ AI-generated tests validating AI-generated code defeats verification. Same biase
 - Tests should be written or verified by humans
 - If an agent writes tests, a human must review before they join the verification suite
 - "Double bookkeeping": tests independently verify logic from a different angle
+- If all your checks are "returns 200" or "test suite passes," you have confirmed the happy path, not verified correctness
 
 ## Test Hierarchy for Agent Work
 

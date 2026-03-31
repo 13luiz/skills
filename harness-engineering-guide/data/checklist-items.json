@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "description": "Machine-readable version of all 43 audit checklist items from references/checklist.md.",
+    "description": "Machine-readable version of all 44 audit checklist items from references/checklist.md.",
     "usage": "Cross-reference with stages.json for active items and profiles.json for skip/substitute items.",
     "scoring": "PASS=1.0, PARTIAL=0.5, FAIL=0.0. dimension_score = (sum / count) * 100. final = sum(dim_score * weight)."
   },
@@ -374,6 +374,22 @@
         "pass": "Flakes tracked, quarantined, or retried with monitoring",
         "partial": "Some awareness but not systematic",
         "fail": "Flakes routinely block or silently ignored"
+      },
+      "requires_content_analysis": true
+    },
+    {
+      "id": "4.7",
+      "dimension": 4,
+      "dimension_name": "Testing & Verification",
+      "name": "Adversarial Verification",
+      "control_element": "sensor_actuator",
+      "stages": ["growth", "mature"],
+      "auto_detect": {
+        "type": "content",
+        "check": "Independent verifier agent with read-only permissions, structured evidence output, adversarial probes",
+        "pass": "Dedicated verification agent/step with permission isolation, structured reports (command + output + verdict), and at least one adversarial probe per verification",
+        "partial": "Some independent verification exists but lacks structured evidence format or adversarial probes",
+        "fail": "No independent verification — implementer self-assesses or verification is code-reading only"
       },
       "requires_content_analysis": true
     },

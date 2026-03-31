@@ -185,6 +185,15 @@ The primary scoring instrument. Go through each item, marking PASS / PARTIAL / F
 - PARTIAL: Some awareness but no systematic management
 - FAIL: Flakes routinely block or are silently ignored
 
+### 4.7 Adversarial Verification
+**What to check**: Is there an independent verification step where a separate agent (or process) with read-only permissions actively tries to break the implementation?
+
+- PASS: Dedicated verification agent/step with permission isolation (write tools removed programmatically), structured evidence reports (command executed + output observed + verdict per check), and at least one adversarial probe (boundary values, concurrency, idempotency) per verification cycle
+- PARTIAL: Some independent verification exists (e.g., a review agent) but lacks structured evidence format, adversarial probes, or programmatic permission isolation
+- FAIL: No independent verification — implementer self-assesses, or verification consists of reading code without executing commands
+
+**Detection**: Look for verification agent definitions, read-only tool configurations, structured report templates, or anti-rationalization prompts in agent system prompts. See `references/adversarial-verification.md` for the full pattern.
+
 ---
 
 ## 5. Context Engineering (10%)
@@ -354,7 +363,7 @@ The primary scoring instrument. Go through each item, marking PASS / PARTIAL / F
 
 ---
 
-## Quick Reference: All 43 Items
+## Quick Reference: All 44 Items
 
 | # | Dimension | Item | Weight | Control Element |
 |---|-----------|------|--------|----------------|
@@ -381,6 +390,7 @@ The primary scoring instrument. Go through each item, marking PASS / PARTIAL / F
 | 4.4 | Testing | Formalized done criteria | 15% | Sensor + Actuator |
 | 4.5 | Testing | End-to-end verification | 15% | Sensor + Actuator |
 | 4.6 | Testing | Test flake management | 15% | Sensor + Actuator |
+| 4.7 | Testing | Adversarial verification | 15% | Sensor + Actuator |
 | 5.1 | Context | Externalized knowledge | 10% | Goal State |
 | 5.2 | Context | Documentation freshness | 10% | Goal State |
 | 5.3 | Context | Machine-readable references | 10% | Goal State |

@@ -157,6 +157,32 @@ Harden tool access:
 - Treat MCP tool output as untrusted — validate before acting on results
 - Establish tool invocation audit trail (log tool name, args, timestamps)
 
+### SI-11: Implement Adversarial Verification
+**Fixes**: 4.7 | **Effort**: 1-2 weeks | **Impact**: High | **Stage**: [G][M]
+
+Build a three-party verification chain (implementer → verifier → auditor):
+
+1. **Verifier agent definition**: read-only permissions (block file-write/edit tools programmatically), temp-dir exception for test scripts, structured output format (Command run → Output observed → Result)
+2. **Anti-rationalization prompts**: embed the six common verification-skipping excuses in the verifier's system prompt so it recognizes its own failure modes
+3. **Structural nudges**: inject verification reminders into task-tracking tool returns when all tasks close without a verification step
+4. **Spot-check protocol**: auditor re-runs 2-3 commands from verifier's report to validate consistency
+5. **Type-specialized strategies**: configure verification probes per change type (frontend → browser automation, API → curl + edge cases, CLI → boundary inputs)
+
+Read `references/adversarial-verification.md` for the full pattern catalog.
+
+### SI-12: Progressive Harness Component Rollout
+**Fixes**: N/A (meta-pattern) | **Effort**: 1-3 days per component | **Impact**: Medium | **Stage**: [G][M]
+
+Deploy new harness components (verification agents, custom lint rules, new CI gates) incrementally rather than all-at-once:
+
+1. **Feature flag gating**: wrap the component behind a build-time or runtime flag so it can be disabled without code changes
+2. **Internal dogfooding**: enable for the team that built it first
+3. **Percentage rollout**: use remote config (LaunchDarkly, GrowthBook, environment variables) to gradually increase activation from 5% → 25% → 100%
+4. **Monitoring**: track trigger rate, false positive rate, time cost, and user satisfaction delta between enabled and disabled groups
+5. **Default-on**: remove gates once the component is stable
+
+This pattern is especially important for adversarial verification systems, where a high false-positive rate during early rollout can erode developer trust.
+
 ---
 
 ## Anti-Patterns to Avoid

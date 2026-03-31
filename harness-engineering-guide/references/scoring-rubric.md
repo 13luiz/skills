@@ -149,7 +149,7 @@ When a lifecycle stage is selected (from `data/stages.json`), only the active it
 |-------|-------------|-------|
 | **Bootstrap** (<2k LOC) | 9 items | Foundations: agent file, CI, lint, types, tests, env recovery, security baseline |
 | **Growth** (2k-50k LOC) | 27 items | All foundations + architecture, testing depth, early feedback loops |
-| **Mature** (50k+ LOC) | 43 items | Full audit with all dimensions |
+| **Mature** (50k+ LOC) | 44 items | Full audit with all dimensions |
 
 Inactive items are excluded from the dimension score calculation. Only active items contribute to the score:
 

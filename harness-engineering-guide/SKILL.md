@@ -34,9 +34,9 @@ Every effective harness implements four elements from cybernetics:
 
 A system missing any element is **open-loop** — it cannot self-correct. Read `references/control-theory.md` for the full theoretical grounding.
 
-## Quick Reference — 8 Dimensions, 43 Items
+## Quick Reference — 8 Dimensions, 44 Items
 
-*Always-on context for rapid assessment. Use item IDs to cross-reference `references/checklist.md` for full PASS/PARTIAL/FAIL criteria.*
+*Always-on context for rapid assessment. Use item IDs to cross-reference `references/checklist.md` for full PASS/PARTIAL/FAIL criteria. See `references/adversarial-verification.md` for the complete adversarial verification pattern (item 4.7).*
 
 ### Dim 1: Architecture Documentation & Knowledge Management (15%) — GOAL STATE
 - `1.1` **agent-instruction-file** — AGENTS.md/CLAUDE.md exists and concise (<150 lines)
@@ -68,6 +68,7 @@ A system missing any element is **open-loop** — it cannot self-correct. Read `
 - `4.4` **formalized-done** — Feature list in machine-readable format (JSON/YAML) with pass/fail
 - `4.5` **e2e-verification** — E2E suite (Playwright/Cypress) runs in CI
 - `4.6` **flake-management** — Flaky tests tracked, quarantined, retried with monitoring
+- `4.7` **adversarial-verification** — Independent verifier tries to break implementation (read-only, structured evidence)
 
 ### Dim 5: Context Engineering (10%) — GOAL STATE
 - `5.1` **externalized-knowledge** — Key decisions documented in-repo, not in Slack/chat
@@ -131,7 +132,7 @@ Available profiles: `frontend-spa`, `frontend-ssr`, `backend-api`, `backend-micr
 |-------|-----|-------------|-------|
 | **Bootstrap** | <2k | 9 items | Foundations: agent file, CI, lint, types, tests, env recovery |
 | **Growth** | 2k-50k | 27 items | Constraints + testing + early feedback loops |
-| **Mature** | 50k+ | 43 items (all) | Full audit with all dimensions |
+| **Mature** | 50k+ | 44 items (all) | Full audit with all dimensions |
 
 ### Step 1: Explore the Repository
 
@@ -148,7 +149,7 @@ Add `--output <dir>` to save results to a file with timestamp.
 
 ### Step 2: Score Each Dimension
 
-Read `references/checklist.md` — the primary scoring instrument with 43 items across 8 weighted dimensions.
+Read `references/checklist.md` — the primary scoring instrument with 44 items across 8 weighted dimensions.
 
 For the selected stage, only score the active items from `data/stages.json`. Apply weight overrides from the selected profile in `data/profiles.json`.
 
@@ -176,7 +177,7 @@ Generate the report:
 | Parameter | Value |
 |-----------|-------|
 | Profile | [type] — [weight adjustments applied] |
-| Stage | [stage] — [X of 43 items active] |
+| Stage | [stage] — [X of 44 items active] |
 | Skipped Items | [list with reasons] |
 
 ## Dimension Scores
@@ -222,6 +223,7 @@ Based on gaps found, offer ready-to-use artifacts from subdirectories under `tem
 | No formalized done criteria | `templates/universal/feature-checklist.json` |
 | No environment recovery | `templates/init/init.sh` or `templates/init/init.ps1` |
 | No task decomposition | `templates/universal/execution-plan.md` |
+| No verification report format | `templates/universal/verification-report-format.md` |
 
 Use `data/ecosystems.json` to select the right ecosystem-specific templates and fill CI command placeholders.
 
@@ -254,6 +256,7 @@ When the user wants to implement specific components, read the relevant referenc
 | Cache stability & context | `references/cache-stability.md` |
 | Durable execution | `references/durable-execution.md` |
 | Protocol hygiene (MCP/A2A) | `references/protocol-hygiene.md` |
+| Adversarial verification | `references/adversarial-verification.md` |
 | Monorepo patterns | `references/monorepo-patterns.md` |
 | Automation templates | `references/automation-templates.md` + `templates/` |
 
@@ -299,7 +302,10 @@ Then design across maturity levels:
 - Per-worktree isolation for concurrent agent work
 - Full observability stack queryable by agents
 - Browser automation for E2E verification
-- Generator-evaluator separation (adversarial verification)
+- **Three-layer adversarial verification**: pre-implementation advisory, post-implementation adversarial verifier (read-only, structured evidence), plan-level completion verification. See `references/adversarial-verification.md`.
+- Anti-rationalization prompts in verifier system prompts (preemptively name the 6 common verification-skipping excuses)
+- Structural nudges: inject verification reminders in task-tracking tool returns at the loop-exit moment
+- Permission-isolated verifiers: programmatic write-tool removal + temp-dir exception for test scripts
 - Session handoff protocols with structured progress files
 - Durable execution support: checkpoint files, crash recovery
 - Cache-friendly repository design
@@ -325,6 +331,8 @@ Then design across maturity levels:
 11. **Dynamic tool catalog mid-session** — Invalidates prompt cache. Fix catalog at session start.
 12. **No crash recovery** — Multi-step tasks need structured checkpoint files.
 13. **Trusting tool output blindly** — MCP server output is untrusted input.
+14. **Verification without execution** — Verifier reads code and writes "PASS" without running commands. A check without a command-run block is a skip, not a pass.
+15. **Happy-path-only verification** — Verifier confirms the feature works with normal input but never tries to break it. At minimum, one adversarial probe (boundary value, concurrent request, missing resource) is required.
 
 ---
 
@@ -336,6 +344,7 @@ Then design across maturity levels:
 4. **Small PRs, always** — One feature, one fix, one concern per PR.
 5. **Verify before claiming done** — Run tests, check types, view actual output.
 6. **Clean up after yourself** — Every session ends with codebase in better or equal state.
+7. **Test results are context, not evidence** — LLM-written tests may use circular assertions or excessive mocking. Passing tests confirm the happy path; independent adversarial verification confirms correctness.
 
 ---
 
@@ -370,7 +379,7 @@ Read these as needed — do not load all at once:
 
 | File | Purpose | When to Read |
 |------|---------|-------------|
-| `references/checklist.md` | 43-item audit checklist with PASS/PARTIAL/FAIL criteria | Always during Audit mode |
+| `references/checklist.md` | 44-item audit checklist with PASS/PARTIAL/FAIL criteria | Always during Audit mode |
 | `references/scoring-rubric.md` | Scoring methodology, borderline guidance, project-type adaptations | When scoring is ambiguous |
 | `references/control-theory.md` | Control theory framework | When explaining "why this matters" |
 | `references/improvement-patterns.md` | Quick wins and strategic investments | When writing improvement roadmaps |
@@ -384,6 +393,7 @@ Read these as needed — do not load all at once:
 | `references/cache-stability.md` | Cache stability and context | When diagnosing context overflow |
 | `references/durable-execution.md` | Crash recovery | When implementing resilience |
 | `references/protocol-hygiene.md` | MCP/ACP/A2A trust boundaries | When auditing tool safety |
+| `references/adversarial-verification.md` | Three-layer verification, anti-rationalization, structural nudges, permission isolation | When implementing or auditing verification systems |
 | `references/monorepo-patterns.md` | Monorepo audit and patterns | When auditing or designing for monorepos |
 
 ## Data Files
@@ -395,7 +405,7 @@ Structured knowledge — read to configure audit parameters:
 | `data/profiles.json` | 17 project type profiles with weight overrides | Audit Step 0 |
 | `data/stages.json` | 3 lifecycle stages with active item subsets | Audit Step 0 |
 | `data/ecosystems.json` | 11 ecosystem detection rules and tool mappings | Audit Step 1, Mode 2, Mode 3 |
-| `data/checklist-items.json` | 43 items in machine-readable format | Programmatic audit processing |
+| `data/checklist-items.json` | 44 items in machine-readable format | Programmatic audit processing |
 
 ## Executable Assets
 
@@ -403,7 +413,7 @@ Structured knowledge — read to configure audit parameters:
 |-------|---------|-------------|
 | `scripts/harness-audit.sh` | Bash audit scanner (JSON output with content analysis) | Audit Step 1 on macOS/Linux |
 | `scripts/harness-audit.ps1` | PowerShell audit scanner | Audit Step 1 on Windows |
-| `templates/universal/` | 5 language-agnostic templates | Audit Step 4 |
+| `templates/universal/` | 6 language-agnostic templates | Audit Step 4 |
 | `templates/ci/` | CI pipeline templates (GitHub Actions, GitLab, Azure) | Audit Step 4 |
 | `templates/linting/` | Boundary rules (ESLint, import-linter, depguard, clippy) | Audit Step 4 |
 | `templates/init/` | Environment recovery scripts (Bash, PowerShell) | Audit Step 4 |
