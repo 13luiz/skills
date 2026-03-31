@@ -35,9 +35,16 @@ A good example report should:
 4. **Include the improvement roadmap** — actionable recommendations
 5. **Cover different project types** — aim for diversity across profiles
 
+## Existing Examples
+
+| Report | Profile | Stage | Language |
+|--------|---------|-------|----------|
+| `2026-04-01_openclaw_audit.md` | — | — | English |
+| `2026-04-01_openclaw_audit.zh.md` | — | — | Chinese |
+
 ## Planned Examples
 
-The following well-known repositories are candidates for example audits:
+The following well-known repositories are candidates for additional example audits:
 
 - [ ] A large TypeScript monorepo (e.g., Next.js, Turborepo)
 - [ ] A Python backend service (e.g., FastAPI, Django)
@@ -46,5 +53,3 @@ The following well-known repositories are candidates for example audits:
 - [ ] A frontend SPA (e.g., React-based)
 - [ ] A data/ML pipeline project
 - [ ] An early-stage startup project (bootstrap stage)
-
-These will be added after the skill optimization is complete.

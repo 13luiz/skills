@@ -1,6 +1,6 @@
 # Harness Engineering Guide（治具工程指南）
 
-一个全面的技能，用于审计、设计和实施 AI 编码代理的环境约束和反馈循环。支持 **17 种项目类型**、**12 种语言生态** 和 **3 个生命周期阶段**。
+一个全面的技能，用于审计、设计和实施 AI 编码代理的环境约束和反馈循环。支持 **17 种项目类型**、**11 种语言生态** 和 **3 个生命周期阶段**。
 
 ## 什么是 Harness Engineering？
 
@@ -47,11 +47,15 @@
 |---------|------|
 | `frontend-spa` / `frontend-ssr` | UI 可见性、E2E 测试、组件架构 |
 | `backend-api` / `backend-microservice` | 可观测性、安全、分布式追踪 |
+| `fullstack` | 默认权重、依赖方向 |
 | `library` / `cli-tool` | 测试、机械约束、减少可观测性要求 |
 | `desktop-app` / `mobile-app` | UI 自动化、多进程架构 |
+| `system-infra` | 安全、回滚、类型安全 |
 | `game` | 架构文档、缓存友好设计、资产管线 |
 | `data-ml` | 长时间任务、持久化执行、进度跟踪 |
 | `devops-iac` | 安全护栏、人工确认、回滚 |
+| `script-automation` | Lint、测试、安全基础 |
+| `browser-extension` / `smart-contract` | 安全性、E2E 测试 |
 | `monorepo` | 跨包边界、熵管理 |
 
 ### 生命周期阶段（3 个阶段）
@@ -63,7 +67,7 @@
 | **Growth**（2k-50k LOC） | 29 项 | 约束 + 测试 + 早期反馈循环 |
 | **Mature**（50k+ LOC） | 44 项 | 全量审计 |
 
-### 多生态支持（12 种生态）
+### 多生态支持（11 种生态）
 Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin、Dart/Flutter、PHP
 
 ### 增强审计脚本
@@ -89,7 +93,7 @@ harness-engineering-guide/
 ├── SKILL.md                           ← Agent 入口（薄指令层 + Quick Reference）
 ├── skill.json                         ← Skill 元数据（名称、版本、平台、关键词）
 ├── README.md                          ← 英文版
-├── README.cn.md                       ← 你在这里（中文版）
+├── README.zh.md                       ← 你在这里（中文版）
 ├── data/
 │   ├── profiles.json                  ← 17 种项目类型配置及权重覆盖
 │   ├── stages.json                    ← 3 个生命周期阶段及活跃审查项子集
@@ -106,8 +110,9 @@ harness-engineering-guide/
 │   ├── linting/                       ← 边界规则：ESLint、import-linter、depguard、clippy
 │   └── init/                          ← 环境恢复：Bash、PowerShell
 ├── reports/                           ← 审计报告输出目录
-├── examples/                          ← 示例审计报告（占位）
-├── references/                        ← 深度参考文档（15 个文件）
+├── examples/                          ← 示例审计报告
+├── references/                        ← 深度参考文档（16 个文件）
+│   ├── adversarial-verification.md    ← 对抗性验证模式
 │   ├── checklist.md                   ← 8 维度 44 项审计清单
 │   ├── scoring-rubric.md              ← 评分方法论和配置/阶段调整
 │   ├── control-theory.md              ← 控制论基础

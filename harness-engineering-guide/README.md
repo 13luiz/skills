@@ -1,6 +1,6 @@
 # Harness Engineering Guide
 
-A comprehensive skill for auditing, designing, and implementing environment constraints and feedback loops for AI coding agents. Supports **17 project types**, **12 language ecosystems**, and **3 lifecycle stages**.
+A comprehensive skill for auditing, designing, and implementing environment constraints and feedback loops for AI coding agents. Supports **17 project types**, **11 language ecosystems**, and **3 lifecycle stages**.
 
 ## What is Harness Engineering?
 
@@ -67,7 +67,7 @@ Reduces audit scope for projects at different maturity levels:
 | **Growth** (2k-50k LOC) | 29 items | Constraints + testing + early feedback |
 | **Mature** (50k+ LOC) | 44 items | Full audit |
 
-### Multi-Ecosystem Support (12 ecosystems)
+### Multi-Ecosystem Support (11 ecosystems)
 Detection rules, tool recommendations, and CI commands for:
 Node.js/TypeScript, Python, Go, Rust, Ruby, Java, C#/.NET, Swift, Kotlin, Dart/Flutter, PHP
 
@@ -94,7 +94,7 @@ harness-engineering-guide/
 ├── SKILL.md                           ← Agent entry point (thin orchestrator + Quick Reference)
 ├── skill.json                         ← Skill metadata (name, version, platforms, keywords)
 ├── README.md                          ← You are here (English)
-├── README.cn.md                       ← Chinese version
+├── README.zh.md                       ← Chinese version
 ├── data/
 │   ├── profiles.json                  ← 17 project type profiles with weight overrides
 │   ├── stages.json                    ← 3 lifecycle stages with active item subsets
@@ -111,8 +111,9 @@ harness-engineering-guide/
 │   ├── linting/                       ← Boundary rules: ESLint, import-linter, depguard, clippy
 │   └── init/                          ← Environment recovery: Bash, PowerShell
 ├── reports/                           ← Audit report output directory
-├── examples/                          ← Example audit reports (placeholder)
-├── references/                        ← Deep-dive reference docs (15 files)
+├── examples/                          ← Example audit reports
+├── references/                        ← Deep-dive reference docs (16 files)
+│   ├── adversarial-verification.md    ← Adversarial verification patterns
 │   ├── checklist.md                   ← 8-dimension, 44-item audit checklist
 │   ├── scoring-rubric.md              ← Scoring methodology & profile/stage adjustments
 │   ├── control-theory.md              ← Control theory foundation
