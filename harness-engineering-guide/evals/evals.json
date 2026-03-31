@@ -1,0 +1,161 @@
+{
+  "skill_name": "harness-engineering-guide",
+  "evals": [
+    {
+      "id": 1,
+      "prompt": "Review my repo for AI coding readiness. I'm using Claude Code and Cursor to write most of my TypeScript code. The project has basic ESLint but no CI pipeline yet.",
+      "expected_output": "A structured harness engineering audit report with 8-dimension scoring, letter grade, specific findings with evidence, quick wins, and strategic investment recommendations. Should identify missing CI as a critical gap.",
+      "expectations": [
+        "Produces a scored assessment across all 8 dimensions",
+        "Identifies missing CI pipeline as critical gap in Dimension 2",
+        "Provides quick wins prioritized by effort/impact",
+        "Offers to generate automation templates",
+        "Report is in the user's language"
+      ],
+      "files": []
+    },
+    {
+      "id": 2,
+      "prompt": "Help me set up AGENTS.md for my Python Django project. We have 5 developers using Codex and Claude Code. The project has about 20k LOC.",
+      "expected_output": "A concise AGENTS.md scaffold following progressive disclosure pattern, under 100 lines, with commands first, architecture rules, boundaries, and pointers to deeper docs.",
+      "expectations": [
+        "Generated AGENTS.md is under 100 lines",
+        "Commands section appears first with exact Django/Python commands",
+        "Three-tier boundaries defined (always/ask/never)",
+        "References a docs/ directory for deeper knowledge",
+        "Follows progressive disclosure pattern"
+      ],
+      "files": []
+    },
+    {
+      "id": 3,
+      "prompt": "I'm starting a new React + Node.js project from scratch. I want to use AI agents heavily. Design me a complete harness strategy.",
+      "expected_output": "A phased harness design with Level 1/2/3 maturity stages, specific tool recommendations for React+Node ecosystem, CI pipeline structure, testing strategy including E2E, and entropy management approach.",
+      "expectations": [
+        "Provides a phased approach (Level 1 -> 2 -> 3)",
+        "Recommends specific tools for React+Node (ESLint, TypeScript strict, Vitest, Playwright)",
+        "Includes CI pipeline structure with all required gates",
+        "Covers documentation strategy with progressive disclosure",
+        "Addresses entropy management and long-running task support"
+      ],
+      "files": []
+    },
+    {
+      "id": 4,
+      "prompt": "为什么我的 AI agent 总是写出烂代码？我用 Cursor 写 Python，但代码质量一直在下降，架构越来越乱。",
+      "expected_output": "用中文解释 harness engineering 的核心概念，诊断可能的问题（缺少机械约束、缺少反馈循环等），并提供具体的改进步骤。应该引用控制论框架来解释为什么改进 harness 比换模型更有效。",
+      "expectations": [
+        "Response is in Chinese",
+        "Explains harness engineering concept with control theory four elements",
+        "Diagnoses likely root causes (missing linting, no CI, no architecture enforcement)",
+        "Provides actionable improvement steps starting with quick wins",
+        "References 'harness over model' principle"
+      ],
+      "files": []
+    },
+    {
+      "id": 5,
+      "prompt": "Audit my Go monorepo. We already have strict CI, golangci-lint, 85% coverage, structured docs/, AGENTS.md, and CODEOWNERS. What can we improve?",
+      "expected_output": "A high-score audit (B+ to A range) that identifies fine-tuning opportunities rather than fundamental gaps. Should look for missing entropy management, doc freshness automation, long-running task support, and cache-friendly context design.",
+      "expectations": [
+        "Scores the repo in B+ to A range, not lower",
+        "Identifies subtle improvement opportunities rather than critical gaps",
+        "Suggests advanced patterns: doc-gardening automation, quality score tracking, cache stability",
+        "Does not recommend basics already in place (CI, linting, coverage)",
+        "Acknowledges strengths before listing improvements"
+      ],
+      "files": []
+    },
+    {
+      "id": 6,
+      "prompt": "Design a harness for my Rust CLI tool. It's a single-binary command-line utility, no web server, no UI. About 8k LOC. I use Cursor for development.",
+      "expected_output": "A harness design adapted for non-service projects. Dimensions 3.2-3.4 (metrics, agent-queryable observability, UI visibility) should be marked as reduced relevance. Focus on clippy, type safety, test coverage, and AGENTS.md.",
+      "expectations": [
+        "Applies project-type adaptations for CLI tools",
+        "Reduces weight of observability items that require services (3.2, 3.3, 3.4)",
+        "Recommends Rust-specific tools: clippy, cargo test, cargo fmt",
+        "Focuses on architecture boundary enforcement and test coverage",
+        "Keeps the design proportional to project size"
+      ],
+      "files": []
+    },
+    {
+      "id": 7,
+      "prompt": "Our CI has 15% flaky tests and it's killing our team's productivity. Agents keep retrying and wasting tokens. How do I fix this?",
+      "expected_output": "A focused implementation plan for test flake management (checklist item 4.6). Should include quarantine strategy, retry policies, flake tracking, and agent-specific guidance on handling flaky test output.",
+      "expectations": [
+        "Addresses checklist item 4.6 (Test Flake Management) specifically",
+        "Provides a quarantine strategy for known flakes",
+        "Recommends retry policies with limits",
+        "Explains impact on agent token waste (context flooding with retry output)",
+        "Suggests 'succeed silently, fail verbosely' pattern for test output"
+      ],
+      "files": []
+    },
+    {
+      "id": 8,
+      "prompt": "We have 12 MCP servers connected to our Cursor setup. Some of them have broad file system access. Audit the safety of our agent tool configuration.",
+      "expected_output": "A safety-focused audit examining MCP server trust boundaries, tool protocol hygiene, credential scoping, and blast radius. Should reference protocol hygiene principles and recommend least-privilege tool configurations.",
+      "expectations": [
+        "Evaluates MCP server configurations against safety rails (Dimension 8)",
+        "Flags broad filesystem access as a risk",
+        "Recommends least-privilege MCP tool scoping",
+        "References protocol trust boundary principles (tool output as untrusted)",
+        "Suggests tool catalog reduction to minimize context bloat and attack surface"
+      ],
+      "files": []
+    },
+    {
+      "id": 9,
+      "prompt": "My agent tasks keep failing halfway through multi-hour coding sessions. The agent loses context and starts over, wasting hours of work. How do I make long-running tasks more reliable?",
+      "expected_output": "A comprehensive plan for long-running task support covering durable execution patterns, structured progress tracking, checkpoint/recovery mechanisms, session handoff protocols, and environment recovery scripts.",
+      "expectations": [
+        "Addresses Dimension 7 (Long-Running Task Support) comprehensively",
+        "Recommends structured progress files (progress.txt, features.json)",
+        "Explains durable execution concepts: checkpointing, crash recovery",
+        "Provides execution plan template for multi-phase tasks",
+        "Recommends init.sh environment recovery script"
+      ],
+      "files": []
+    },
+    {
+      "id": 10,
+      "prompt": "Our AI agents constantly hit context window limits. Tool outputs flood the context and the agent starts hallucinating. We're using a 200k token model but still running out.",
+      "expected_output": "A diagnosis rooted in cache stability and context engineering principles. Should recommend structured tool output, artifact externalization, context tiering, and cache-friendly project design.",
+      "expectations": [
+        "Diagnoses context overflow as a harness problem, not a model limitation",
+        "Recommends cache stability practices: stable prefix, append-only history",
+        "Suggests tool output externalization (artifact pattern)",
+        "References multi-tier context management: eviction -> compression -> fresh restart",
+        "Maps to Dimension 5 (Context Engineering) improvements"
+      ],
+      "files": []
+    },
+    {
+      "id": 11,
+      "prompt": "We just scored D (45/100) on a harness audit. Give me a 3-month improvement plan to get to at least B grade.",
+      "expected_output": "A phased 3-month improvement roadmap with Month 1 quick wins, Month 2 strategic investments, and Month 3 advanced patterns. Each phase should have specific deliverables and expected score improvements.",
+      "expectations": [
+        "Provides a month-by-month phased plan",
+        "Month 1 focuses on quick wins (QW-1 through QW-5) for maximum score impact",
+        "Month 2 introduces strategic investments (CI hardening, custom linters, E2E)",
+        "Month 3 covers advanced patterns (entropy management, long-running support)",
+        "Projects expected score improvement per phase to reach B (70+)"
+      ],
+      "files": []
+    },
+    {
+      "id": 12,
+      "prompt": "私のRailsプロジェクトをAIエージェント向けに監査してください。RSpecとRuboCopを使っていますが、CIはありません。",
+      "expected_output": "Japanese-language audit report covering all 8 dimensions with Rails-specific tool recommendations (RSpec, RuboCop, Brakeman). Should identify missing CI as critical and adapt terminology for the Ruby/Rails ecosystem.",
+      "expectations": [
+        "Response is in Japanese",
+        "Adapts audit terminology for Rails ecosystem",
+        "Recommends Rails-specific tools: RuboCop (linter), RSpec (test), Brakeman (security)",
+        "Identifies missing CI as critical Dimension 2 gap",
+        "Provides quick wins appropriate for Ruby/Rails stack"
+      ],
+      "files": []
+    }
+  ]
+}

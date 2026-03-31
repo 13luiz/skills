@@ -1,0 +1,28 @@
+{
+  "project": "project-name",
+  "created": "2026-03-31",
+  "total_features": 5,
+  "completed": 0,
+  "features": [
+    {
+      "id": 1,
+      "category": "core",
+      "description": "User can create account with email and password",
+      "steps": [
+        "Navigate to /signup",
+        "Fill email and password",
+        "Click Create Account",
+        "Verify redirect to dashboard",
+        "Verify welcome email queued"
+      ],
+      "passes": false,
+      "verified_by": null,
+      "verified_at": null
+    }
+  ],
+  "rules": {
+    "modification": "Only change passes, verified_by, verified_at. Never delete or modify descriptions.",
+    "verification": "Features only pass after E2E testing through actual UI.",
+    "regression": "If previously passing feature fails, set passes to false."
+  }
+}

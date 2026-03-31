@@ -1,0 +1,28 @@
+{
+  "$schema": "tech-debt-tracker",
+  "last_updated": "2026-03-31",
+  "updated_by": "agent/human",
+  "modules": [
+    {
+      "name": "auth",
+      "path": "src/auth/",
+      "scores": {
+        "test_coverage": { "grade": "B", "value": 78, "target": 85 },
+        "doc_freshness": { "grade": "A", "value": 95, "target": 90 },
+        "lint_violations": { "grade": "A", "value": 0, "target": 0 },
+        "dependency_violations": { "grade": "A", "value": 0, "target": 0 },
+        "code_duplication": { "grade": "B", "value": 3, "target": 0 }
+      },
+      "overall_grade": "B+",
+      "notes": "Coverage gap in OAuth refresh token flow.",
+      "trend": "improving"
+    }
+  ],
+  "golden_principles": [
+    "Prefer shared utilities over hand-rolled helpers",
+    "Validate data at boundaries — never trust unvalidated shapes",
+    "Dependencies flow: Types → Config → Repo → Service → Runtime → UI",
+    "Every public API must have at least one integration test",
+    "No file should exceed 500 lines"
+  ]
+}

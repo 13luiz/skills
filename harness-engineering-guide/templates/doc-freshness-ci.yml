@@ -1,0 +1,50 @@
+# .github/workflows/doc-freshness.yml
+name: Documentation Freshness Check
+
+on:
+  pull_request:
+    paths: ['docs/**', 'src/**']
+  schedule:
+    - cron: '0 9 * * 1'
+
+jobs:
+  check-freshness:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Check for stale documentation
+        run: |
+          STALE_THRESHOLD_DAYS=90
+          STALE_FILES=()
+          for doc in $(find docs -name '*.md' -type f); do
+            LAST_MODIFIED=$(git log -1 --format="%ct" -- "$doc")
+            NOW=$(date +%s)
+            DAYS_AGO=$(( (NOW - LAST_MODIFIED) / 86400 ))
+            if [ "$DAYS_AGO" -gt "$STALE_THRESHOLD_DAYS" ]; then
+              STALE_FILES+=("$doc (${DAYS_AGO} days old)")
+            fi
+          done
+          if [ ${#STALE_FILES[@]} -gt 0 ]; then
+            echo "::warning::Stale documentation found:"
+            for f in "${STALE_FILES[@]}"; do echo "  - $f"; done
+          fi
+
+      - name: Check doc-code alignment
+        run: |
+          BROKEN_REFS=()
+          for doc in $(find docs -name '*.md' -type f); do
+            REFS=$(grep -oP '`(src|lib|app)/[^`]+`' "$doc" | tr -d '`' || true)
+            for ref in $REFS; do
+              if [ ! -e "$ref" ]; then
+                BROKEN_REFS+=("$doc references $ref (not found)")
+              fi
+            done
+          done
+          if [ ${#BROKEN_REFS[@]} -gt 0 ]; then
+            echo "::error::Broken documentation references:"
+            for r in "${BROKEN_REFS[@]}"; do echo "  - $r"; done
+            exit 1
+          fi
