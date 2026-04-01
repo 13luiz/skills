@@ -150,3 +150,60 @@ For critical features, generate multiple solutions:
 4. Cost is 3x but significantly reduces rework
 
 Use selectively for high-risk changes.
+
+## Boundary-Crossing Verification
+
+The most dangerous bugs in AI-generated code occur at **boundaries between components** — where one agent's output becomes another component's input. Verifying each component in isolation misses integration mismatches.
+
+### The Pattern
+
+Instead of checking "does component A exist?" and "does component B exist?" independently, verify that **the contract between A and B is consistent**:
+
+```
+API endpoint returns: { userId: string, role: "admin" | "user" }
+Frontend hook expects: { userId: number, role: string }
+                              ^^^^^^         ^^^^^^
+                              type mismatch  lost enum constraint
+```
+
+### Where Boundaries Break
+
+| Boundary | What Breaks | How to Verify |
+|----------|------------|---------------|
+| API response → Frontend hook | Shape mismatch, type mismatch, missing fields | Read both sides simultaneously; compare field names, types, optionality |
+| Database schema → ORM model | Column type drift, missing relations | Compare migration files with model definitions |
+| Route definitions → Navigation links | Dead links, parameter mismatches | Extract route params and verify callers pass matching args |
+| State machine → UI states | Unreachable states, missing transitions | List all machine states; verify each has a UI representation |
+| Config schema → Runtime reads | Accessing undefined config keys | Grep config reads; verify each key exists in schema |
+
+### Implementation
+
+1. **Identify boundaries** — List every point where data crosses from one module/layer to another
+2. **Read both sides** — Open the producer and consumer simultaneously (not sequentially)
+3. **Compare shapes** — Field names, types, optionality, enum values must match exactly
+4. **Automate where possible** — Shared type definitions, generated API clients, or contract tests eliminate drift mechanically
+
+### Anti-Pattern: Existence-Only Verification
+
+Checking "does the API endpoint exist?" and "does the hook exist?" separately gives false confidence. Both exist, but the data shape between them is incompatible. Boundary verification requires reading **both sides in the same verification step**.
+
+## Incremental Verification
+
+Verify each module **immediately after completion**, not after the entire system is built. Late verification compounds errors: if module 3 depends on a flawed module 1, fixing module 1 cascades changes through modules 2 and 3.
+
+### The Rule
+
+```
+Build Module 1 → Verify Module 1 → Build Module 2 → Verify Module 2 (+ boundary with 1)
+                                                                          → ...
+```
+
+Never:
+
+```
+Build Module 1 → Build Module 2 → Build Module 3 → Verify Everything → Cascade of fixes
+```
+
+### Why This Matters for AI Agents
+
+AI agents building on top of a flawed foundation will **adapt to the flaw** rather than flag it. If module 1 returns the wrong shape, module 2's agent will silently accommodate it, producing code that "works" against the wrong contract. The later the verification, the deeper the rot.

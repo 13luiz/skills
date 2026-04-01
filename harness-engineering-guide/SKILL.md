@@ -321,6 +321,7 @@ When the user wants to implement specific components, read the relevant referenc
 | Adversarial verification | `references/adversarial-verification.md` |
 | Monorepo patterns | `references/monorepo-patterns.md` |
 | Automation templates | `references/automation-templates.md` + `templates/` |
+| Multi-agent coordination | `references/agent-team-patterns.md` |
 
 ### Implementation Principles
 
@@ -362,6 +363,7 @@ Then design across maturity levels:
 
 ### Level 3: Production Organization (1-2 weeks)
 - Per-worktree isolation for concurrent agent work
+- **Multi-agent coordination topology** — Choose a pattern (Pipeline, Fan-out/Fan-in, Expert Pool, Producer-Reviewer, Supervisor, Hierarchical Delegation) based on task dependencies and team structure. See `references/agent-team-patterns.md`.
 - Full observability stack queryable by agents
 - Browser automation for E2E verification
 - **Three-layer adversarial verification**: pre-implementation advisory, post-implementation adversarial verifier (read-only, structured evidence), plan-level completion verification. See `references/adversarial-verification.md`.
@@ -474,6 +476,7 @@ Read these as needed — do not load all at once:
 | `references/protocol-hygiene.md` | MCP/ACP/A2A trust boundaries | When auditing tool safety |
 | `references/adversarial-verification.md` | Three-layer verification, anti-rationalization, structural nudges, permission isolation | When implementing or auditing verification systems |
 | `references/monorepo-patterns.md` | Monorepo audit and patterns | When auditing or designing for monorepos |
+| `references/agent-team-patterns.md` | 6 coordination topologies with per-dimension harness requirements | When designing multi-agent workflows (Design Mode Level 3) |
 
 ## Data Files
 

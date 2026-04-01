@@ -251,6 +251,44 @@
         "Addresses rollback capability (8.3) for infrastructure changes"
       ],
       "files": []
+    },
+    {
+      "id": 20,
+      "prompt": "We're running 4 AI agents in parallel for code review — security, performance, architecture, and style. They keep producing duplicate findings and sometimes overwrite each other's output files. How do I fix this?",
+      "expected_output": "Diagnosis as a multi-agent coordination problem. Recommends Fan-out/Fan-in topology with directory isolation and merge-point deduplication.",
+      "expectations": [
+        "Identifies this as a Fan-out/Fan-in coordination pattern",
+        "References references/agent-team-patterns.md for topology guidance",
+        "Recommends directory isolation (each agent writes to own directory)",
+        "Addresses Dim 2 (Mechanical) for preventing conflicting writes",
+        "Addresses Dim 6 (Entropy) for deduplication at merge point",
+        "Does NOT recommend switching to sequential execution as the primary fix"
+      ],
+      "files": []
+    },
+    {
+      "id": 21,
+      "prompt": "Help me optimize my database queries.",
+      "expected_output": "This prompt should NOT trigger the harness-engineering-guide skill. It is a general coding task unrelated to agent harness engineering.",
+      "expectations": [
+        "Does NOT trigger harness-engineering-guide skill",
+        "This is a near-miss: 'optimize' sounds like it could relate to harness optimization, but it is about database query optimization",
+        "If triggered, the skill should recognize this is outside its scope and defer"
+      ],
+      "files": []
+    },
+    {
+      "id": 22,
+      "prompt": "My AI agent writes code that passes all tests but the API responses don't match what the frontend expects. Types look fine on both sides individually but break at integration.",
+      "expected_output": "Diagnosis as a boundary-crossing verification gap. Recommends reading both sides simultaneously and comparing data shapes at boundaries.",
+      "expectations": [
+        "Identifies this as a Dim 4 (Testing) boundary verification issue",
+        "References boundary-crossing verification from references/testing-patterns.md",
+        "Recommends reading API response shape and frontend expectation simultaneously",
+        "Suggests contract tests or shared type definitions as mechanical fix",
+        "Maps to incremental verification pattern (verify after each module, not at the end)"
+      ],
+      "files": []
     }
   ]
 }
