@@ -1,6 +1,61 @@
-# Automation Templates — Index
+# Automation Templates — Gap-Driven Recommendations
 
-Ready-to-use templates for common harness engineering artifacts. Templates are organized by category under `templates/` with subdirectories for language-agnostic, CI platform-specific, ecosystem-specific linting, and environment recovery.
+Ready-to-use templates for common harness engineering artifacts. Instead of browsing all templates, use the decision tree below to find the **single correct template** for each audit gap.
+
+---
+
+## Decision Tree: Audit Gap → Template
+
+For each gap found in the audit report, follow the matching path to get one specific template file.
+
+### Gap 1.1 — No Agent Instruction File
+
+→ `templates/universal/agents-md-scaffold.md`
+
+### Gap 2.1 — No CI Pipeline
+
+Detect CI platform from repo:
+- `.github/workflows/` exists or GitHub repo → `templates/ci/github-actions/standard-pipeline.yml`
+- `.gitlab-ci.yml` exists or GitLab repo → `templates/ci/gitlab-ci.yml`
+- `azure-pipelines.yml` exists or Azure DevOps → `templates/ci/azure-pipelines.yml`
+- Unknown → default to `templates/ci/github-actions/standard-pipeline.yml`
+
+Fill CI command placeholders using `data/ecosystems.json` for the detected ecosystem.
+
+### Gap 2.5 — No Dependency Direction Enforcement
+
+Detect ecosystem from repo (use `data/ecosystems.json` detect fields):
+- `package.json` → `templates/linting/eslint-boundary-rule.js`
+- `pyproject.toml` / `requirements.txt` → `templates/linting/import-linter.cfg`
+- `go.mod` → `templates/linting/depguard.yml`
+- `Cargo.toml` → `templates/linting/clippy-workspace.toml`
+- Other ecosystems → implement custom lint rule (no template available; document the rule in AGENTS.md)
+
+### Gap 4.4 — No Formalized Done Criteria
+
+→ `templates/universal/feature-checklist.json`
+
+### Gap 5.2 — No Documentation Freshness Mechanism
+
+→ `templates/ci/github-actions/doc-freshness.yml` (GitHub Actions only; adapt for other CI platforms)
+
+### Gap 6.2 — No Recurring Cleanup
+
+→ `templates/universal/doc-gardening-prompt.md`
+
+### Gap 6.3 — No Tech Debt Tracking
+
+→ `templates/universal/tech-debt-tracker.json`
+
+### Gap 7.1 — No Task Decomposition Strategy
+
+→ `templates/universal/execution-plan.md`
+
+### Gap 7.4 — No Environment Recovery
+
+Detect OS from context:
+- Unix/macOS/Linux or WSL → `templates/init/init.sh`
+- Windows (PowerShell) → `templates/init/init.ps1`
 
 ---
 
@@ -8,7 +63,7 @@ Ready-to-use templates for common harness engineering artifacts. Templates are o
 
 ```
 templates/
-├── universal/                    # Language-agnostic templates
+├── universal/                    # Language-agnostic (5 files)
 │   ├── agents-md-scaffold.md     # AGENTS.md scaffold
 │   ├── execution-plan.md         # Multi-phase task plan
 │   ├── feature-checklist.json    # Feature verification checklist
@@ -21,54 +76,21 @@ templates/
 │   ├── gitlab-ci.yml             # GitLab CI equivalent
 │   └── azure-pipelines.yml       # Azure DevOps equivalent
 ├── linting/                      # Architectural boundary rules
-│   ├── eslint-boundary-rule.js   # JS/TS layer enforcement
-│   ├── import-linter.cfg         # Python import boundaries
-│   ├── depguard.yml              # Go dependency guard
-│   └── clippy-workspace.toml     # Rust workspace clippy config
+│   ├── eslint-boundary-rule.js   # JS/TS (Node ecosystem)
+│   ├── import-linter.cfg         # Python ecosystem
+│   ├── depguard.yml              # Go ecosystem
+│   └── clippy-workspace.toml     # Rust ecosystem
 └── init/                         # Environment recovery scripts
     ├── init.sh                   # Bash (auto-detects ecosystem)
     └── init.ps1                  # PowerShell equivalent
 ```
 
-## Available Templates
-
-| # | Template | File | Use When |
-|---|----------|------|----------|
-| 1 | **AGENTS.md Scaffold** | `templates/universal/agents-md-scaffold.md` | Creating agent instruction files for any project |
-| 2 | **CI Pipeline (GitHub)** | `templates/ci/github-actions/standard-pipeline.yml` | Setting up CI with lint/typecheck/test/build stages |
-| 3 | **CI Pipeline (GitLab)** | `templates/ci/gitlab-ci.yml` | GitLab CI equivalent of the standard pipeline |
-| 4 | **CI Pipeline (Azure)** | `templates/ci/azure-pipelines.yml` | Azure DevOps equivalent of the standard pipeline |
-| 5 | **Doc Freshness CI** | `templates/ci/github-actions/doc-freshness.yml` | Detecting stale documentation in GitHub Actions |
-| 6 | **ESLint Boundary Rule** | `templates/linting/eslint-boundary-rule.js` | Enforcing JS/TS dependency direction |
-| 7 | **Python Import Linter** | `templates/linting/import-linter.cfg` | Enforcing Python import boundaries |
-| 8 | **Go Depguard** | `templates/linting/depguard.yml` | Enforcing Go package dependency direction |
-| 9 | **Rust Clippy Config** | `templates/linting/clippy-workspace.toml` | Workspace-level Rust clippy enforcement |
-| 10 | **Tech Debt Tracker** | `templates/universal/tech-debt-tracker.json` | Tracking per-module quality scores and trends |
-| 11 | **Doc-Gardening Prompt** | `templates/universal/doc-gardening-prompt.md` | Scheduling automated documentation maintenance |
-| 12 | **Feature Checklist** | `templates/universal/feature-checklist.json` | Tracking feature completion with machine-readable status |
-| 13 | **Environment Recovery (Bash)** | `templates/init/init.sh` | Bootstrapping dev environment with health checks |
-| 14 | **Environment Recovery (PS)** | `templates/init/init.ps1` | PowerShell equivalent of init.sh |
-| 15 | **Execution Plan** | `templates/universal/execution-plan.md` | Structuring multi-phase agent tasks with handoff notes |
-
 ## How to Use
 
-1. Identify the gap from the audit report
-2. Read the appropriate template file
-3. Select the right ecosystem variant (use `data/ecosystems.json` for CI command placeholders)
-4. Copy into the target project
-5. Replace placeholders (marked with `[brackets]` or `[ECOSYSTEM: ...]` comments) with project-specific values
-6. Commit and integrate into the workflow
+1. Identify the gap from the audit report (item ID like 2.1, 2.5, 7.4)
+2. Follow the decision tree above — it resolves to **one** template file
+3. Read that template file
+4. Replace placeholders (marked with `[brackets]` or `[ECOSYSTEM: ...]` comments) with project-specific values from `data/ecosystems.json`
+5. Copy into the target project and commit
 
-## Mapping to Audit Gaps
-
-| Gap Found | Recommended Templates |
-|-----------|----------------------|
-| No agent instruction file (1.1) | Template 1: AGENTS.md Scaffold |
-| No CI pipeline (2.1) | Templates 2-4: CI Pipeline (pick your platform) |
-| No doc freshness mechanism (5.2) | Template 5: Doc Freshness CI |
-| No dependency enforcement (2.5) | Templates 6-9: Boundary Rule (pick your ecosystem) |
-| No tech debt tracking (6.3) | Template 10: Tech Debt Tracker |
-| No recurring cleanup (6.2) | Template 11: Doc-Gardening Prompt |
-| No formalized done criteria (4.4) | Template 12: Feature Checklist |
-| No environment recovery (7.4) | Templates 13-14: init.sh / init.ps1 |
-| No task decomposition (7.1) | Template 15: Execution Plan |
+Do **not** install all templates. Only apply what the audit identified as a gap.

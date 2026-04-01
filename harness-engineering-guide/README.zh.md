@@ -1,6 +1,6 @@
 # Harness Engineering Guide（Harness 工程指南）
 
-一个全面的技能，用于审计、设计和实施 AI 编码代理的环境约束和反馈循环。支持**快速审计**（15 项生命体征检查）和**完整审计**（45 项），覆盖 **17 种项目类型**、**11 种语言生态** 和 **3 个生命周期阶段**。
+一个全面的技能，用于审计、设计和实施 AI 编码代理的环境约束和反馈循环。支持**快速审计**（15 项生命体征检查）和**完整审计**（45 项），覆盖 **10 种项目配置**、**11 种语言生态**、**3 个生命周期阶段** 和 **21 个反模式**。
 
 ## 什么是 Harness Engineering？
 
@@ -44,23 +44,21 @@
 
 ## 功能特性
 
-### 项目类型配置（17 种类型）
-根据项目类型调整审计维度权重并跳过不相关的检查项：
+### 项目类型配置（10 种配置）
+根据项目类型调整审计维度权重并跳过不相关的检查项。旧的细粒度名称（如 `frontend-spa`）通过 `profile_aliases` 映射到主配置。
 
-| 配置文件 | 重点 |
-|---------|------|
-| `frontend-spa` / `frontend-ssr` | UI 可见性、E2E 测试、组件架构 |
-| `backend-api` / `backend-microservice` | 可观测性、安全、分布式追踪 |
-| `fullstack` | 默认权重、依赖方向 |
-| `library` / `cli-tool` | 测试、机械约束、减少可观测性要求 |
-| `desktop-app` / `mobile-app` | UI 自动化、多进程架构 |
-| `system-infra` | 安全、回滚、类型安全 |
-| `game` | 架构文档、缓存友好设计、资产管线 |
-| `data-ml` | 长时间任务、持久化执行、进度跟踪 |
-| `devops-iac` | 安全护栏、人工确认、回滚 |
-| `script-automation` | Lint、测试、安全基础 |
-| `browser-extension` / `smart-contract` | 安全性、E2E 测试 |
-| `monorepo` | 跨包边界、熵管理 |
+| 配置文件 | 覆盖范围 | 重点 |
+|---------|---------|------|
+| `frontend` | SPA、SSR/SSG、浏览器扩展 | UI 可见性、E2E 测试、组件架构 |
+| `backend` | API 服务、微服务 | 可观测性、安全、分布式追踪 |
+| `fullstack` | 全栈单体应用 | 默认权重、依赖方向 |
+| `library` | 库、CLI 工具、包 | 测试、机械约束、减少可观测性要求 |
+| `client-app` | 桌面、移动应用 | UI 自动化、多进程架构 |
+| `system-infra` | 系统级、嵌入式、游戏、智能合约 | 安全、回滚、类型安全 |
+| `data-ml` | ML 管线、ETL、数据处理 | 长时间任务、持久化执行、进度跟踪 |
+| `devops-iac` | IaC、脚本、自动化 | 安全护栏、人工确认、回滚 |
+| `monorepo` | 多包仓库 | 跨包边界、熵管理 |
+| `ai-agent-runtime` | Agent 框架、LLM 编排器 | 会话持久化、工具协议信任、Agent 可观测性 |
 
 ### 生命周期阶段（3 个阶段）
 按项目成熟度减少审计范围：
@@ -109,7 +107,7 @@ harness-engineering-guide/
 ├── README.md                          ← 英文版
 ├── README.zh.md                       ← 你在这里（中文版）
 ├── data/
-│   ├── profiles.json                  ← 17 种项目类型配置及权重覆盖
+│   ├── profiles.json                  ← 10 种项目类型配置（含 variants）及权重覆盖
 │   ├── stages.json                    ← 3 个生命周期阶段及活跃审查项子集
 │   ├── ecosystems.json                ← 11 种生态检测规则和工具映射
 │   └── checklist-items.json           ← 45 项机器可读格式
@@ -119,7 +117,7 @@ harness-engineering-guide/
 │   └── utils/
 │       └── content-analyzers.sh       ← 内容级分析函数（维度 3/5/6）
 ├── templates/
-│   ├── universal/                     ← 语言无关模板（6 个文件）
+│   ├── universal/                     ← 语言无关模板（5 个文件）
 │   ├── ci/                            ← CI 模板：GitHub Actions、GitLab、Azure
 │   ├── linting/                       ← 边界规则：ESLint、import-linter、depguard、clippy
 │   └── init/                          ← 环境恢复：Bash、PowerShell
@@ -127,13 +125,13 @@ harness-engineering-guide/
 ├── examples/                          ← 示例审计报告
 ├── references/                        ← 深度参考文档（19 个文件）
 │   ├── adversarial-verification.md    ← 对抗性验证（模式 + prompt 模板 + 平台实现指南）
-│   ├── anti-patterns.md               ← 15 个反模式及快速诊断表
+│   ├── anti-patterns.md               ← 21 个反模式及快速诊断表
 │   ├── checklist.md                   ← 8 维度 45 项审计清单
 │   ├── scoring-rubric.md              ← 评分方法论、维度消歧、成熟度标注
 │   ├── report-format.md               ← 审计报告模板和命名规范
 │   ├── control-theory.md              ← 控制论基础
 │   ├── improvement-patterns.md        ← 快速改进、战略投资、关键指标、常见痛点
-│   ├── automation-templates.md        ← 模板索引
+│   ├── automation-templates.md        ← 缺口驱动的模板决策树
 │   ├── monorepo-patterns.md           ← Monorepo 审计和设计模式
 │   └── ...                            ← 更多参考文档（agents-md-guide、ci-cd-patterns 等）
 └── evals/

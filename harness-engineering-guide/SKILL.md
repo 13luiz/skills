@@ -128,7 +128,7 @@ Run the Pre-Assessment Gate first to determine audit depth: **Full Audit** (4-5 
 
 #### Full Audit (45 items)
 
-**Step 0: Profile + Stage** — Read `data/profiles.json` for project type (17 profiles) and `data/stages.json` for lifecycle stage (Bootstrap <2k LOC / Growth 2-50k / Mature 50k+). Detect report language.
+**Step 0: Profile + Stage** — Read `data/profiles.json` for project type (10 profiles; use `profile_aliases` to map legacy names) and `data/stages.json` for lifecycle stage (Bootstrap <2k LOC / Growth 2-50k / Mature 50k+). Detect report language.
 
 **Step 1: Scan** — Run `bash scripts/harness-audit.sh <repo> --profile <type> --stage <stage>` (or `pwsh scripts/harness-audit.ps1`). Add `--monorepo` for monorepo, `--blueprint` for gap analysis. For manual scan, use Glob/Grep patterns from `references/checklist.md`.
 
@@ -136,7 +136,7 @@ Run the Pre-Assessment Gate first to determine audit depth: **Full Audit** (4-5 
 
 **Step 3: Report** — Apply dimension weights, calculate 0-100 score, map to letter grade. Use the report template from `references/report-format.md`. Save to `reports/<YYYY-MM-DD>_<repo>_audit[.<lang>].md`.
 
-**Step 4: Templates** — Offer ready-to-use artifacts from `templates/` based on gaps found. Read `references/automation-templates.md` for the full template index.
+**Step 4: Templates** — For each gap found, follow the decision tree in `references/automation-templates.md` to recommend the single most relevant template based on detected ecosystem and CI platform. Do not list all templates.
 
 **Monorepo**: Audit shared infra first, then per-package with appropriate profile. See `references/monorepo-patterns.md`.
 
@@ -197,7 +197,7 @@ Understand context: team size, tech stack (`data/ecosystems.json`), project type
 
 Read as needed — do not load all at once.
 
-**Audit & Scoring**: `references/checklist.md` (45-item criteria) · `references/scoring-rubric.md` (scoring + disambiguation + maturity annotations) · `references/report-format.md` (report template) · `references/anti-patterns.md` (15 anti-patterns)
+**Audit & Scoring**: `references/checklist.md` (45-item criteria) · `references/scoring-rubric.md` (scoring + disambiguation + maturity annotations) · `references/report-format.md` (report template) · `references/anti-patterns.md` (21 anti-patterns)
 
 **Implementation**: `references/agents-md-guide.md` · `references/ci-cd-patterns.md` · `references/linting-strategy.md` · `references/testing-patterns.md` · `references/review-practices.md` · `references/adversarial-verification.md` (verification + prompt template + platform guide)
 
@@ -205,7 +205,7 @@ Read as needed — do not load all at once.
 
 **Resilience**: `references/long-running-agents.md` · `references/durable-execution.md` · `references/protocol-hygiene.md`
 
-**Data**: `data/profiles.json` (17 profiles) · `data/stages.json` (3 stages) · `data/ecosystems.json` (11 ecosystems) · `data/checklist-items.json` (45 items)
+**Data**: `data/profiles.json` (10 profiles with variants) · `data/stages.json` (3 stages) · `data/ecosystems.json` (11 ecosystems) · `data/checklist-items.json` (45 items)
 
 **Scripts**: `scripts/harness-audit.sh` / `scripts/harness-audit.ps1` — Run with `--help` for all options. Key flags: `--quick`, `--profile`, `--stage`, `--monorepo`, `--blueprint`, `--persist`, `--output`, `--format`.
 
