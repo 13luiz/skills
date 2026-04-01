@@ -39,7 +39,7 @@ Before running a full audit, answer these 5 questions. If 3+ are "No", suggest a
 |----------|-----------|--------|-------------|--------------|
 | 1 | Mechanical Constraints (Dim 2) | 20% | CI blocks PR? Linter enforced? Types strict? | "Trust the agent" |
 | 2 | Testing & Verification (Dim 4) | 15% | Tests in CI? Coverage threshold? E2E exists? | "AI tests verifying AI code" |
-| 3 | Architecture Docs (Dim 1) | 15% | AGENTS.md exists and <100 lines? docs/ structured? | "Encyclopedia AGENTS.md" |
+| 3 | Architecture Docs (Dim 1) | 15% | AGENTS.md exists and concise? docs/ structured? | "Encyclopedia AGENTS.md" |
 | 4 | Feedback & Observability (Dim 3) | 15% | Structured logging? Metrics? Agent-queryable? | "Ad-hoc print debugging" |
 | 5 | Context Engineering (Dim 5) | 10% | Decisions in-repo? Docs fresh? Cache-friendly? | "Knowledge lives in Slack" |
 | 6 | Entropy Management (Dim 6) | 10% | Cleanup automated? Tech debt tracked? | "Manual Friday cleanup" |
@@ -87,7 +87,7 @@ Before running a full audit, answer these 5 questions. If 3+ are "No", suggest a
 - `5.2` **doc-freshness** — Automated freshness checks
 - `5.3` **machine-readable-refs** — llms.txt, curated reference docs
 - `5.4` **tech-composability** — Stable, well-known technologies
-- `5.5` **cache-friendly-design** — AGENTS.md <100 lines; structured state files
+- `5.5` **cache-friendly-design** — AGENTS.md <150 lines (monorepo: up to 300); structured state files
 
 ### Dim 6: Entropy Management (10%) — FEEDBACK LOOP
 - `6.1` **golden-principles** — Core engineering principles documented

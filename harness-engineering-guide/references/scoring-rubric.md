@@ -68,7 +68,7 @@ The key question: **would this practice catch an agent going off the rails?**
 
 - CI runs linter but almost no rules enabled -> PARTIAL (infrastructure there, teeth missing)
 - CI runs linter with comprehensive rules and blocks PRs -> PASS
-- AGENTS.md exists but is 200+ lines -> PARTIAL (violates progressive disclosure)
+- AGENTS.md exists but exceeds 2× the dynamic PASS threshold (e.g. >300 for default, >500+ for large monorepo) -> PARTIAL (violates progressive disclosure)
 
 ---
 

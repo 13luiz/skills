@@ -96,7 +96,7 @@
         "score_range": [75, 88],
         "grade": "B+/A-",
         "key_findings": [
-          "AGENTS.md exists — check conciseness (<100 lines)",
+          "AGENTS.md exists — check conciseness against dynamic threshold",
           "CI pipeline blocks on failure with multiple jobs",
           "TypeScript strict mode active",
           "Monorepo workspace configuration (pnpm/turbo)",

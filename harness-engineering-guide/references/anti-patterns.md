@@ -14,7 +14,7 @@ Common anti-patterns found in harness engineering. Flag these during audit (Mode
 
 ## Documentation Anti-Patterns
 
-6. **Encyclopedia AGENTS.md** — Files over 100 lines. Should be a concise TOC with pointers to deeper docs.
+6. **Encyclopedia AGENTS.md** — Files exceeding the dynamic threshold (default 150 lines; monorepo: up to 300). Should be a concise TOC with pointers to deeper docs.
 7. **LLM-generated agent config** — Human-crafted instruction files outperform AI-generated ones because they encode domain-specific constraints.
 8. **Full test suite in agent context** — Floods context with passing output. Configure CI to surface errors only (succeed silently, fail verbosely).
 
@@ -39,7 +39,7 @@ When reviewing a codebase, check for these red flags:
 
 | Red Flag | Anti-Pattern # | Quick Fix |
 |----------|---------------|-----------|
-| AGENTS.md > 100 lines | #6 | Trim to TOC, move content to `docs/` |
+| AGENTS.md exceeds threshold (>150 / >300 monorepo) | #6 | Trim to TOC, move content to `docs/` |
 | No CI or CI doesn't block | Dim 2 gap | Add blocking CI pipeline (checklist 2.1) |
 | Tests written by same agent that wrote code | #1 | Independent verifier agent |
 | 15+ MCP servers loaded | #9 | Audit and remove rarely-used servers |

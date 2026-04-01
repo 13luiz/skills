@@ -9,7 +9,7 @@
 
 ## Executive Summary
 
-OpenClaw v2.0.0-beta5 demonstrates a strong mechanical core with CI, linting (Biome + Oxlint), and TypeScript strict mode enforced on every PR. Architecture documentation is above average with a concise AGENTS.md (<100 lines) and structured docs/. Key gaps include missing E2E testing in CI, no dependency-direction enforcement, absent entropy management automation, and weak safety rails (no CODEOWNERS, no rollback playbook).
+OpenClaw v2.0.0-beta5 demonstrates a strong mechanical core with CI, linting (Biome + Oxlint), and TypeScript strict mode enforced on every PR. Architecture documentation is above average with a concise AGENTS.md (~67 lines, well under monorepo threshold) and structured docs/. Key gaps include missing E2E testing in CI, no dependency-direction enforcement, absent entropy management automation, and weak safety rails (no CODEOWNERS, no rollback playbook).
 
 ## Audit Parameters
 
@@ -90,7 +90,7 @@ OpenClaw v2.0.0-beta5 demonstrates a strong mechanical core with CI, linting (Bi
 | 5.2 | Doc Freshness | **PARTIAL** (0.5) | No doc freshness workflow under `.github/`. |
 | 5.3 | Machine-Readable Refs | **FAIL** (0.0) | No `llms.txt` or equivalent curated machine index. |
 | 5.4 | Tech Composability | **PASS** (1.0) | TypeScript/Node, Swift, Kotlin/Gradle — mainstream stack. |
-| 5.5 | Cache-Friendly Design | **PASS** (1.0) | `AGENTS.md` under 100 lines; deeper context in `docs/` + templates. |
+| 5.5 | Cache-Friendly Design | **PASS** (1.0) | `AGENTS.md` ~67 lines, well under dynamic threshold (monorepo ~200); deeper context in `docs/` + templates. |
 
 ### 6. Entropy Management & Garbage Collection (50.0%)
 

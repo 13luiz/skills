@@ -261,7 +261,7 @@ $quickAssessment = switch ($true) {
 }
 
 # --- Build Output ---
-$output = [ordered]@{
+$scanData = [ordered]@{
     repo_root            = $RepoAbs
     timestamp            = $Timestamp
     ecosystem            = $ecosystem
@@ -628,7 +628,7 @@ if ($Blueprint) {
 } elseif ($Format -eq "markdown") {
     $finalOutput = Format-Markdown
 } else {
-    $finalOutput = $output | ConvertTo-Json -Depth 10
+    $finalOutput = $scanData | ConvertTo-Json -Depth 10
 }
 
 if ($Persist) {

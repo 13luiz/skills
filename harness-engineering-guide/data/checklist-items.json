@@ -15,8 +15,8 @@
       "auto_detect": {
         "type": "glob",
         "patterns": ["AGENTS.md", "CLAUDE.md", "CODEX.md", ".cursorrules", ".cursor/rules/*.md"],
-        "pass": "File exists and < 100 lines",
-        "partial": "File exists but 100-200 lines or < 10 lines",
+        "pass": "File exists and under dynamic threshold (default <150 lines; monorepo: base 150 + 5/pkg, cap 300)",
+        "partial": "File exists but exceeds PASS threshold up to 2x, or < 10 lines",
         "fail": "No file found"
       },
       "requires_content_analysis": true
@@ -467,8 +467,8 @@
       "auto_detect": {
         "type": "content",
         "check": "AGENTS.md line count, structured state files, artifact directories",
-        "pass": "AGENTS.md < 100 lines; structured state files; artifact dirs",
-        "partial": "Some externalization but AGENTS.md bloated (100-200 lines)",
+        "pass": "AGENTS.md under dynamic threshold (default <150; monorepo: 150+5/pkg, cap 300); structured state files; artifact dirs",
+        "partial": "Some externalization but AGENTS.md exceeds PASS threshold up to 2x",
         "fail": "Monolithic instruction files; no structured state"
       },
       "requires_content_analysis": true

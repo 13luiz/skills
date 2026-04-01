@@ -131,7 +131,7 @@ Agents that can see their own logs diagnose their own problems.
 **Fixes**: 5.5 | **Effort**: 1-2 days | **Impact**: Medium-high | **Stage**: [G][M]
 
 Restructure for cache stability:
-- Trim AGENTS.md to <100 lines (move verbose content to docs/)
+- Trim AGENTS.md to under the dynamic threshold (default <150 lines; monorepo up to 300; move verbose content to docs/)
 - Create artifact directories (`reports/`, `artifacts/`) for large agent outputs
 - Convert prose progress tracking to structured JSON files
 - Audit MCP server count; remove rarely-used always-loaded servers
@@ -213,7 +213,7 @@ Quick diagnostic table mapping symptoms to dimension gaps and fixes:
 | Agent generates duplicate utilities | Dim 6: no slop detection | Add `6.4` ai-slop-detection lint rules for dead code and duplicates |
 | Long tasks crash mid-way, no recovery | Dim 7: no durable execution | Implement `7.6` checkpoint files + recovery script |
 | PRs frequently reverted after merge | Dim 4: insufficient test coverage | Raise `4.3` coverage thresholds; add `4.5` E2E verification |
-| AGENTS.md too long, agent ignores it | Dim 1: no progressive disclosure | Trim to <100 lines (`1.1`); use `1.4` layered knowledge with pointers |
+| AGENTS.md too long, agent ignores it | Dim 1: no progressive disclosure | Trim to under threshold (default <150; monorepo <300) (`1.1`); use `1.4` layered knowledge with pointers |
 | Agent writes code that type-checks but is wrong | Dim 4: no adversarial verification | Add `4.7` independent verifier that tries to break the implementation |
 | Agent breaks other modules when fixing one | Dim 2: no dependency direction enforcement | Add `2.5` import boundary rules via custom lint |
 | Quality degrades over time | Dim 6: no recurring cleanup | Set up `6.2` automated cleanup agent + `6.3` tech debt tracking |

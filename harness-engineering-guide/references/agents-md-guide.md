@@ -4,7 +4,7 @@ Based on GitHub's analysis of 2,500+ repositories and OpenAI's internal practice
 
 ## Core Principle
 
-AGENTS.md is a **table of contents**, not an encyclopedia. Keep the root file under 60-100 lines. Detailed knowledge lives in `docs/` and is referenced by path.
+AGENTS.md is a **table of contents**, not an encyclopedia. Keep the root file concise — under 150 lines for single-package projects, scaling up to 300 lines for large monorepos (base 150 + ~5 lines per package). Detailed knowledge lives in `docs/` and is referenced by path.
 
 AGENTS.md is now an open standard under the Agentic AI Foundation, supported by OpenAI Codex, Amp, Jules (Google), Cursor, and Factory. It is tool-agnostic and works across all major agent platforms.
 
@@ -83,7 +83,7 @@ Include exact flags. Agents should be able to copy-paste and run.
 
 ```
 repo/
-├── AGENTS.md          # ~60-100 lines, TOC + commands + boundaries
+├── AGENTS.md          # ~100-150 lines (up to 300 for monorepo), TOC + commands + boundaries
 ├── docs/
 │   ├── architecture.md    # Dependency rules, module boundaries
 │   ├── api-patterns.md    # How to write API endpoints
@@ -117,7 +117,7 @@ These waste tokens with no measurable benefit:
 
 ## Validation Checklist
 
-- [ ] Under 100 lines at root level
+- [ ] Under 150 lines at root level (monorepo: up to 300)
 - [ ] Commands section is first, with exact flags
 - [ ] Three-tier boundaries defined (always/ask first/never)
 - [ ] References docs/ for detailed knowledge
