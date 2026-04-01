@@ -72,6 +72,61 @@ The key question: **would this practice catch an agent going off the rails?**
 
 ---
 
+## Dimension Boundary Disambiguation
+
+When scoring, agents may encounter items that seem to overlap between dimensions. Use these guidelines to assign items to the correct dimension.
+
+### Dim 2 (Mechanical Constraints) vs Dim 6 (Entropy Management)
+
+**The question**: "Is this preventing a specific violation (Dim 2) or cleaning up accumulated drift (Dim 6)?"
+
+- **2.2 Linter Enforcement** asks: does a linter exist and block in CI? This is infrastructure.
+- **6.4 AI Slop Detection** asks: are there rules specifically targeting AI-generated patterns (duplicate utilities, dead code, over-abstraction)? This is AI-aware cleanup.
+
+A project can PASS 2.2 (linter exists and blocks) but FAIL 6.4 (no AI-specific rules within the linter). The linter is the tool (Dim 2); the AI-specific rules are the policy (Dim 6).
+
+### Dim 3 (Feedback & Observability) vs Dim 5 (Context Engineering)
+
+**The question**: "Is this about runtime signals (Dim 3) or information architecture (Dim 5)?"
+
+- **Dim 3** measures runtime observability: structured logs, metrics, tracing, screenshots, diagnostic errors. These are signals generated during execution.
+- **Dim 5** measures knowledge architecture: documentation structure, freshness mechanisms, machine-readable references, cache-friendly design. These are static information assets.
+
+**Doc freshness (5.2)** belongs in Dim 5 because it is about knowledge management — keeping documentation current. It is not a runtime signal. If a CI check enforces doc freshness, the CI infrastructure contributes to Dim 2, but the freshness policy itself is Dim 5.
+
+### Dim 2 (Mechanical Constraints) vs Dim 8 (Safety Rails)
+
+**The question**: "Is this enforcing code quality (Dim 2) or limiting blast radius (Dim 8)?"
+
+- **Dim 2** gates block non-conforming code from landing (linters, type checkers, tests).
+- **Dim 8** gates prevent catastrophic actions (human confirmation for deploys, rollback capability, credential scoping).
+
+If a CI check blocks a bad import, that is Dim 2. If a CI check requires manual approval before a database migration, that is Dim 8.
+
+---
+
+## Maturity Annotations (Optional)
+
+The PASS/PARTIAL/FAIL scoring (1.0/0.5/0.0) captures whether a practice exists and functions. It deliberately does not capture sophistication level — a basic CI pipeline and a 12-job cross-platform CI pipeline both score PASS (1.0).
+
+For reports where qualitative depth matters, annotate PASS items with a maturity level:
+
+| Annotation | Meaning | Example (item 2.1 CI Pipeline) |
+|------------|---------|-------------------------------|
+| **[basic]** | Meets minimum PASS criteria | CI runs lint + test on PRs, blocks on failure |
+| **[advanced]** | Exceeds basic requirements with meaningful additions | CI has 5+ jobs, caching, parallel execution, coverage enforcement |
+| **[exemplary]** | Industry-leading implementation | CI has cross-platform matrix, change detection, sharding, <5 min total, security scanning |
+
+### Rules
+
+- Annotations are **optional** — omit them for straightforward audits
+- Annotations do **not** change the numeric score (PASS is always 1.0)
+- Annotations appear in the "Evidence" column of the detailed findings table
+- Use annotations primarily on Dim 2 and Dim 4 items where sophistication varies most
+- Do not annotate PARTIAL or FAIL items — they already communicate "needs improvement"
+
+---
+
 ## Project-Type Adaptations
 
 ### Libraries / CLI tools
@@ -109,14 +164,14 @@ The key question: **would this practice catch an agent going off the rails?**
 | 1 | Arch Docs & Knowledge | 5 | 3/5 | 60% | 9.0 | Goal State |
 | 2 | Mechanical Constraints | 7 | 5/7 | 71% | 14.3 | Actuator |
 | 3 | Feedback & Observability | 5 | 2/5 | 40% | 6.0 | Sensor |
-| 4 | Testing & Verification | 6 | 4/6 | 67% | 10.0 | Sensor + Actuator |
+| 4 | Testing & Verification | 7 | 4.5/7 | 64% | 9.6 | Sensor + Actuator |
 | 5 | Context Engineering | 5 | 2/5 | 40% | 4.0 | Goal State |
 | 6 | Entropy Management | 4 | 1/4 | 25% | 2.5 | Feedback Loop |
 | 7 | Long-Running Tasks | 6 | 2/6 | 33% | 3.3 | Feedback Loop |
 | 8 | Safety Rails | 6 | 3/6 | 50% | 2.5 | Actuator (protective) |
-| **Total** | | **43** | **22/43** | | **51.6** |
+| **Total** | | **45** | **22.5/45** | | **51.2** |
 
-**Grade: D (51.6/100)**
+**Grade: D (51.2/100)**
 ```
 
 Use PARTIAL scores where applicable — count as 0.5 in the "Passed" column.
@@ -146,7 +201,7 @@ When a lifecycle stage is selected (from `data/stages.json`), only the active it
 |-------|-------------|-------|
 | **Bootstrap** (<2k LOC) | 9 items | Foundations: agent file, CI, lint, types, tests, env recovery, security baseline |
 | **Growth** (2k-50k LOC) | 29 items | All foundations + architecture, testing depth, early feedback loops |
-| **Mature** (50k+ LOC) | 44 items | Full audit with all dimensions |
+| **Mature** (50k+ LOC) | 45 items | Full audit with all dimensions |
 
 Inactive items are excluded from the dimension score calculation. Only active items contribute to the score:
 

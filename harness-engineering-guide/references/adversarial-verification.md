@@ -364,3 +364,314 @@ Reference non-existent resources:
 - Delete a non-existent ID
 - Update a deleted record
 - Reference a foreign key that doesn't exist
+
+---
+
+## Verification Agent System Prompt Template
+
+A production-ready template distilled from Claude Code's built-in verification agent. Copy, adapt, and embed in your verification system.
+
+### Complete Template
+
+```text
+You are a verification specialist. Your job is not to confirm the implementation works — it is to try to break it.
+
+=== YOUR FAILURE MODES (recognize and resist) ===
+
+You will feel the urge to skip checks. These are the exact excuses you reach for — recognize them and do the opposite:
+
+1. "The code looks correct based on my reading" — Reading is not verification. Run the code.
+2. "The implementer's tests already pass" — The implementer is an LLM. Their tests may use circular assertions or excessive mocking. Verify independently.
+3. "This is probably fine" — "Probably" is not "verified." Replace it with a command.
+4. "Let me check the code to verify" — Checking code means reading it. Verification means executing it. Start the server. Hit the endpoint. Observe the output.
+5. "I don't have the right tools" — Did you actually enumerate your available tools? Check before claiming inability.
+6. "This would take too long" — Not your call. Run what you can. Report what you couldn't as PARTIAL with specific blockers.
+
+You have two documented failure patterns:
+1. Verification avoidance: when faced with a check, you find reasons not to run it — you read code, narrate what you would test, write "PASS," and move on.
+2. Being seduced by the first 80%: you see a polished UI or a passing test suite and feel inclined to pass it, not noticing half the buttons do nothing or the backend crashes on bad input.
+
+=== OUTPUT FORMAT (mandatory for every check) ===
+
+### Check: [what you're verifying]
+**Command run:**
+  [exact command you executed]
+**Output observed:**
+  [actual terminal output — copy-paste, not paraphrased]
+**Result: PASS** (or FAIL — with Expected vs Actual)
+
+A check without a "Command run" block is not a PASS — it is a skip.
+
+=== VERDICT PROTOCOL ===
+
+End your report with exactly one of:
+- VERDICT: PASS — All checks passed with command evidence. At least one adversarial probe was run.
+- VERDICT: FAIL — Any check failed. Include Expected vs Actual for each failure.
+- VERDICT: PARTIAL — Environment limitations prevent full verification. List specific blockers.
+
+Rules:
+- The implementer's own checks do NOT substitute for your verdict
+- The implementer cannot self-assign PARTIAL or PASS — only you assign verdicts
+- Every PASS check must have a Command run block with actual output
+- Your report must include at least one adversarial probe (boundary value, concurrent request, missing resource, or similar)
+- If all your checks are "returns 200" or "test suite passes," you have confirmed the happy path, not verified correctness
+
+=== BEFORE REPORTING FAIL ===
+
+Check you haven't missed why it's actually fine:
+- Already handled: is there defensive code elsewhere?
+- Intentional: does AGENTS.md / comments explain this as deliberate?
+- Not actionable: is this a real limitation but unfixable?
+
+=== CRITICAL: DO NOT MODIFY THE PROJECT ===
+
+You are STRICTLY PROHIBITED from creating, modifying, or deleting any files in the project directory. You may write ephemeral test scripts to /tmp only. You must end with VERDICT: PASS, VERDICT: FAIL, or VERDICT: PARTIAL.
+```
+
+### Adaptation Notes
+
+When adapting this template:
+
+- Add project-specific context (tech stack, key endpoints, critical files) to the preamble
+- Adjust the adversarial probe requirements based on change type (see Type-Specialized Verification Strategies above)
+- For frontend changes, add: "Start the dev server. Open the browser. Click the buttons. Check the console."
+- For API changes, add: "curl every endpoint. Try malformed input. Check error responses."
+
+---
+
+## Platform Implementation Guide
+
+How to implement adversarial verification on the three major AI coding platforms.
+
+### Claude Code
+
+Claude Code has built-in verification agent support via `AgentTool`:
+
+**Spawning the verifier:**
+
+```
+Spawn the AgentTool with subagent_type="verification". Pass:
+- The original user request
+- All files changed (by anyone)
+- The approach taken
+- The plan file path if applicable
+
+Flag your concerns but do NOT share test results or claim things work.
+```
+
+**Permission isolation** (enforced at tool-routing level):
+
+- Write tools (FileEdit, FileWrite, NotebookEdit) are removed from the verifier's available tool set
+- Agent spawn tool is removed (prevents nested agents bypassing restrictions)
+- BashTool is retained (needed for running verification commands)
+- File read and search tools retained
+- Browser/web tools retained if available
+- Verifier can write to /tmp for ephemeral test scripts
+
+**Anti-rationalization reinforcement:**
+
+Use `criticalSystemReminder_EXPERIMENTAL` to reinforce constraints at message boundaries:
+
+```
+CRITICAL: This is a VERIFICATION-ONLY task. You CANNOT edit, write, or create 
+files IN THE PROJECT DIRECTORY (tmp is allowed for ephemeral test scripts). 
+You MUST end with VERDICT: PASS, VERDICT: FAIL, or VERDICT: PARTIAL.
+```
+
+**Trigger contract** (embed in main agent system prompt):
+
+```
+The contract: when non-trivial implementation happens on your turn, 
+independent adversarial verification must happen before you report 
+completion. Non-trivial means: 3+ file edits, backend/API changes, 
+or infrastructure changes.
+```
+
+**Spot-check protocol:**
+
+On PASS: re-run 2-3 commands from the verifier's report. Confirm every PASS has a Command run block with output that matches your re-run. If any PASS lacks a command block or diverges, resume the verifier with the specifics.
+
+### Cursor
+
+Cursor implements verification through the Task tool with readonly mode:
+
+**Spawning the verifier:**
+
+```
+Use the Task tool with:
+- subagent_type: "generalPurpose" (or a dedicated verification type if available)
+- readonly: true  (restricts write operations)
+- prompt: [verification agent system prompt template + task details]
+```
+
+**Permission isolation:**
+
+- `readonly: true` restricts file modifications
+- The verifier can still execute shell commands for testing
+- Embed the "DO NOT MODIFY THE PROJECT" constraint in the prompt as defense-in-depth
+
+**Structural nudge:**
+
+After completing implementation, before reporting to the user, spawn a readonly verification task. Include in the task prompt:
+
+- List of all files changed
+- Description of what was implemented
+- The full verification agent system prompt template
+
+### Codex (OpenAI)
+
+Codex uses sandbox isolation for verification:
+
+**Spawning the verifier:**
+
+- Use the agent-spawn mechanism to create a separate verification agent
+- The sandbox environment provides natural isolation
+
+**Permission isolation:**
+
+- Codex agents run in sandboxed environments by default
+- Configure the verification agent's sandbox to have read-only access to the project
+- Allow network access for API testing
+
+**Integration pattern:**
+
+1. Implementation agent completes work and commits
+2. Verification agent is spawned with read-only project access
+3. Verification agent runs checks against the committed state
+4. Results are reported back to the orchestrator
+
+---
+
+## End-to-End Example: API Feature Verification
+
+A complete implement → verify → fix → re-verify cycle for a REST API endpoint.
+
+### Scenario
+
+Task: Add a `POST /api/users/register` endpoint with email validation and password hashing.
+
+### Step 1: Implementation Complete
+
+The implementer has:
+
+- Created `src/routes/auth.ts` with the register endpoint
+- Added `src/services/auth.ts` with password hashing
+- Added `src/validators/user.ts` with email validation
+- Written 3 unit tests (all passing)
+
+Files changed: 4 (above non-trivial threshold of 3). Verification triggered.
+
+### Step 2: Spawn Verifier
+
+The main agent spawns a verification agent with:
+
+- Read-only access to the project
+- The system prompt template (above)
+- Context: "Verify the new POST /api/users/register endpoint. Files changed: src/routes/auth.ts, src/services/auth.ts, src/validators/user.ts, src/tests/auth.test.ts"
+
+### Step 3: Verifier Runs Checks
+
+```text
+### Check: Server starts without errors
+**Command run:**
+  cd /project && npm run dev &
+  sleep 3
+  curl -s http://localhost:3000/health
+**Output observed:**
+  {"status":"ok"}
+**Result: PASS**
+
+### Check: Register with valid data returns 201
+**Command run:**
+  curl -s -w "\n%{http_code}" -X POST http://localhost:3000/api/users/register \
+    -H "Content-Type: application/json" \
+    -d '{"email":"test@example.com","password":"SecurePass123!"}'
+**Output observed:**
+  {"id":"usr_abc123","email":"test@example.com"}
+  201
+**Result: PASS**
+
+### Check: Register with short password returns 400
+**Command run:**
+  curl -s -w "\n%{http_code}" -X POST http://localhost:3000/api/users/register \
+    -H "Content-Type: application/json" \
+    -d '{"email":"test2@example.com","password":"short"}'
+**Output observed:**
+  {"error":"password must be at least 8 characters"}
+  400
+**Result: PASS**
+
+### Check: Register with invalid email returns 400
+**Command run:**
+  curl -s -w "\n%{http_code}" -X POST http://localhost:3000/api/users/register \
+    -H "Content-Type: application/json" \
+    -d '{"email":"not-an-email","password":"SecurePass123!"}'
+**Output observed:**
+  {"error":"invalid email format"}
+  400
+**Result: PASS**
+
+### Check: [ADVERSARIAL] Duplicate registration
+**Command run:**
+  curl -s -w "\n%{http_code}" -X POST http://localhost:3000/api/users/register \
+    -H "Content-Type: application/json" \
+    -d '{"email":"test@example.com","password":"SecurePass123!"}'
+**Output observed:**
+  {"error":"Internal Server Error"}
+  500
+**Expected:** 409 Conflict with descriptive error message
+**Result: FAIL** — Duplicate email causes unhandled database unique constraint error instead of a proper 409 response.
+
+### Check: [ADVERSARIAL] SQL injection in email field
+**Command run:**
+  curl -s -w "\n%{http_code}" -X POST http://localhost:3000/api/users/register \
+    -H "Content-Type: application/json" \
+    -d '{"email":"test@example.com\" OR 1=1--","password":"SecurePass123!"}'
+**Output observed:**
+  {"error":"invalid email format"}
+  400
+**Result: PASS** — Email validation catches the injection attempt.
+
+VERDICT: FAIL
+- 5 checks passed, 1 failed
+- Duplicate registration returns 500 instead of 409
+- Fix required: Add unique constraint error handling in src/routes/auth.ts
+```
+
+### Step 4: Fix and Re-verify
+
+The implementer fixes the duplicate registration handling, then resumes the verifier:
+
+"Fixed the duplicate registration issue. Added catch for unique constraint violation in src/routes/auth.ts, now returns 409. Please re-verify the failed check."
+
+The verifier re-runs the failed check:
+
+```text
+### Check: [RE-VERIFY] Duplicate registration
+**Command run:**
+  curl -s -w "\n%{http_code}" -X POST http://localhost:3000/api/users/register \
+    -H "Content-Type: application/json" \
+    -d '{"email":"retest@example.com","password":"SecurePass123!"}'
+  curl -s -w "\n%{http_code}" -X POST http://localhost:3000/api/users/register \
+    -H "Content-Type: application/json" \
+    -d '{"email":"retest@example.com","password":"SecurePass123!"}'
+**Output observed:**
+  {"id":"usr_def456","email":"retest@example.com"}
+  201
+  {"error":"email already registered"}
+  409
+**Result: PASS**
+
+VERDICT: PASS
+```
+
+### Step 5: Spot-Check
+
+The main agent re-runs the duplicate registration check from the verifier's report:
+
+```text
+Re-running: curl -s -w "\n%{http_code}" -X POST ... (duplicate email)
+Output matches verifier's report: 409 with "email already registered"
+Spot-check confirmed. ✓
+```
+

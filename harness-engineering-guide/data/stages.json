@@ -88,10 +88,10 @@
         "7.1", "7.2", "7.3", "7.4", "7.5", "7.6",
         "8.1", "8.2", "8.3", "8.4", "8.5", "8.6"
       ],
-      "active_item_count": 44,
+      "active_item_count": 45,
       "weight_overrides": {},
       "rationale": {
-        "all": "All 44 items apply. Use default weights or project-type profile overrides."
+        "all": "All 45 items apply. Use default weights or project-type profile overrides."
       }
     }
   }

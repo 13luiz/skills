@@ -65,7 +65,7 @@ The most monorepo-specific dimension — enforcing boundaries between packages:
 
 ## Monorepo-Specific Checklist Items
 
-These augment the standard 44 items:
+These augment the standard 45 items:
 
 ### Cross-Package Boundary Enforcement (extends 2.5)
 - PASS: Import rules between packages are mechanically enforced (e.g., Nx module boundaries, ESLint import restrictions, `depguard`)

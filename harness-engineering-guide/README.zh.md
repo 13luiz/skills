@@ -1,4 +1,4 @@
-# Harness Engineering Guide（治具工程指南）
+# Harness Engineering Guide（Harness 工程指南）
 
 一个全面的技能，用于审计、设计和实施 AI 编码代理的环境约束和反馈循环。支持 **17 种项目类型**、**11 种语言生态** 和 **3 个生命周期阶段**。
 
@@ -30,7 +30,7 @@
 ## 三种模式
 
 ### 模式 1：审计
-评估仓库的 harness 成熟度，覆盖 8 个维度、44 个检查项。可按**项目类型配置文件**和**生命周期阶段**进行配置。输出 A-F 分级报告和改进路线图。支持 monorepo 逐包审计。
+评估仓库的 harness 成熟度，覆盖 8 个维度、45 个检查项。可按**项目类型配置文件**和**生命周期阶段**进行配置。输出 A-F 分级报告和改进路线图。支持 monorepo 逐包审计。
 
 ### 模式 2：实施
 按需设置具体的 harness 组件：AGENTS.md、CI 流水线、lint 规则、测试策略等。提供多个 CI 平台和语言生态的模板。
@@ -65,7 +65,7 @@
 |------|--------|------|
 | **Bootstrap**（<2k LOC） | 9 项 | 仅基础项 |
 | **Growth**（2k-50k LOC） | 29 项 | 约束 + 测试 + 早期反馈循环 |
-| **Mature**（50k+ LOC） | 44 项 | 全量审计 |
+| **Mature**（50k+ LOC） | 45 项 | 全量审计 |
 
 ### 多生态支持（11 种生态）
 Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin、Dart/Flutter、PHP
@@ -90,7 +90,7 @@ Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin
 
 ```
 harness-engineering-guide/
-├── SKILL.md                           ← Agent 入口（薄指令层 + Quick Reference）
+├── SKILL.md                           ← Agent 入口（~190 行，薄指令层 + Quick Reference）
 ├── skill.json                         ← Skill 元数据（名称、版本、平台、关键词）
 ├── README.md                          ← 英文版
 ├── README.zh.md                       ← 你在这里（中文版）
@@ -98,30 +98,32 @@ harness-engineering-guide/
 │   ├── profiles.json                  ← 17 种项目类型配置及权重覆盖
 │   ├── stages.json                    ← 3 个生命周期阶段及活跃审查项子集
 │   ├── ecosystems.json                ← 11 种生态检测规则和工具映射
-│   └── checklist-items.json           ← 44 项机器可读格式
+│   └── checklist-items.json           ← 45 项机器可读格式
 ├── scripts/
 │   ├── harness-audit.sh               ← 增强版 Bash 审计（内容分析 + 配置/阶段）
 │   ├── harness-audit.ps1              ← 增强版 PowerShell 审计
 │   └── utils/
 │       └── content-analyzers.sh       ← 内容级分析函数（维度 3/5/6）
 ├── templates/
-│   ├── universal/                     ← 语言无关模板（5 个文件）
+│   ├── universal/                     ← 语言无关模板（6 个文件）
 │   ├── ci/                            ← CI 模板：GitHub Actions、GitLab、Azure
 │   ├── linting/                       ← 边界规则：ESLint、import-linter、depguard、clippy
 │   └── init/                          ← 环境恢复：Bash、PowerShell
 ├── reports/                           ← 审计报告输出目录
 ├── examples/                          ← 示例审计报告
-├── references/                        ← 深度参考文档（16 个文件）
-│   ├── adversarial-verification.md    ← 对抗性验证模式
-│   ├── checklist.md                   ← 8 维度 44 项审计清单
-│   ├── scoring-rubric.md              ← 评分方法论和配置/阶段调整
+├── references/                        ← 深度参考文档（19 个文件）
+│   ├── adversarial-verification.md    ← 对抗性验证（模式 + prompt 模板 + 平台实现指南）
+│   ├── anti-patterns.md               ← 15 个反模式及快速诊断表
+│   ├── checklist.md                   ← 8 维度 45 项审计清单
+│   ├── scoring-rubric.md              ← 评分方法论、维度消歧、成熟度标注
+│   ├── report-format.md               ← 审计报告模板和命名规范
 │   ├── control-theory.md              ← 控制论基础
-│   ├── improvement-patterns.md        ← 快速改进和战略投资（带阶段标注）
+│   ├── improvement-patterns.md        ← 快速改进、战略投资、关键指标、常见痛点
 │   ├── automation-templates.md        ← 模板索引
 │   ├── monorepo-patterns.md           ← Monorepo 审计和设计模式
-│   └── ...                            ← 更多参考文档
+│   └── ...                            ← 更多参考文档（agents-md-guide、ci-cd-patterns 等）
 └── evals/
-    └── evals.json                     ← 19 个评估场景
+    └── evals.json                     ← 8 个真实仓库评估基准（5 个仓库，OpenClaw x4）
 ```
 
 ## 审计脚本用法
@@ -162,3 +164,27 @@ pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Persist
 - **OpenAI**：5 个月内交付 100 万行代码，零人工编写 —— 关键是 harness 投资，而非模型升级
 - **LangChain**：仅改变 harness（不改模型），Terminal Bench 2.0 得分从 52.8% 跳升至 66.5%（Top 30 → Top 5）
 - **Anthropic**：生成器-评估器分离是长时间运行代理最有效的 harness 模式
+
+---
+
+## 术语表
+
+本文档中英文术语的统一翻译规范。标题保留英文原名，首次出现时括号注释中文，正文统一使用英文术语。
+
+| 英文 | 中文 | 说明 |
+|------|------|------|
+| Harness | Harness（治具） | 首次使用时标注中文，后续使用英文 |
+| Harness Engineering | Harness 工程 | 不翻译为"治具工程" |
+| Adversarial Verification | 对抗性验证 | "对抗性"强调系统性对抗，区别于一般性"对抗" |
+| Entropy Management | 熵管理 | |
+| Progressive Disclosure | 渐进式披露 | |
+| Generator-Evaluator | 生成器-评估器 | |
+| Circuit Breaker | 断路器 | |
+| Feedback Loop | 反馈循环 | |
+| Mechanical Constraints | 机械约束 | 指 CI/linter 等确定性门控 |
+| Context Engineering | 上下文工程 | |
+| Durable Execution | 持久化执行 | |
+| Cache Stability | 缓存稳定性 | |
+| Safety Rails | 安全护栏 | |
+| Anti-Rationalization | 反合理化 | 指验证代理抵抗自我合理化倾向 |
+| Maturity Annotation | 成熟度标注 | PASS 项的 [basic]/[advanced]/[exemplary] 标注 |

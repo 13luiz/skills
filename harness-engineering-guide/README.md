@@ -30,7 +30,7 @@ Say any of the following to an AI agent to trigger this skill:
 ## Three Modes
 
 ### Mode 1: Audit
-Evaluate the repo's harness maturity across 8 dimensions with 44 check items. Configurable by **project type profile** and **lifecycle stage**. Outputs an A–F graded report with an improvement roadmap. Supports monorepo per-package auditing.
+Evaluate the repo's harness maturity across 8 dimensions with 45 check items. Configurable by **project type profile** and **lifecycle stage**. Outputs an A–F graded report with an improvement roadmap. Supports monorepo per-package auditing.
 
 ### Mode 2: Implement
 Set up specific harness components on demand: AGENTS.md, CI pipelines, lint rules, testing strategies, and more. Templates available for multiple CI platforms and language ecosystems.
@@ -65,7 +65,7 @@ Reduces audit scope for projects at different maturity levels:
 |-------|-------------|-------|
 | **Bootstrap** (<2k LOC) | 9 items | Foundations only |
 | **Growth** (2k-50k LOC) | 29 items | Constraints + testing + early feedback |
-| **Mature** (50k+ LOC) | 44 items | Full audit |
+| **Mature** (50k+ LOC) | 45 items | Full audit |
 
 ### Multi-Ecosystem Support (11 ecosystems)
 Detection rules, tool recommendations, and CI commands for:
@@ -91,7 +91,7 @@ Content-level analysis beyond file existence:
 
 ```
 harness-engineering-guide/
-├── SKILL.md                           ← Agent entry point (thin orchestrator + Quick Reference)
+├── SKILL.md                           ← Agent entry point (~190 lines, thin orchestrator + Quick Reference)
 ├── skill.json                         ← Skill metadata (name, version, platforms, keywords)
 ├── README.md                          ← You are here (English)
 ├── README.zh.md                       ← Chinese version
@@ -99,25 +99,27 @@ harness-engineering-guide/
 │   ├── profiles.json                  ← 17 project type profiles with weight overrides
 │   ├── stages.json                    ← 3 lifecycle stages with active item subsets
 │   ├── ecosystems.json                ← 11 ecosystem detection rules and tool mappings
-│   └── checklist-items.json           ← 44 items in machine-readable format
+│   └── checklist-items.json           ← 45 items in machine-readable format
 ├── scripts/
 │   ├── harness-audit.sh               ← Enhanced Bash audit (content analysis + profiles/stages)
 │   ├── harness-audit.ps1              ← Enhanced PowerShell audit
 │   └── utils/
 │       └── content-analyzers.sh       ← Content-level analysis functions (Dim 3/5/6)
 ├── templates/
-│   ├── universal/                     ← Language-agnostic templates (5 files)
+│   ├── universal/                     ← Language-agnostic templates (6 files)
 │   ├── ci/                            ← CI templates: GitHub Actions, GitLab, Azure
 │   ├── linting/                       ← Boundary rules: ESLint, import-linter, depguard, clippy
 │   └── init/                          ← Environment recovery: Bash, PowerShell
 ├── reports/                           ← Audit report output directory
 ├── examples/                          ← Example audit reports
-├── references/                        ← Deep-dive reference docs (16 files)
-│   ├── adversarial-verification.md    ← Adversarial verification patterns
-│   ├── checklist.md                   ← 8-dimension, 44-item audit checklist
-│   ├── scoring-rubric.md              ← Scoring methodology & profile/stage adjustments
+├── references/                        ← Deep-dive reference docs (19 files)
+│   ├── adversarial-verification.md    ← Adversarial verification (patterns + prompt template + platform guide)
+│   ├── anti-patterns.md               ← 15 anti-patterns with quick diagnostic table
+│   ├── checklist.md                   ← 8-dimension, 45-item audit checklist
+│   ├── scoring-rubric.md              ← Scoring, disambiguation, maturity annotations
+│   ├── report-format.md               ← Audit report template and naming conventions
 │   ├── control-theory.md              ← Control theory foundation
-│   ├── improvement-patterns.md        ← Quick wins & strategic investments (with stage tags)
+│   ├── improvement-patterns.md        ← Quick wins, strategic investments, metrics, sticking points
 │   ├── automation-templates.md        ← Template index
 │   ├── agents-md-guide.md             ← AGENTS.md authoring guide
 │   ├── ci-cd-patterns.md              ← CI/CD pipeline patterns
@@ -130,7 +132,7 @@ harness-engineering-guide/
 │   ├── protocol-hygiene.md            ← Protocol hygiene (MCP/ACP/A2A)
 │   └── monorepo-patterns.md           ← Monorepo audit and design patterns
 └── evals/
-    └── evals.json                     ← 19 evaluation scenarios
+    └── evals.json                     ← 8 real-repo evaluation benchmarks (5 repos, OpenClaw x4)
 ```
 
 ## Audit Script Usage

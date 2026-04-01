@@ -1,294 +1,217 @@
 {
   "skill_name": "harness-engineering-guide",
+  "eval_strategy": "real-repo",
+  "description": "Evaluation benchmarks using real open-source repositories. Each eval clones a specific release tag, runs the full audit flow, and compares against expected findings.",
+  "execution": {
+    "clone": "git clone --depth 1 --branch <tag> <repo> /tmp/harness-eval/<repo-name>",
+    "audit": "bash scripts/harness-audit.sh /tmp/harness-eval/<repo-name> --profile <profile> --stage <stage> --blueprint",
+    "report_output": "reports/<YYYY-MM-DD>_<repo-name>_eval.md",
+    "validation": {
+      "score_tolerance": 5,
+      "key_findings_match_rate": 0.8
+    },
+    "report_path_note": "report_path values are OUTPUT destinations, not pre-existing files. Reports are generated when evals are run. Paths under examples/ serve as golden references once generated."
+  },
   "evals": [
     {
-      "id": 1,
-      "prompt": "Review my repo for AI coding readiness. I'm using Claude Code and Cursor to write most of my TypeScript code. The project has basic ESLint but no CI pipeline yet.",
-      "expected_output": "A structured harness engineering audit report with 8-dimension scoring, letter grade, specific findings with evidence, quick wins, and strategic investment recommendations. Should identify missing CI as a critical gap.",
-      "expectations": [
-        "Runs Step 0: detects profile (likely frontend-spa or fullstack) and asks about stage",
-        "Produces a scored assessment across active dimensions",
-        "Identifies missing CI pipeline as critical gap in Dimension 2",
-        "Provides quick wins prioritized by effort/impact",
-        "Offers ecosystem-specific templates from templates/ci/ and templates/linting/",
-        "Report is in the user's language"
-      ],
-      "files": []
+      "id": "1a",
+      "type": "real-repo",
+      "name": "OpenClaw (Dec 2025 baseline)",
+      "repo": "https://github.com/openclaw/openclaw",
+      "tag": "v2.0.0-beta5",
+      "profile": "monorepo",
+      "stage": "mature",
+      "language": "en",
+      "purpose": "Historical baseline — harness state before date-based versioning",
+      "expectations": {
+        "score_range": [65, 78],
+        "grade": "B-/C+",
+        "key_findings": [
+          "AGENTS.md quality — check line count and progressive disclosure",
+          "CI pipeline exists and blocks on failure",
+          "TypeScript strict mode configured",
+          "Monorepo tooling (workspace configuration)",
+          "Entropy management gaps likely present"
+        ],
+        "must_identify_anti_patterns": []
+      },
+      "report_path": "examples/2025-12_openclaw_v2.0.0-beta5_audit.md"
     },
     {
-      "id": 2,
-      "prompt": "Help me set up AGENTS.md for my Python Django project. We have 5 developers using Codex and Claude Code. The project has about 20k LOC.",
-      "expected_output": "A concise AGENTS.md scaffold following progressive disclosure pattern, under 100 lines, with commands first, architecture rules, boundaries, and pointers to deeper docs.",
-      "expectations": [
-        "Generated AGENTS.md is under 100 lines",
-        "Commands section appears first with exact Django/Python commands",
-        "Three-tier boundaries defined (always/ask/never)",
-        "References a docs/ directory for deeper knowledge",
-        "Follows progressive disclosure pattern"
-      ],
-      "files": []
+      "id": "1b",
+      "type": "real-repo",
+      "name": "OpenClaw (Jan 2026)",
+      "repo": "https://github.com/openclaw/openclaw",
+      "tag": "v2026.1.30",
+      "profile": "monorepo",
+      "stage": "mature",
+      "language": "en",
+      "purpose": "Time-series point 2 — track harness maturity evolution",
+      "expectations": {
+        "score_range": [70, 82],
+        "grade": "B/B+",
+        "key_findings": [
+          "Improvements over beta5 baseline",
+          "CI pipeline maturity",
+          "Documentation structure changes"
+        ],
+        "must_identify_anti_patterns": []
+      },
+      "report_path": "examples/2026-01_openclaw_v2026.1.30_audit.md"
     },
     {
-      "id": 3,
-      "prompt": "I'm starting a new React + Node.js project from scratch. I want to use AI agents heavily. Design me a complete harness strategy.",
-      "expected_output": "A phased harness design with Level 1/2/3 maturity stages, specific tool recommendations for React+Node ecosystem, CI pipeline structure, testing strategy including E2E, and entropy management approach.",
-      "expectations": [
-        "Reads data/ecosystems.json for Node.js ecosystem guidance",
-        "Provides a phased approach (Level 1 -> 2 -> 3)",
-        "Recommends specific tools: ESLint, TypeScript strict, Vitest, Playwright",
-        "Offers CI template from templates/ci/github-actions/standard-pipeline.yml",
-        "Addresses entropy management and long-running task support"
-      ],
-      "files": []
+      "id": "1c",
+      "type": "real-repo",
+      "name": "OpenClaw (Feb 2026)",
+      "repo": "https://github.com/openclaw/openclaw",
+      "tag": "v2026.2.26",
+      "profile": "monorepo",
+      "stage": "mature",
+      "language": "en",
+      "purpose": "Time-series point 3 — track harness maturity evolution",
+      "expectations": {
+        "score_range": [72, 85],
+        "grade": "B/B+",
+        "key_findings": [
+          "Continued evolution from Jan baseline",
+          "Testing and verification improvements",
+          "Context engineering maturity"
+        ],
+        "must_identify_anti_patterns": []
+      },
+      "report_path": "examples/2026-02_openclaw_v2026.2.26_audit.md"
     },
     {
-      "id": 4,
-      "prompt": "为什么我的 AI agent 总是写出烂代码？我用 Cursor 写 Python，但代码质量一直在下降，架构越来越乱。",
-      "expected_output": "用中文解释 harness engineering 的核心概念，诊断可能的问题（缺少机械约束、缺少反馈循环等），并提供具体的改进步骤。应该引用控制论框架来解释为什么改进 harness 比换模型更有效。",
-      "expectations": [
-        "Response is in Chinese",
-        "Explains harness engineering concept with control theory four elements",
-        "Diagnoses likely root causes (missing linting, no CI, no architecture enforcement)",
-        "Recommends Python-specific tools from data/ecosystems.json (ruff, mypy)",
-        "References 'harness over model' principle"
-      ],
-      "files": []
+      "id": "1d",
+      "type": "real-repo",
+      "name": "OpenClaw (Mar 2026 — golden reference)",
+      "repo": "https://github.com/openclaw/openclaw",
+      "tag": "v2026.3.31",
+      "profile": "monorepo",
+      "stage": "mature",
+      "language": "en",
+      "purpose": "Golden reference eval — most recent state, used as primary benchmark for skill regression testing",
+      "golden_reference": true,
+      "expectations": {
+        "score_range": [75, 88],
+        "grade": "B+/A-",
+        "key_findings": [
+          "AGENTS.md exists — check conciseness (<100 lines)",
+          "CI pipeline blocks on failure with multiple jobs",
+          "TypeScript strict mode active",
+          "Monorepo workspace configuration (pnpm/turbo)",
+          "Documentation structure and freshness",
+          "Testing coverage and E2E presence",
+          "Long-running task support",
+          "No adversarial verification (4.7 likely PARTIAL/FAIL)"
+        ],
+        "must_identify_anti_patterns": [
+          "Encyclopedia AGENTS.md (if applicable)"
+        ]
+      },
+      "report_path": "examples/2026-03_openclaw_v2026.3.31_audit.md"
     },
     {
-      "id": 5,
-      "prompt": "Audit my Go monorepo. We already have strict CI, golangci-lint, 85% coverage, structured docs/, AGENTS.md, and CODEOWNERS. What can we improve?",
-      "expected_output": "A high-score audit (B+ to A range) with monorepo-specific findings. Should look for cross-package boundary enforcement, entropy management, doc freshness, long-running task support, and cache-friendly design.",
-      "expectations": [
-        "Uses monorepo profile from data/profiles.json",
-        "Scores the repo in B+ to A range",
-        "Identifies subtle improvements: cross-package boundaries, doc-gardening, quality tracking",
-        "References references/monorepo-patterns.md for monorepo-specific guidance",
-        "Acknowledges strengths before listing improvements"
-      ],
-      "files": []
+      "id": "2",
+      "type": "real-repo",
+      "name": "OpenCode",
+      "repo": "https://github.com/anomalyco/opencode",
+      "tag": "v1.3.13",
+      "profile": "monorepo",
+      "stage": "mature",
+      "language": "en",
+      "purpose": "Large TS monorepo (Bun + Turbo) — calibration for high-velocity development projects",
+      "expectations": {
+        "score_range": [70, 80],
+        "grade": "B-/B+",
+        "key_findings": [
+          "Bun + Turbo monorepo tooling",
+          "CI pipeline configuration",
+          "TypeScript configuration strictness",
+          "Documentation structure",
+          "Testing strategy across packages"
+        ],
+        "must_identify_anti_patterns": []
+      },
+      "report_path": "reports/"
     },
     {
-      "id": 6,
-      "prompt": "Design a harness for my Rust CLI tool. It's a single-binary command-line utility, no web server, no UI. About 8k LOC. I use Cursor for development.",
-      "expected_output": "A harness design adapted for CLI tools using the cli-tool profile. Observability items 3.2-3.4 marked as reduced relevance. Focus on clippy, type safety, test coverage, and AGENTS.md.",
-      "expectations": [
-        "Loads cli-tool profile from data/profiles.json",
-        "Applies project-type weight adjustments (Dim 3 reduced to 5%)",
-        "Skips items 3.2, 3.3, 3.4 with substitute criteria",
-        "Recommends Rust-specific tools: clippy, cargo test, cargo fmt",
-        "Offers templates/linting/clippy-workspace.toml"
-      ],
-      "files": []
+      "id": "3",
+      "type": "real-repo",
+      "name": "OpenFang",
+      "repo": "https://github.com/RightNow-AI/openfang",
+      "tag": "v0.5.7",
+      "profile": "system-infra",
+      "stage": "growth",
+      "language": "en",
+      "purpose": "Rust multi-crate system — validates scoring for safety-critical infrastructure projects",
+      "expectations": {
+        "score_range": [75, 82],
+        "grade": "B/B+",
+        "key_findings": [
+          "Rust cargo workspace with multiple crates",
+          "Clippy and cargo fmt enforcement",
+          "Safety rail configuration for system-level code",
+          "Testing across crate boundaries",
+          "Documentation for agent instruction"
+        ],
+        "must_identify_anti_patterns": []
+      },
+      "report_path": "reports/"
     },
     {
-      "id": 7,
-      "prompt": "Our CI has 15% flaky tests and it's killing our team's productivity. Agents keep retrying and wasting tokens. How do I fix this?",
-      "expected_output": "A focused implementation plan for test flake management (checklist item 4.6). Should include quarantine strategy, retry policies, flake tracking, and agent-specific guidance.",
-      "expectations": [
-        "Addresses checklist item 4.6 (Test Flake Management)",
-        "Provides quarantine strategy for known flakes",
-        "Recommends retry policies with limits",
-        "Explains impact on agent token waste",
-        "Suggests 'succeed silently, fail verbosely' pattern"
-      ],
-      "files": []
+      "id": "4",
+      "type": "real-repo",
+      "name": "Cherry Studio",
+      "repo": "https://github.com/CherryHQ/cherry-studio",
+      "tag": "v1.8.4",
+      "profile": "desktop-app",
+      "stage": "mature",
+      "language": "en",
+      "purpose": "Electron desktop app — validates desktop-app profile and dual agent instruction file handling",
+      "expectations": {
+        "score_range": [75, 82],
+        "grade": "B/B+",
+        "key_findings": [
+          "Electron multi-process architecture (renderer + main)",
+          "Agent instruction file(s) present",
+          "CI pipeline configuration",
+          "TypeScript configuration",
+          "E2E testing for desktop app",
+          "Build and packaging pipeline"
+        ],
+        "must_identify_anti_patterns": []
+      },
+      "report_path": "reports/"
     },
     {
-      "id": 8,
-      "prompt": "We have 12 MCP servers connected to our Cursor setup. Some have broad file system access. Audit the safety of our tool configuration.",
-      "expected_output": "A safety-focused audit examining MCP trust boundaries, tool protocol hygiene, credential scoping, and blast radius.",
-      "expectations": [
-        "Evaluates against Dimension 8 (Safety Rails)",
-        "Flags broad filesystem access as a risk",
-        "Recommends least-privilege MCP scoping",
-        "References protocol trust boundary principles",
-        "Suggests tool catalog reduction"
-      ],
-      "files": []
-    },
-    {
-      "id": 9,
-      "prompt": "My agent tasks keep failing halfway through multi-hour sessions. Context lost, work restarted. How to fix?",
-      "expected_output": "Comprehensive plan for long-running task support covering durable execution, progress tracking, checkpoints, session handoff, and environment recovery.",
-      "expectations": [
-        "Addresses Dimension 7 comprehensively",
-        "Recommends structured progress files",
-        "Explains durable execution: checkpointing, crash recovery",
-        "Offers templates/universal/execution-plan.md",
-        "Recommends templates/init/init.sh"
-      ],
-      "files": []
-    },
-    {
-      "id": 10,
-      "prompt": "Our AI agents constantly hit context window limits. Tool outputs flood the context. Using 200k tokens but still running out.",
-      "expected_output": "Diagnosis rooted in cache stability and context engineering. Recommend structured tool output, artifact externalization, context tiering, cache-friendly design.",
-      "expectations": [
-        "Diagnoses as harness problem, not model limitation",
-        "Recommends cache stability practices from references/cache-stability.md",
-        "Suggests tool output externalization",
-        "Maps to Dimension 5 improvements",
-        "References item 5.5 cache-friendly-design"
-      ],
-      "files": []
-    },
-    {
-      "id": 11,
-      "prompt": "We just scored D (45/100) on a harness audit. Give me a 3-month plan to get to B.",
-      "expected_output": "A phased 3-month roadmap with month-by-month deliverables and expected score improvements.",
-      "expectations": [
-        "Month 1: Quick wins (QW-1 through QW-5) with stage annotations",
-        "Month 2: Strategic investments (SI-1 through SI-3)",
-        "Month 3: Advanced patterns (SI-5 through SI-7)",
-        "Projects expected score per phase to reach B (70+)",
-        "Uses improvement patterns from references/improvement-patterns.md"
-      ],
-      "files": []
-    },
-    {
-      "id": 12,
-      "prompt": "私のRailsプロジェクトをAIエージェント向けに監査してください。RSpecとRuboCopを使っていますが、CIはありません。",
-      "expected_output": "Japanese-language audit with Rails-specific tool recommendations.",
-      "expectations": [
-        "Response is in Japanese",
-        "Detects Ruby ecosystem from data/ecosystems.json",
-        "Recommends Rails tools: RuboCop, RSpec, Brakeman",
-        "Identifies missing CI as critical Dimension 2 gap",
-        "Provides quick wins appropriate for Ruby/Rails"
-      ],
-      "files": []
-    },
-    {
-      "id": 13,
-      "prompt": "Audit my brand new Next.js project. Just created it yesterday, only has the default template. About 200 lines of code.",
-      "expected_output": "A bootstrap-stage audit using frontend-ssr profile. Only 9 core items checked. Focus on setting up foundations rather than advanced patterns.",
-      "expectations": [
-        "Detects or selects bootstrap stage from data/stages.json",
-        "Uses frontend-ssr profile from data/profiles.json",
-        "Only checks 9 bootstrap-stage items, not all 43",
-        "Skips Dim 3, 6 entirely and most of Dim 7, 8",
-        "Focuses recommendations on CI, lint, TypeScript strict, basic tests"
-      ],
-      "files": []
-    },
-    {
-      "id": 14,
-      "prompt": "Audit our monorepo. It has a Next.js frontend in apps/web, a Python FastAPI backend in apps/api, and shared TypeScript types in packages/shared. Using pnpm workspaces and Turborepo.",
-      "expected_output": "A monorepo audit with per-package reports and aggregate score. Infrastructure layer audit + per-package audits with appropriate profiles + cross-package boundary checks.",
-      "expectations": [
-        "Detects monorepo via pnpm-workspace.yaml and turbo.json",
-        "Audits shared infrastructure (root CI, root configs)",
-        "Audits apps/web with frontend-ssr profile",
-        "Audits apps/api with backend-api profile",
-        "Audits packages/shared with library profile",
-        "Checks cross-package boundary enforcement",
-        "References references/monorepo-patterns.md",
-        "Produces per-package + aggregate report"
-      ],
-      "files": []
-    },
-    {
-      "id": 15,
-      "prompt": "Design a harness for my Electron desktop application. It has a React frontend and a Node.js main process. About 15k LOC, 3 developers.",
-      "expected_output": "A harness design using the desktop-app profile with growth-stage focus. Should address both frontend and main process concerns.",
-      "expectations": [
-        "Uses desktop-app profile from data/profiles.json",
-        "Addresses multi-process architecture (renderer + main)",
-        "Recommends E2E testing for desktop (Playwright Electron)",
-        "Applies growth-stage item selection (27 items)",
-        "Provides specific templates for the Node.js/TypeScript ecosystem"
-      ],
-      "files": []
-    },
-    {
-      "id": 16,
-      "prompt": "I'm building a Unity game in C#. The project has 30k LOC, uses custom shaders and a plugin system. How do I set up a harness for AI agent development?",
-      "expected_output": "A harness design using the game profile. Should address game-specific concerns: engine/gameplay separation, asset pipeline, and editor integration.",
-      "expectations": [
-        "Uses game profile from data/profiles.json",
-        "Addresses engine vs gameplay architecture separation (1.3)",
-        "Substitutes 3.2 with in-game debug console/profiler",
-        "Emphasizes architecture docs and cache-friendly design",
-        "Recommends C#/.NET ecosystem tools from data/ecosystems.json"
-      ],
-      "files": []
-    },
-    {
-      "id": 17,
-      "prompt": "Audit my ML training pipeline. We use Python with PyTorch, MLflow for experiment tracking, and DVC for data versioning. Jobs run for hours. About 10k LOC.",
-      "expected_output": "An audit using the data-ml profile with emphasis on long-running task support and durable execution.",
-      "expectations": [
-        "Uses data-ml profile from data/profiles.json",
-        "Elevates Dim 7 (Long-Running) weight to 15%",
-        "Checks for durable execution patterns (7.6)",
-        "Substitutes 3.4 with experiment tracking UI (MLflow)",
-        "Addresses progress tracking for long training jobs (7.2)"
-      ],
-      "files": []
-    },
-    {
-      "id": 18,
-      "prompt": "Compare my project's audit from 3 months ago (scored C 58/100) with the current state. We implemented CI, added strict TypeScript, and set up AGENTS.md.",
-      "expected_output": "A comparative audit showing score improvement, highlighting what changed and what still needs work.",
-      "expectations": [
-        "Acknowledges improvements in Dim 1 and Dim 2",
-        "Re-scores with evidence of new CI, TypeScript strict, AGENTS.md",
-        "Identifies remaining gaps (likely Dim 3, 6, 7)",
-        "Shows score improvement trajectory",
-        "Suggests next phase of improvements"
-      ],
-      "files": []
-    },
-    {
-      "id": 19,
-      "prompt": "Design a harness for my Terraform IaC project. We manage 50+ AWS resources. Security is critical.",
-      "expected_output": "A harness design using the devops-iac profile with elevated safety rails.",
-      "expectations": [
-        "Uses devops-iac profile from data/profiles.json",
-        "Elevates Dim 8 (Safety) weight to 15%",
-        "Emphasizes human confirmation gates (8.4) for destructive ops",
-        "Recommends plan output review as substitute for 3.4",
-        "Addresses rollback capability (8.3) for infrastructure changes"
-      ],
-      "files": []
-    },
-    {
-      "id": 20,
-      "prompt": "We're running 4 AI agents in parallel for code review — security, performance, architecture, and style. They keep producing duplicate findings and sometimes overwrite each other's output files. How do I fix this?",
-      "expected_output": "Diagnosis as a multi-agent coordination problem. Recommends Fan-out/Fan-in topology with directory isolation and merge-point deduplication.",
-      "expectations": [
-        "Identifies this as a Fan-out/Fan-in coordination pattern",
-        "References references/agent-team-patterns.md for topology guidance",
-        "Recommends directory isolation (each agent writes to own directory)",
-        "Addresses Dim 2 (Mechanical) for preventing conflicting writes",
-        "Addresses Dim 6 (Entropy) for deduplication at merge point",
-        "Does NOT recommend switching to sequential execution as the primary fix"
-      ],
-      "files": []
-    },
-    {
-      "id": 21,
-      "prompt": "Help me optimize my database queries.",
-      "expected_output": "This prompt should NOT trigger the harness-engineering-guide skill. It is a general coding task unrelated to agent harness engineering.",
-      "expectations": [
-        "Does NOT trigger harness-engineering-guide skill",
-        "This is a near-miss: 'optimize' sounds like it could relate to harness optimization, but it is about database query optimization",
-        "If triggered, the skill should recognize this is outside its scope and defer"
-      ],
-      "files": []
-    },
-    {
-      "id": 22,
-      "prompt": "My AI agent writes code that passes all tests but the API responses don't match what the frontend expects. Types look fine on both sides individually but break at integration.",
-      "expected_output": "Diagnosis as a boundary-crossing verification gap. Recommends reading both sides simultaneously and comparing data shapes at boundaries.",
-      "expectations": [
-        "Identifies this as a Dim 4 (Testing) boundary verification issue",
-        "References boundary-crossing verification from references/testing-patterns.md",
-        "Recommends reading API response shape and frontend expectation simultaneously",
-        "Suggests contract tests or shared type definitions as mechanical fix",
-        "Maps to incremental verification pattern (verify after each module, not at the end)"
-      ],
-      "files": []
+      "id": "5",
+      "type": "real-repo",
+      "name": "Paperclip",
+      "repo": "https://github.com/paperclipai/paperclip",
+      "tag": "v2026.325.0",
+      "profile": "fullstack",
+      "stage": "mature",
+      "language": "en",
+      "purpose": "Full-stack orchestration platform (Node + React) — validates fullstack profile scoring",
+      "expectations": {
+        "score_range": [70, 78],
+        "grade": "B/B-",
+        "key_findings": [
+          "Full-stack Node.js + React architecture",
+          "CI/CD pipeline configuration",
+          "Documentation and knowledge management",
+          "Testing strategy across frontend and backend",
+          "Dependency direction enforcement"
+        ],
+        "must_identify_anti_patterns": []
+      },
+      "report_path": "reports/"
     }
-  ]
+  ],
+  "time_series_analysis": {
+    "description": "OpenClaw evals 1a-1d form a time series showing harness maturity evolution over 4 months. After running all four audits, compare scores and findings to validate that the skill detects incremental improvements.",
+    "repos": ["1a", "1b", "1c", "1d"],
+    "expected_trend": "generally upward or stable trend; investigate any large drops (>10 points) for regression causes; specific dimension improvements should be identifiable at each checkpoint"
+  }
 }

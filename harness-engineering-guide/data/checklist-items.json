@@ -1,6 +1,6 @@
 {
   "_meta": {
-    "description": "Machine-readable version of all 44 audit checklist items from references/checklist.md.",
+    "description": "Machine-readable version of all 45 audit checklist items from references/checklist.md.",
     "usage": "Cross-reference with stages.json for active items and profiles.json for skip/substitute items.",
     "scoring": "PASS=1.0, PARTIAL=0.5, FAIL=0.0. dimension_score = (sum / count) * 100. final = sum(dim_score * weight)."
   },

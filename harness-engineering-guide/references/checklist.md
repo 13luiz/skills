@@ -363,7 +363,7 @@ The primary scoring instrument. Go through each item, marking PASS / PARTIAL / F
 
 ---
 
-## Quick Reference: All 44 Items
+## Quick Reference: All 45 Items
 
 | # | Dimension | Item | Weight | Control Element |
 |---|-----------|------|--------|----------------|

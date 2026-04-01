@@ -131,7 +131,7 @@ Agents that can see their own logs diagnose their own problems.
 **Fixes**: 5.5 | **Effort**: 1-2 days | **Impact**: Medium-high | **Stage**: [G][M]
 
 Restructure for cache stability:
-- Trim AGENTS.md to <150 lines (move verbose content to docs/)
+- Trim AGENTS.md to <100 lines (move verbose content to docs/)
 - Create artifact directories (`reports/`, `artifacts/`) for large agent outputs
 - Convert prose progress tracking to structured JSON files
 - Audit MCP server count; remove rarely-used always-loaded servers
@@ -185,12 +185,43 @@ This pattern is especially important for adversarial verification systems, where
 
 ---
 
+## Key Metrics
+
+Track these to measure harness effectiveness over time:
+
+| Metric | What It Measures | Target |
+|--------|-----------------|--------|
+| PRs merged/engineer/day | Throughput | 2-4 |
+| Change failure rate | Harness effectiveness | <10% |
+| AI code rework rate | Generation quality | <20% |
+| Test coverage on AI code | Verification coverage | >80% |
+| Mean time to correct (MTTC) | Feedback loop speed | <30 min |
+| Documentation freshness | Knowledge currency | <30 days stale |
+| Prompt cache hit rate | Context efficiency | >60% |
+| Session resume success rate | Durable execution | >90% |
+| MCP tool count | Tool hygiene | <10 always-loaded |
+
+---
+
+## Common Sticking Points
+
+Quick diagnostic table mapping symptoms to dimension gaps and fixes:
+
+| Problem | Diagnosis | Fix |
+|---------|-----------|-----|
+| Agent ignores coding standards | Dim 2: linter not blocking in CI | Add linter as required CI check; use `2.6` remediation messages |
+| Agent generates duplicate utilities | Dim 6: no slop detection | Add `6.4` ai-slop-detection lint rules for dead code and duplicates |
+| Long tasks crash mid-way, no recovery | Dim 7: no durable execution | Implement `7.6` checkpoint files + recovery script |
+| PRs frequently reverted after merge | Dim 4: insufficient test coverage | Raise `4.3` coverage thresholds; add `4.5` E2E verification |
+| AGENTS.md too long, agent ignores it | Dim 1: no progressive disclosure | Trim to <100 lines (`1.1`); use `1.4` layered knowledge with pointers |
+| Agent writes code that type-checks but is wrong | Dim 4: no adversarial verification | Add `4.7` independent verifier that tries to break the implementation |
+| Agent breaks other modules when fixing one | Dim 2: no dependency direction enforcement | Add `2.5` import boundary rules via custom lint |
+| Quality degrades over time | Dim 6: no recurring cleanup | Set up `6.2` automated cleanup agent + `6.3` tech debt tracking |
+| Agent can't resume work across sessions | Dim 7: no handoff protocol | Implement `7.3` descriptive commits + progress logs |
+| MCP tools leak data or have excess access | Dim 8: no protocol hygiene | Apply `8.6` least-privilege scoping; treat output as untrusted |
+
+---
+
 ## Anti-Patterns to Avoid
 
-See the full anti-pattern catalog (15 items) in the "Anti-Patterns to Flag" section of `SKILL.md`. The most critical ones for improvement planning:
-
-1. **Giant AGENTS.md** — Over 100 lines. Use as TOC pointing to deeper docs.
-2. **Documentation without enforcement** — For every rule, ask "can I lint this?"
-3. **Optimizing prompts instead of harness** — Ask "what capability is missing?"
-4. **Trusting agent self-evaluation** — Use external verification, not self-assessment.
-5. **No crash recovery** — Structured progress files after each meaningful step.
+See `references/anti-patterns.md` for the full catalog (15 anti-patterns with quick diagnostic table). Prioritize fixing: Encyclopedia AGENTS.md (#6), no enforcement (#12), and no crash recovery (#14).
