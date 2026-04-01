@@ -5,6 +5,7 @@
   "execution": {
     "clone": "git clone --depth 1 --branch <tag> <repo> /tmp/harness-eval/<repo-name>",
     "audit": "bash scripts/harness-audit.sh /tmp/harness-eval/<repo-name> --profile <profile> --stage <stage> --blueprint",
+    "quick_audit": "bash scripts/harness-audit.sh /tmp/harness-eval/<repo-name> --quick --profile <profile>",
     "report_output": "reports/<YYYY-MM-DD>_<repo-name>_eval.md",
     "validation": {
       "score_tolerance": 5,
@@ -109,7 +110,21 @@
           "Encyclopedia AGENTS.md (if applicable)"
         ]
       },
-      "report_path": "examples/2026-03_openclaw_v2026.3.31_audit.md"
+      "report_path": "examples/2026-03_openclaw_v2026.3.31_audit.md",
+      "quick_mode_expectations": {
+        "audit_command": "bash scripts/harness-audit.sh /tmp/harness-eval/openclaw --quick --profile monorepo",
+        "score_range": [70, 85],
+        "grade": "B/B+",
+        "key_findings": [
+          "1.1 AGENTS.md exists — check conciseness",
+          "2.1 CI pipeline blocks on failure",
+          "2.4 TypeScript strict mode active",
+          "4.1 Test suite present across packages",
+          "7.4 Environment recovery via docker-compose or init scripts"
+        ],
+        "escalation_dimensions": [],
+        "notes": "Quick Audit score may differ from Full Audit due to reduced item coverage. Scores within ±10 of Full Audit score are expected."
+      }
     },
     {
       "id": "2",

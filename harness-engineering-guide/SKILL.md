@@ -21,7 +21,7 @@ You are a harness engineering consultant. Your job is to audit, design, and impl
 
 ## Pre-Assessment Gate
 
-Before running a full audit, answer these 5 questions. If 3+ are "No", suggest a lightweight setup instead.
+Before running an audit, answer these 5 questions to determine the appropriate audit depth.
 
 1. Is the project expected to live beyond 1 month?
 2. Will AI agents modify this codebase going forward?
@@ -29,7 +29,13 @@ Before running a full audit, answer these 5 questions. If 3+ are "No", suggest a
 4. Has there been at least one instance of AI-generated code causing problems?
 5. Is there more than one contributor (human or agent)?
 
-**If mostly "No"**: Skip full audit. Recommend: basic AGENTS.md + pre-commit hook + lint. Done in 30 minutes. See `references/agents-md-guide.md`.
+| "Yes" Count | Route | What You Get |
+|-------------|-------|--------------|
+| **4-5** | **Full Audit** | All 45 items scored across 8 dimensions. Detailed report with improvement roadmap. |
+| **2-3** | **Quick Audit** | 15 vital-sign items across all 8 dimensions. Streamlined report with Top 3 actions. ~30 min. |
+| **0-1** | **Skip** | Basic AGENTS.md + pre-commit hook + lint. Done in 30 minutes. See `references/agents-md-guide.md`. |
+
+The user can also explicitly request Quick or Full mode regardless of the gate result.
 
 ## Dimension Priority
 
@@ -49,48 +55,49 @@ Before running a full audit, answer these 5 questions. If 3+ are "No", suggest a
 ## Quick Reference — 8 Dimensions, 45 Items
 
 *Use item IDs to cross-reference `references/checklist.md` for full PASS/PARTIAL/FAIL criteria.*
+*Items marked `[Q]` are included in Quick Audit mode (15 vital-sign items).*
 
 ### Dim 1: Architecture Documentation (15%) — GOAL STATE
-- `1.1` **agent-instruction-file** — AGENTS.md/CLAUDE.md exists and concise (<100 lines)
+- `1.1` `[Q]` **agent-instruction-file** — AGENTS.md/CLAUDE.md exists and concise (<100 lines)
 - `1.2` **structured-knowledge** — `docs/` organized with subdirectories and index
-- `1.3` **architecture-docs** — ARCHITECTURE.md with domain boundaries and dependency rules
+- `1.3` `[Q]` **architecture-docs** — ARCHITECTURE.md with domain boundaries and dependency rules
 - `1.4` **progressive-disclosure** — Short entry point → deeper docs
 - `1.5` **versioned-knowledge** — ADRs, design docs, execution plans in version control
 
 ### Dim 2: Mechanical Constraints (20%) — ACTUATOR
-- `2.1` **ci-pipeline-blocks** — CI runs on every PR, blocks merges on failure
-- `2.2` **linter-enforcement** — Linter in CI, violations block
+- `2.1` `[Q]` **ci-pipeline-blocks** — CI runs on every PR, blocks merges on failure
+- `2.2` `[Q]` **linter-enforcement** — Linter in CI, violations block
 - `2.3` **formatter-enforcement** — Formatter in CI, violations block
-- `2.4` **type-safety** — Type checker in CI, strict mode
+- `2.4` `[Q]` **type-safety** — Type checker in CI, strict mode
 - `2.5` **dependency-direction** — Import rules mechanically enforced via custom lint
 - `2.6` **remediation-errors** — Custom lint messages include fix instructions
 - `2.7` **structural-conventions** — Naming, file size, import restrictions enforced
 
 ### Dim 3: Feedback & Observability (15%) — SENSOR
-- `3.1` **structured-logging** — Logging framework, not ad-hoc prints
+- `3.1` `[Q]` **structured-logging** — Logging framework, not ad-hoc prints
 - `3.2` **metrics-tracing** — OpenTelemetry/Prometheus configured
 - `3.3` **agent-queryable-obs** — Agents can query logs/metrics via CLI or API
 - `3.4` **ui-visibility** — Browser automation for agent screenshot/inspect
-- `3.5` **diagnostic-error-ctx** — Errors include stack traces, state, and suggested fixes
+- `3.5` `[Q]` **diagnostic-error-ctx** — Errors include stack traces, state, and suggested fixes
 
 ### Dim 4: Testing & Verification (15%) — SENSOR + ACTUATOR
-- `4.1` **test-suite** — Tests across multiple layers (unit, integration, E2E)
-- `4.2` **tests-ci-blocking** — Tests required check; PRs cannot merge with failures
+- `4.1` `[Q]` **test-suite** — Tests across multiple layers (unit, integration, E2E)
+- `4.2` `[Q]` **tests-ci-blocking** — Tests required check; PRs cannot merge with failures
 - `4.3` **coverage-thresholds** — Coverage thresholds configured and enforced in CI
 - `4.4` **formalized-done** — Feature list in machine-readable format with pass/fail
-- `4.5` **e2e-verification** — E2E suite runs in CI
+- `4.5` `[Q]` **e2e-verification** — E2E suite runs in CI
 - `4.6` **flake-management** — Flaky tests tracked, quarantined, retried
 - `4.7` **adversarial-verification** — Independent verifier tries to break implementation
 
 ### Dim 5: Context Engineering (10%) — GOAL STATE
-- `5.1` **externalized-knowledge** — Key decisions documented in-repo
+- `5.1` `[Q]` **externalized-knowledge** — Key decisions documented in-repo
 - `5.2` **doc-freshness** — Automated freshness checks
 - `5.3` **machine-readable-refs** — llms.txt, curated reference docs
 - `5.4` **tech-composability** — Stable, well-known technologies
 - `5.5` **cache-friendly-design** — AGENTS.md <150 lines (monorepo: up to 300); structured state files
 
 ### Dim 6: Entropy Management (10%) — FEEDBACK LOOP
-- `6.1` **golden-principles** — Core engineering principles documented
+- `6.1` `[Q]` **golden-principles** — Core engineering principles documented
 - `6.2` **recurring-cleanup** — Automated or scheduled cleanup
 - `6.3` **tech-debt-tracking** — Quality scores or tech-debt-tracker maintained
 - `6.4` **ai-slop-detection** — Lint rules target duplicate utilities, dead code
@@ -99,14 +106,14 @@ Before running a full audit, answer these 5 questions. If 3+ are "No", suggest a
 - `7.1` **task-decomposition** — Strategy with templates (execution plans)
 - `7.2` **progress-tracking** — Structured progress notes across sessions
 - `7.3` **handoff-bridges** — Descriptive commits + progress logs + feature status
-- `7.4` **environment-recovery** — init.sh boots environment with health checks
+- `7.4` `[Q]` **environment-recovery** — init.sh boots environment with health checks
 - `7.5` **clean-state-discipline** — Each session commits clean, tested code
 - `7.6` **durable-execution** — Checkpoint files + recovery script
 
 ### Dim 8: Safety Rails (5%) — ACTUATOR (PROTECTIVE)
-- `8.1` **least-privilege-creds** — Agent tokens scoped to minimum permissions
+- `8.1` `[Q]` **least-privilege-creds** — Agent tokens scoped to minimum permissions
 - `8.2` **audit-logging** — PRs, deploys, config changes logged
-- `8.3` **rollback-capability** — Documented rollback playbook or scripts
+- `8.3` `[Q]` **rollback-capability** — Documented rollback playbook or scripts
 - `8.4` **human-confirmation** — Destructive ops require approval
 - `8.5` **security-path-marking** — Critical files marked (CODEOWNERS)
 - `8.6` **tool-protocol-trust** — MCP scoped; output treated as untrusted
@@ -116,6 +123,10 @@ Before running a full audit, answer these 5 questions. If 3+ are "No", suggest a
 ## Three Modes
 
 ### Mode 1: Audit — Evaluate and score the repo's harness maturity.
+
+Run the Pre-Assessment Gate first to determine audit depth: **Full Audit** (4-5 Yes) or **Quick Audit** (2-3 Yes). The user can also request either mode directly.
+
+#### Full Audit (45 items)
 
 **Step 0: Profile + Stage** — Read `data/profiles.json` for project type (17 profiles) and `data/stages.json` for lifecycle stage (Bootstrap <2k LOC / Growth 2-50k / Mature 50k+). Detect report language.
 
@@ -128,6 +139,20 @@ Before running a full audit, answer these 5 questions. If 3+ are "No", suggest a
 **Step 4: Templates** — Offer ready-to-use artifacts from `templates/` based on gaps found. Read `references/automation-templates.md` for the full template index.
 
 **Monorepo**: Audit shared infra first, then per-package with appropriate profile. See `references/monorepo-patterns.md`.
+
+#### Quick Audit (15 vital-sign items)
+
+Covers 15 `[Q]`-marked items — the highest-leverage check per dimension. Produces a streamlined report in ~30 minutes.
+
+**Step 0: Profile** — Detect project type and report language (stage is not needed — Quick Audit uses a fixed item set).
+
+**Step 1: Scan** — Run `bash scripts/harness-audit.sh <repo> --quick --profile <type>` (or `pwsh scripts/harness-audit.ps1 -Quick`). For manual scan, check only items marked `[Q]` in the Quick Reference above.
+
+**Step 2: Score** — Score 15 items with PASS/PARTIAL/FAIL. Apply dimension weights (default or profile). Use `references/scoring-rubric.md` § Quick Mode Scoring.
+
+**Step 3: Report** — Use the Quick Report template from `references/report-format.md`. Save to `reports/<YYYY-MM-DD>_<repo>_quick-audit[.<lang>].md`. Report includes: dimension overview table, Top 3 improvement actions, and an upgrade recommendation if any dimension scores below 50%.
+
+**Escalation**: If any dimension scores below 50%, recommend upgrading to Full Audit for that repo.
 
 ### Mode 2: Implement — Set up or improve specific harness components.
 
@@ -182,6 +207,6 @@ Read as needed — do not load all at once.
 
 **Data**: `data/profiles.json` (17 profiles) · `data/stages.json` (3 stages) · `data/ecosystems.json` (11 ecosystems) · `data/checklist-items.json` (45 items)
 
-**Scripts**: `scripts/harness-audit.sh` / `scripts/harness-audit.ps1` — Run with `--help` for all options. Key flags: `--profile`, `--stage`, `--monorepo`, `--blueprint`, `--persist`, `--output`, `--format`.
+**Scripts**: `scripts/harness-audit.sh` / `scripts/harness-audit.ps1` — Run with `--help` for all options. Key flags: `--quick`, `--profile`, `--stage`, `--monorepo`, `--blueprint`, `--persist`, `--output`, `--format`.
 
 **Templates**: `templates/universal/` · `templates/ci/` · `templates/linting/` · `templates/init/`

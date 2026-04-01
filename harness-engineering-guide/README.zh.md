@@ -1,6 +1,6 @@
 # Harness Engineering Guide（Harness 工程指南）
 
-一个全面的技能，用于审计、设计和实施 AI 编码代理的环境约束和反馈循环。支持 **17 种项目类型**、**11 种语言生态** 和 **3 个生命周期阶段**。
+一个全面的技能，用于审计、设计和实施 AI 编码代理的环境约束和反馈循环。支持**快速审计**（15 项生命体征检查）和**完整审计**（45 项），覆盖 **17 种项目类型**、**11 种语言生态** 和 **3 个生命周期阶段**。
 
 ## 什么是 Harness Engineering？
 
@@ -23,6 +23,7 @@
 
 - "审查我的仓库的 AI 编码就绪度"
 - "审计这个仓库的 harness 成熟度"
+- "快速检查我的仓库 harness 健康度"
 - "为我的项目设置 AGENTS.md"
 - "为我的新项目设计 harness 策略"
 - "为什么我的 AI agent 总是写出烂代码？"
@@ -30,7 +31,10 @@
 ## 三种模式
 
 ### 模式 1：审计
-评估仓库的 harness 成熟度，覆盖 8 个维度、45 个检查项。可按**项目类型配置文件**和**生命周期阶段**进行配置。输出 A-F 分级报告和改进路线图。支持 monorepo 逐包审计。
+评估仓库的 harness 成熟度，覆盖 8 个维度。提供两种深度：
+
+- **快速审计** — 15 项生命体征检查，覆盖全部 8 个维度。精简报告 + Top 3 改进行动。约 30 分钟。由 Pre-Assessment Gate（2-3 个 Yes）或 `--quick` 标志触发。
+- **完整审计** — 全部 45 项评分。可按**项目类型配置文件**和**生命周期阶段**进行配置。输出 A-F 分级报告和详细改进路线图。支持 monorepo 逐包审计。
 
 ### 模式 2：实施
 按需设置具体的 harness 组件：AGENTS.md、CI 流水线、lint 规则、测试策略等。提供多个 CI 平台和语言生态的模板。
@@ -70,6 +74,15 @@
 ### 多生态支持（11 种生态）
 Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin、Dart/Flutter、PHP
 
+### Pre-Assessment Gate（预评估门控）
+5 个问题的分流机制，路由到合适的审计深度：
+
+| "Yes" 数量 | 路由 | 说明 |
+|------------|------|------|
+| **4-5** | 完整审计 | 45 项，详细报告 + 改进路线图 |
+| **2-3** | 快速审计 | 15 项生命体征检查，精简报告，约 30 分钟 |
+| **0-1** | 跳过 | 基础 AGENTS.md + pre-commit hook + lint 设置 |
+
 ### 增强审计脚本
 超越文件存在性的内容级分析：
 - 结构化日志框架检测
@@ -77,6 +90,7 @@ Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin
 - AGENTS.md 质量分析（行数、文档链接、命令引用）
 - 技术债务密度扫描（TODO/FIXME/HACK）
 - Monorepo 自动检测和包发现
+- **快速模式**：15 项生命体征快速分诊（`--quick` / `-Quick`）
 - **蓝图模式**：缺口分析 + 优先级推荐 + 模板映射
 - **持久化模式**：将蓝图保存到 `harness-system/MASTER.md`，跨会话复用
 - **多输出格式**：JSON、Markdown、Blueprint
@@ -129,6 +143,10 @@ harness-engineering-guide/
 ## 审计脚本用法
 
 ```bash
+# 快速审计（15 项生命体征检查）
+bash scripts/harness-audit.sh /path/to/repo --quick
+bash scripts/harness-audit.sh /path/to/repo --quick --profile backend-api
+
 # 基本审计（JSON 输出，向后兼容）
 bash scripts/harness-audit.sh /path/to/repo
 
@@ -154,6 +172,7 @@ bash scripts/harness-audit.sh /path/to/repo --monorepo
 bash scripts/harness-audit.sh /path/to/repo --blueprint --output reports/
 
 # PowerShell 等价
+pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Quick
 pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Profile backend-api -Stage growth
 pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Blueprint
 pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Persist

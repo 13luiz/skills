@@ -1,6 +1,6 @@
 # Harness Engineering Guide
 
-A comprehensive skill for auditing, designing, and implementing environment constraints and feedback loops for AI coding agents. Supports **17 project types**, **11 language ecosystems**, and **3 lifecycle stages**.
+A comprehensive skill for auditing, designing, and implementing environment constraints and feedback loops for AI coding agents. Supports **Quick Audit** (15 vital-sign items) and **Full Audit** (45 items) across **17 project types**, **11 language ecosystems**, and **3 lifecycle stages**.
 
 ## What is Harness Engineering?
 
@@ -23,6 +23,7 @@ Say any of the following to an AI agent to trigger this skill:
 
 - "Review my repo for AI coding readiness"
 - "Audit this repo's harness maturity"
+- "Quick check my repo's harness health"
 - "Set up AGENTS.md for my project"
 - "Design a harness strategy for my new project"
 - "Why does my AI agent keep writing bad code?"
@@ -30,7 +31,10 @@ Say any of the following to an AI agent to trigger this skill:
 ## Three Modes
 
 ### Mode 1: Audit
-Evaluate the repo's harness maturity across 8 dimensions with 45 check items. Configurable by **project type profile** and **lifecycle stage**. Outputs an A–F graded report with an improvement roadmap. Supports monorepo per-package auditing.
+Evaluate the repo's harness maturity across 8 dimensions. Two depth levels:
+
+- **Quick Audit** — 15 vital-sign items covering all 8 dimensions. Streamlined report with Top 3 actions. ~30 minutes. Triggered by Pre-Assessment Gate (2-3 Yes) or `--quick` flag.
+- **Full Audit** — All 45 items scored. Configurable by **project type profile** and **lifecycle stage**. Outputs an A–F graded report with a detailed improvement roadmap. Supports monorepo per-package auditing.
 
 ### Mode 2: Implement
 Set up specific harness components on demand: AGENTS.md, CI pipelines, lint rules, testing strategies, and more. Templates available for multiple CI platforms and language ecosystems.
@@ -71,6 +75,15 @@ Reduces audit scope for projects at different maturity levels:
 Detection rules, tool recommendations, and CI commands for:
 Node.js/TypeScript, Python, Go, Rust, Ruby, Java, C#/.NET, Swift, Kotlin, Dart/Flutter, PHP
 
+### Pre-Assessment Gate
+A 5-question triage that routes to the right audit depth:
+
+| "Yes" Count | Route | Description |
+|-------------|-------|-------------|
+| **4-5** | Full Audit | 45 items, detailed report with improvement roadmap |
+| **2-3** | Quick Audit | 15 vital-sign items, streamlined report, ~30 min |
+| **0-1** | Skip | Basic AGENTS.md + pre-commit hook + lint setup |
+
 ### Enhanced Audit Scripts
 Content-level analysis beyond file existence:
 - Structured logging framework detection
@@ -80,6 +93,7 @@ Content-level analysis beyond file existence:
 - Monorepo auto-detection and package discovery
 - **Blueprint mode**: gap analysis with prioritized recommendations and template mappings
 - **Persist mode**: save blueprint to `harness-system/MASTER.md` for cross-session reuse
+- **Quick mode**: 15 vital-sign items for fast triage (`--quick` / `-Quick`)
 - **Multiple output formats**: JSON, Markdown, Blueprint
 
 ### Multi-Platform Templates
@@ -138,6 +152,10 @@ harness-engineering-guide/
 ## Audit Script Usage
 
 ```bash
+# Quick Audit (15 vital-sign items)
+bash scripts/harness-audit.sh /path/to/repo --quick
+bash scripts/harness-audit.sh /path/to/repo --quick --profile backend-api
+
 # Basic audit (JSON output, backward compatible)
 bash scripts/harness-audit.sh /path/to/repo
 
@@ -163,6 +181,7 @@ bash scripts/harness-audit.sh /path/to/repo --monorepo
 bash scripts/harness-audit.sh /path/to/repo --blueprint --output reports/
 
 # PowerShell equivalents
+pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Quick
 pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Profile backend-api -Stage growth
 pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Blueprint
 pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Persist

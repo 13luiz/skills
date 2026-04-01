@@ -2,7 +2,8 @@
   "_meta": {
     "description": "Machine-readable version of all 45 audit checklist items from references/checklist.md.",
     "usage": "Cross-reference with stages.json for active items and profiles.json for skip/substitute items.",
-    "scoring": "PASS=1.0, PARTIAL=0.5, FAIL=0.0. dimension_score = (sum / count) * 100. final = sum(dim_score * weight)."
+    "scoring": "PASS=1.0, PARTIAL=0.5, FAIL=0.0. dimension_score = (sum / count) * 100. final = sum(dim_score * weight).",
+    "quick_mode": "15 vital-sign items marked with quick_mode: true. These cover all 8 dimensions and represent the highest-leverage check per dimension."
   },
   "items": [
     {
@@ -11,6 +12,7 @@
       "dimension_name": "Architecture Documentation & Knowledge Management",
       "name": "Agent Instruction File Exists",
       "control_element": "goal_state",
+      "quick_mode": true,
       "stages": ["bootstrap", "growth", "mature"],
       "auto_detect": {
         "type": "glob",
@@ -43,6 +45,7 @@
       "dimension_name": "Architecture Documentation & Knowledge Management",
       "name": "Architecture Documentation",
       "control_element": "goal_state",
+      "quick_mode": true,
       "stages": ["growth", "mature"],
       "auto_detect": {
         "type": "glob",
@@ -91,6 +94,7 @@
       "dimension_name": "Mechanical Constraints",
       "name": "CI Pipeline Exists and Blocks",
       "control_element": "actuator",
+      "quick_mode": true,
       "stages": ["bootstrap", "growth", "mature"],
       "auto_detect": {
         "type": "glob",
@@ -107,6 +111,7 @@
       "dimension_name": "Mechanical Constraints",
       "name": "Linter Enforcement",
       "control_element": "actuator",
+      "quick_mode": true,
       "stages": ["bootstrap", "growth", "mature"],
       "auto_detect": {
         "type": "glob+content",
@@ -141,6 +146,7 @@
       "dimension_name": "Mechanical Constraints",
       "name": "Type Safety",
       "control_element": "actuator",
+      "quick_mode": true,
       "stages": ["bootstrap", "growth", "mature"],
       "auto_detect": {
         "type": "glob+content",
@@ -206,6 +212,7 @@
       "dimension_name": "Feedback Loops & Observability",
       "name": "Structured Logging",
       "control_element": "sensor",
+      "quick_mode": true,
       "stages": ["growth", "mature"],
       "auto_detect": {
         "type": "content",
@@ -270,6 +277,7 @@
       "dimension_name": "Feedback Loops & Observability",
       "name": "Diagnostic Error Context",
       "control_element": "sensor",
+      "quick_mode": true,
       "stages": ["growth", "mature"],
       "auto_detect": {
         "type": "content",
@@ -286,6 +294,7 @@
       "dimension_name": "Testing & Verification",
       "name": "Test Suite Exists",
       "control_element": "sensor_actuator",
+      "quick_mode": true,
       "stages": ["bootstrap", "growth", "mature"],
       "auto_detect": {
         "type": "glob",
@@ -302,6 +311,7 @@
       "dimension_name": "Testing & Verification",
       "name": "Tests Run in CI and Block",
       "control_element": "sensor_actuator",
+      "quick_mode": true,
       "stages": ["bootstrap", "growth", "mature"],
       "auto_detect": {
         "type": "content",
@@ -350,6 +360,7 @@
       "dimension_name": "Testing & Verification",
       "name": "End-to-End Verification",
       "control_element": "sensor_actuator",
+      "quick_mode": true,
       "stages": ["growth", "mature"],
       "auto_detect": {
         "type": "glob+content",
@@ -399,6 +410,7 @@
       "dimension_name": "Context Engineering",
       "name": "Externalized Knowledge",
       "control_element": "goal_state",
+      "quick_mode": true,
       "stages": ["bootstrap", "growth", "mature"],
       "auto_detect": {
         "type": "glob",
@@ -479,6 +491,7 @@
       "dimension_name": "Entropy Management & Garbage Collection",
       "name": "Codified Golden Principles",
       "control_element": "feedback_loop",
+      "quick_mode": true,
       "stages": ["growth", "mature"],
       "auto_detect": {
         "type": "content",
@@ -592,6 +605,7 @@
       "dimension_name": "Long-Running Task Support",
       "name": "Environment Recovery",
       "control_element": "feedback_loop",
+      "quick_mode": true,
       "stages": ["bootstrap", "growth", "mature"],
       "auto_detect": {
         "type": "glob",
@@ -641,6 +655,7 @@
       "dimension_name": "Safety Rails",
       "name": "Least-Privilege Credentials",
       "control_element": "actuator_protective",
+      "quick_mode": true,
       "stages": ["bootstrap", "growth", "mature"],
       "auto_detect": {
         "type": "manual",
@@ -673,6 +688,7 @@
       "dimension_name": "Safety Rails",
       "name": "Rollback Capability",
       "control_element": "actuator_protective",
+      "quick_mode": true,
       "stages": ["growth", "mature"],
       "auto_detect": {
         "type": "content",

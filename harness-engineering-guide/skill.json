@@ -1,8 +1,8 @@
 {
   "name": "harness-engineering-guide",
   "displayName": "Harness Engineering Guide",
-  "description": "Audit, design, and implement AI agent harnesses — the constraints, feedback loops, and verification systems that make AI coding agents reliable. 8 dimensions, 45 checklist items, 17 project profiles, 11 ecosystems, 3 lifecycle stages.",
-  "version": "1.1.0",
+  "description": "Audit, design, and implement AI agent harnesses — the constraints, feedback loops, and verification systems that make AI coding agents reliable. Quick Audit (15 vital-sign items) or Full Audit (45 items), 8 dimensions, 17 project profiles, 11 ecosystems, 3 lifecycle stages.",
+  "version": "1.1.1",
   "author": "Luiz",
   "license": "Apache-2.0",
   "repository": "https://github.com/13luiz/skills",

@@ -226,6 +226,47 @@ In short: **Profile sets the base weights. Stage filters the scope and may overr
 
 ---
 
+## Quick Mode Scoring
+
+Quick Audit uses 15 vital-sign items (marked `quick_mode: true` in `data/checklist-items.json`) across all 8 dimensions.
+
+### Item Selection
+
+| Dim | Items | Rationale |
+|-----|-------|-----------|
+| 1 | 1.1, 1.3 | Agent entry point + architecture boundary awareness |
+| 2 | 2.1, 2.2, 2.4 | The three highest-ROI mechanical constraints |
+| 3 | 3.1, 3.5 | Runtime signal quality (logging + error diagnostics) |
+| 4 | 4.1, 4.2, 4.5 | Test existence + CI enforcement + E2E coverage |
+| 5 | 5.1 | Knowledge externalization baseline |
+| 6 | 6.1 | Principle documentation (entropy anchor) |
+| 7 | 7.4 | Environment recovery (session bootstrap) |
+| 8 | 8.1, 8.3 | Credential scoping + rollback capability |
+
+### Scoring Rules
+
+- Use the same per-item PASS (1.0) / PARTIAL (0.5) / FAIL (0.0) scale.
+- Dimension scores are calculated the same way: `(sum of quick item points / number of quick items in dimension) * 100`.
+- Dimension weights use default weights (or profile weights if a profile is selected). Dimensions with 1 item get their full default weight. Normalize so weights sum to 1.0.
+- Final score and grade thresholds are identical to Full Audit.
+
+### Escalation Rule
+
+If **any dimension scores below 50%**, the Quick Report must include an upgrade recommendation:
+
+> *"Dimension [N] scored below 50%. A Full Audit is recommended to identify specific gaps and generate a detailed improvement roadmap."*
+
+### Limitations
+
+Quick Audit provides a directional health check, not a comprehensive assessment. It intentionally omits:
+- Advanced practices (adversarial verification, durable execution, flake management)
+- Depth checks (coverage thresholds, formatter enforcement, dependency direction)
+- Organizational maturity indicators (audit logging, security path marking, protocol trust)
+
+When in doubt, upgrade to Full Audit.
+
+---
+
 ## Score Interpretation
 
 **A (85-100): "Ship confidently with agents"**

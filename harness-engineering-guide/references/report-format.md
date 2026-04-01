@@ -78,6 +78,55 @@ Standard report template for Mode 1 (Audit) output. The report should be generat
 
 ---
 
+## Quick Report Template
+
+Used by Quick Audit mode (15 vital-sign items). Streamlined format focused on dimension health and immediate actions.
+
+```markdown
+# Quick Harness Audit: [Project Name]
+
+**Date**: [YYYY-MM-DD]
+**Profile**: [project type]
+**Ecosystem**: [detected ecosystem]
+**Language**: [report language] ([ISO 639-1 code])
+**Mode**: Quick Audit (15 vital-sign items)
+
+## Overall Grade: [Letter] ([Score]/100)
+
+## Executive Summary
+[2-3 sentences on harness health based on vital signs. Note any dimensions flagged for escalation.]
+
+## Dimension Overview
+| # | Dimension | Quick Items | Score | Weight | Weighted | Status |
+|---|-----------|-------------|-------|--------|----------|--------|
+| 1 | Architecture Docs | 1.1, 1.3 | ...% | 15% | ... | OK / WARN |
+| 2 | Mechanical Constraints | 2.1, 2.2, 2.4 | ...% | 20% | ... | OK / WARN |
+| 3 | Feedback & Observability | 3.1, 3.5 | ...% | 15% | ... | OK / WARN |
+| 4 | Testing & Verification | 4.1, 4.2, 4.5 | ...% | 15% | ... | OK / WARN |
+| 5 | Context Engineering | 5.1 | ...% | 10% | ... | OK / WARN |
+| 6 | Entropy Management | 6.1 | ...% | 10% | ... | OK / WARN |
+| 7 | Long-Running Tasks | 7.4 | ...% | 10% | ... | OK / WARN |
+| 8 | Safety Rails | 8.1, 8.3 | ...% | 5% | ... | OK / WARN |
+
+*Status: OK = dimension >= 50%, WARN = dimension < 50% (escalation recommended)*
+
+## Key Findings
+| Item | Name | Score | Evidence |
+|------|------|-------|----------|
+[One row per item, sorted: FAIL first, then PARTIAL, then PASS]
+
+## Top 3 Improvement Actions
+1. [Highest-impact action with specific template or reference]
+2. [Second action]
+3. [Third action]
+
+## Escalation Recommendation
+[If any dimension < 50%: "Dimensions [list] scored below 50%. A Full Audit is recommended to identify specific gaps."]
+[If all dimensions >= 50%: "No escalation needed. Consider a Full Audit before major milestones or team scaling."]
+```
+
+---
+
 ## File Naming Convention
 
 ```
@@ -86,6 +135,7 @@ reports/<YYYY-MM-DD>_<repo-name>_audit[.<lang>].md
 
 - English reports omit the language suffix: `2026-04-01_acme_audit.md`
 - Non-English reports include the ISO 639-1 suffix: `2026-04-01_acme_audit.zh.md`
+- Quick Audit reports use `quick-audit` suffix: `2026-04-01_acme_quick-audit.md`
 - Use the language code determined in Audit Step 0
 
 ---
