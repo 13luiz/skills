@@ -47,7 +47,7 @@ Design a complete harness strategy scaled to team size, across three maturity le
 ```mermaid
 flowchart TD
     Start["Skill Triggered"] --> ModeSelect{"Select Mode"}
-    ModeSelect -->|"Audit"| PreGate["Pre-Assessment Gate\n(5 questions)"]
+    ModeSelect -->|"Audit"| PreGate["Pre-Assessment Gate\n(4 complexity signals)"]
     ModeSelect -->|"Implement"| Implement["Mode 2: Set Up Components"]
     ModeSelect -->|"Design"| Design["Mode 3: Design Strategy"]
 
@@ -112,19 +112,33 @@ ESLint (JS/TS), import-linter (Python), depguard (Go), clippy + Cargo workspace 
 Other ecosystems provide detection + CI commands; boundary rules require manual setup.
 
 ### Pre-Assessment Gate
-A 5-question triage that routes to the right audit depth:
+A complexity-signal router that matches audit depth to project size and AI usage:
 
-| "Yes" Count | Route | Description |
-|-------------|-------|-------------|
-| **4-5** | Full Audit | 45 items, detailed report with improvement roadmap |
-| **2-3** | Quick Audit | 15 vital-sign items, streamlined report, ~30 min |
-| **0-1** | Skip | Basic AGENTS.md + pre-commit hook + lint setup |
+| Signal | Skip | Quick Audit | Full Audit |
+|--------|------|-------------|------------|
+| **Codebase size** | <500 LOC | 500–10k LOC | >10k LOC |
+| **Contributors** (human+agent) | 1 | 2–5 | >5 |
+| **CI maturity** | None | Basic (1–2 jobs) | Multi-job pipeline |
+| **AI agent role** | Not used | Regular assist | Primary workflow |
+
+Route = highest level triggered by any signal. User override always available.
+
+### Two-Tier Assessment Model
+Audit scoring separates script detection (Tier 1) from LLM evaluation (Tier 2):
+
+- **Tier 1 — Script pre-screening**: `dimension-scanners.sh` collects structural signals (file existence, line counts, framework detection via grep, CI content analysis). Fast, deterministic, reproducible.
+- **Tier 2 — LLM final scoring**: The LLM reads script output as evidence, then reads files to make PASS/PARTIAL/FAIL judgments. Handles quality questions scripts cannot answer.
+
+Each checklist item carries a `script_role` field: `definitive` (6 items — script output IS the score), `prescreen` (27 items — script provides evidence, LLM decides), or `none` (12 items — purely LLM/human assessed). See `references/scoring-rubric.md` § Two-Tier Assessment Model.
 
 ### Enhanced Audit Scripts
 Content-level analysis beyond file existence:
+- Agent instruction file quality signals (line count, non-empty check)
 - Structured logging framework detection
 - Metrics/tracing configuration detection
 - AGENTS.md quality analysis (line count, doc links, command refs)
+- Test file non-empty sampling (filters out placeholder test files)
+- Init script content depth check (distinguishes stubs from real scripts)
 - Tech debt density scanning (TODO/FIXME/HACK)
 - Monorepo auto-detection and package discovery
 - **Blueprint mode**: gap analysis with prioritized recommendations and template mappings

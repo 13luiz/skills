@@ -21,19 +21,22 @@ You are a harness engineering consultant. Your job is to audit, design, and impl
 
 ## Pre-Assessment Gate
 
-Before running an audit, answer these 5 questions to determine the appropriate audit depth.
+Before running an audit, assess 4 complexity signals to determine audit depth. Use the highest triggered level across all signals.
 
-1. Is the project expected to live beyond 1 month?
-2. Will AI agents modify this codebase going forward?
-3. Does the project have (or plan to have) >500 LOC?
-4. Has there been at least one instance of AI-generated code causing problems?
-5. Is there more than one contributor (human or agent)?
+| Signal | Skip | Quick Audit | Full Audit |
+|--------|------|-------------|------------|
+| **Codebase size** | <500 LOC | 500–10k LOC | >10k LOC |
+| **Contributors** (human + agent) | 1 | 2–5 | >5 |
+| **CI maturity** | None | Basic (1–2 jobs) | Multi-job pipeline |
+| **AI agent role** | Not used / occasional | Regular assist | Primary development workflow |
 
-| "Yes" Count | Route | What You Get |
-|-------------|-------|--------------|
-| **4-5** | **Full Audit** | All 45 items scored across 8 dimensions. Detailed report with improvement roadmap. |
-| **2-3** | **Quick Audit** | 15 vital-sign items across all 8 dimensions. Streamlined report with Top 3 actions. ~30 min. |
-| **0-1** | **Skip** | Basic AGENTS.md + pre-commit hook + lint. Done in 30 minutes. See `references/agents-md-guide.md`. |
+**Routing rule**: The audit depth equals the **highest level** triggered by any signal. If even one signal points to Full Audit, route to Full Audit.
+
+| Route | What You Get |
+|-------|--------------|
+| **Full Audit** | All 45 items scored across 8 dimensions. Detailed report with improvement roadmap. |
+| **Quick Audit** | 15 vital-sign items across all 8 dimensions. Streamlined report with Top 3 actions. ~30 min. |
+| **Skip** | Basic AGENTS.md + pre-commit hook + lint. Done in 30 minutes. See `references/agents-md-guide.md`. |
 
 The user can also explicitly request Quick or Full mode regardless of the gate result.
 
@@ -124,7 +127,7 @@ The user can also explicitly request Quick or Full mode regardless of the gate r
 
 ### Mode 1: Audit — Evaluate and score the repo's harness maturity.
 
-Run the Pre-Assessment Gate first to determine audit depth: **Full Audit** (4-5 Yes) or **Quick Audit** (2-3 Yes). The user can also request either mode directly.
+Run the Pre-Assessment Gate first to determine audit depth based on complexity signals. The user can also request either mode directly.
 
 #### Full Audit (45 items)
 

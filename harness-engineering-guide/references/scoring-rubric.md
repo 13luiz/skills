@@ -51,6 +51,38 @@ Dimension weights:
 
 ---
 
+## Two-Tier Assessment Model
+
+Audit scoring uses a two-tier approach. Understanding which tier applies to each item prevents the false expectation that scripts perform deep content analysis.
+
+### Tier 1: Script Pre-screening (`dimension-scanners.sh`)
+
+The scanner scripts collect **structural signals**: file existence, line counts, grep matches for framework imports, CI config content analysis, and directory structure. These signals are fast, deterministic, and reproducible. They answer "what exists?" not "is it good?"
+
+Script output is a JSON summary consumed by the LLM auditor as evidence — not as a final verdict (unless the item is marked `script_role: "definitive"`).
+
+### Tier 2: LLM Final Scoring
+
+The LLM auditor reads script output, then reads relevant files to make PASS/PARTIAL/FAIL judgments based on the rubric criteria below. This tier handles quality questions the script cannot answer: "Is this AGENTS.md concise and well-structured?" "Are these tests actually testing meaningful behavior?" "Does this architecture doc define useful boundaries?"
+
+### Item Classification
+
+Each item in `data/checklist-items.json` carries two classification fields:
+
+| Field | Values | Purpose |
+|-------|--------|---------|
+| `assessment_type` | `mechanical` / `judgment` | **Objectivity**: Can two auditors independently reach the same score? Mechanical items have low expected variance (<0.5 point). Judgment items have moderate variance (up to 1.0 point). |
+| `auto_detect.script_role` | `definitive` / `prescreen` / `none` | **Automation**: What can the bash/PowerShell scanner determine? `definitive` = script output IS the score. `prescreen` = script provides evidence, LLM decides. `none` = script cannot help. |
+
+These axes are orthogonal. An item can be `mechanical` (objectively verifiable) but `script_role: "none"` (the script doesn't check it — e.g., 8.1 credential scoping requires platform inspection). Conversely, an item can be `judgment` (subjective) but `script_role: "definitive"` (the glob check is the agreed proxy — e.g., 7.1 task decomposition: exec-plans directory exists or doesn't).
+
+### Practical Impact
+
+- **For script-only audits** (`harness-audit.sh` without LLM): Only `script_role: "definitive"` items (6 of 45) produce reliable scores. All other items should be marked as "pre-screened, awaiting LLM evaluation."
+- **For LLM audits**: Script output accelerates Tier 2 by narrowing what the LLM needs to read. Items with `script_role: "prescreen"` (27 of 45) have script evidence that anchors the LLM's judgment. Items with `script_role: "none"` (12 of 45) require the LLM to gather evidence independently.
+
+---
+
 ## Borderline Guidance
 
 ### PARTIAL vs FAIL

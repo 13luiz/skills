@@ -65,6 +65,15 @@ function Invoke-Dim1Scan {
         ForEach-Object { $_.FullName.Replace((Get-Location).Path + [IO.Path]::DirectorySeparatorChar, '').Replace('\', '/') }
     if ($cursorRules) { $script:agentFiles = @($script:agentFiles) + @($cursorRules) | Sort-Object -Unique }
 
+    $script:agentFileLineCount = 0; $script:agentFileNonempty = $false
+    foreach ($af in @("AGENTS.md", "CLAUDE.md", "CODEX.md")) {
+        if (Test-Path $af) {
+            $script:agentFileLineCount = (Get-Content $af -ErrorAction SilentlyContinue | Measure-Object).Count
+            if ($script:agentFileLineCount -gt 1) { $script:agentFileNonempty = $true }
+            break
+        }
+    }
+
     $script:docsExists = Test-Path "docs" -PathType Container
     $script:docsHasIndex = (Test-Path "docs/index.md") -or (Test-Path "docs/INDEX.md") -or (Test-Path "docs/README.md")
     $script:docsHasArch = (Test-Path "docs/ARCHITECTURE.md") -or (Test-Path "ARCHITECTURE.md")
@@ -73,6 +82,8 @@ function Invoke-Dim1Scan {
 
     return [ordered]@{
         agent_instruction_files = @($script:agentFiles)
+        agent_file_line_count   = $script:agentFileLineCount
+        agent_file_nonempty     = $script:agentFileNonempty
         docs_exists             = $script:docsExists
         docs_has_index          = $script:docsHasIndex
         docs_has_architecture   = $script:docsHasArch
@@ -202,6 +213,16 @@ function Invoke-Dim4Scan {
         Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and ($_.Name -match '\.(test|spec)\.' -or $_.Name -match '(_test\.|test_)') } |
         Measure-Object).Count
 
+    $testFilesSampled = 0; $testFilesNonempty = 0
+    $sampleFiles = Get-ChildItem -Path . -Recurse -Depth 5 -File -ErrorAction SilentlyContinue |
+        Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and ($_.Name -match '\.(test|spec)\.' -or $_.Name -match '(_test\.|test_)') } |
+        Select-Object -First 5
+    foreach ($tf in $sampleFiles) {
+        $testFilesSampled++
+        $lc = (Get-Content $tf.FullName -ErrorAction SilentlyContinue | Measure-Object).Count
+        if ($lc -gt 10) { $testFilesNonempty++ }
+    }
+
     $script:hasFeatureTracker = (Test-Path "features.json") -or (Test-Path "feature-checklist.json") -or
         (Test-Path "docs/features.json") -or (Test-Path "docs/feature-checklist.json")
 
@@ -227,10 +248,12 @@ function Invoke-Dim4Scan {
     }
 
     return [ordered]@{
-        test_dirs           = @($script:testDirs)
-        test_files_count    = $script:testFilesCount
-        has_feature_tracker = $script:hasFeatureTracker
-        coverage_thresholds = $covResult
+        test_dirs                  = @($script:testDirs)
+        test_files_count           = $script:testFilesCount
+        test_files_nonempty_sample = [ordered]@{ sampled = $testFilesSampled; nonempty = $testFilesNonempty }
+        ci_runs_test               = $ciContent.ci_runs_test
+        has_feature_tracker        = $script:hasFeatureTracker
+        coverage_thresholds        = $covResult
     }
 }
 
@@ -350,11 +373,28 @@ function Invoke-Dim7Scan {
         (Test-Path "Makefile") -or (Test-Path "docker-compose.yml") -or
         (Test-Path "docker-compose.yaml") -or (Test-Path "devcontainer.json") -or (Test-Path ".devcontainer") -or
         (Test-Path "flake.nix") -or (Test-Path "shell.nix")
+    $initScriptLines = 0; $initScriptFile = ""
+    foreach ($name in @("init.sh", "setup.sh", "Makefile", "docker-compose.yml", "docker-compose.yaml", "devcontainer.json", "flake.nix", "shell.nix")) {
+        if (Test-Path $name) {
+            $initScriptLines = (Get-Content $name -ErrorAction SilentlyContinue | Measure-Object).Count
+            $initScriptFile = $name
+            break
+        }
+    }
+    if (-not $initScriptFile -and (Test-Path ".devcontainer" -PathType Container)) {
+        $dcFile = Get-ChildItem ".devcontainer" -Filter "*.json" -File -ErrorAction SilentlyContinue | Select-Object -First 1
+        if ($dcFile) {
+            $initScriptLines = (Get-Content $dcFile.FullName -ErrorAction SilentlyContinue | Measure-Object).Count
+            $initScriptFile = ".devcontainer/$($dcFile.Name)"
+        }
+    }
+
     $script:hasProgressTracking = (Test-Path "progress.txt") -or (Test-Path "progress.md") -or
         (Test-Path "progress.json") -or (Test-Path "exec-plans") -or (Test-Path "docs/exec-plans")
 
     return [ordered]@{
         has_init_script       = $script:hasInitScript
+        init_script_quality   = [ordered]@{ file = $initScriptFile; line_count = $initScriptLines }
         has_progress_tracking = $script:hasProgressTracking
     }
 }

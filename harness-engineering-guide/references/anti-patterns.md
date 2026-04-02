@@ -4,6 +4,17 @@ Common anti-patterns found in harness engineering. Flag these during audit (Mode
 
 ---
 
+## Harness Controllability Classification
+
+Anti-patterns are classified by whether the harness can **eliminate** or only **reduce** the problem:
+
+- **Preventable** — The harness can eliminate the problem through mechanical constraints: CI gates, lint rules, permission scoping, structural enforcement. Applies to items #1–22, #25.
+- **Mitigable** — The problem originates from inherent LLM limitations; the harness can reduce frequency and blast radius but cannot fully eliminate it. Applies to items #23 (infinite tool call loops), #24 (context overflow hallucinations).
+
+For mitigable anti-patterns, use defense-in-depth: circuit breakers, structured checkpoints, proactive session management. Communicate residual risk honestly — do not promise elimination.
+
+---
+
 ## Verification Anti-Patterns
 
 1. **AI tests verifying AI code** — Circular verification. Tests should independently verify logic, not mirror the implementation they claim to check.
@@ -23,7 +34,7 @@ Common anti-patterns found in harness engineering. Flag these during audit (Mode
 9. **Tool hoarding** — Dozens of MCP servers bloat context and break cache stability. Target <10 always-loaded servers.
 10. **Dynamic tool catalog mid-session** — Invalidates prompt cache. Fix the tool catalog at session start.
 11. **Trusting tool output blindly** — MCP server output is untrusted input. Validate before acting on results.
-23. **Infinite tool call loops** — Agent calls a tool whose output triggers the agent to call the same tool again, creating an unbounded cycle (distinct from retry loops in harness components). Common patterns: search→read→search→read on the same file, or agent-spawn chains where child agents spawn more children. Add explicit loop detection (call count limits per tool per session) and circuit breakers that escalate to human after N repeated calls.
+23. **[Mitigable] Infinite tool call loops** — Agent calls a tool whose output triggers the agent to call the same tool again, creating an unbounded cycle (distinct from retry loops in harness components). Common patterns: search→read→search→read on the same file, or agent-spawn chains where child agents spawn more children. Add explicit loop detection (call count limits per tool per session) and circuit breakers that escalate to human after N repeated calls.
 
 ## Constraint Anti-Patterns
 
@@ -34,7 +45,7 @@ Common anti-patterns found in harness engineering. Flag these during audit (Mode
 
 14. **Knowledge lives in Slack** — Critical decisions, conventions, and context exist only in chat threads, Notion pages, or email. Agents cannot access external channels. Externalize to in-repo docs or ADRs.
 15. **TODO-driven debt management** — Using `TODO` / `FIXME` / `HACK` comments as the sole mechanism for tracking tech debt. Comments are invisible to planning and trend analysis. Use a maintained tracker artifact.
-24. **Context overflow hallucinations** — Agent's context window fills up, causing it to lose sight of earlier files, instructions, or constraints. The agent then "hallucinates" about code it can no longer see — referencing functions that don't exist, misremembering file structures, or silently dropping requirements. Mitigate with streaming audit batches (see SKILL.md § Streaming Audit Protocol), structured checkpoint files, and proactive session restarts at ~80% context capacity rather than pushing to the limit.
+24. **[Mitigable] Context overflow hallucinations** — Agent's context window fills up, causing it to lose sight of earlier files, instructions, or constraints. The agent then "hallucinates" about code it can no longer see — referencing functions that don't exist, misremembering file structures, or silently dropping requirements. Mitigate with streaming audit batches (see SKILL.md § Streaming Audit Protocol), structured checkpoint files, and proactive session restarts at ~80% context capacity rather than pushing to the limit.
 
 ## Process Anti-Patterns
 

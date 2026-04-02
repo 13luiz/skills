@@ -4,12 +4,12 @@
     "usage": "Load the matching profile to adjust audit weights and skip irrelevant items. All 8 weights are explicit per profile and sum to 1.0. Use variants only when the project clearly fits a sub-category.",
     "default_weights": {
       "dim1_arch_docs": 0.15,
-      "dim2_mechanical": 0.20,
+      "dim2_mechanical": 0.2,
       "dim3_observability": 0.15,
       "dim4_testing": 0.15,
-      "dim5_context": 0.10,
-      "dim6_entropy": 0.10,
-      "dim7_long_running": 0.10,
+      "dim5_context": 0.1,
+      "dim6_entropy": 0.1,
+      "dim7_long_running": 0.1,
       "dim8_safety": 0.05
     },
     "profile_aliases": {
@@ -24,23 +24,30 @@
       "browser-extension": "frontend",
       "smart-contract": "system-infra",
       "script-automation": "devops-iac"
-    }
+    },
+    "calibration_notes": "Weights reflect the relative importance of each dimension for the project type, derived from: (1) industry incident analysis (supply chain attacks, production outages, data breaches), (2) control theory leverage (mechanical constraints have highest leverage on agent code quality), (3) diminishing returns (observability adds little value for non-service code). Initial weights were calibrated against 8 real-repo audits (see evals/evals.json) and are adjusted as more data accumulates. Each profile includes a weight_rationale field explaining its specific calibration."
   },
   "profiles": {
     "frontend": {
       "name": "Frontend Application",
       "description": "SPA, SSR/SSG, or browser extension (React, Vue, Svelte, Angular, Next.js, Nuxt, Astro)",
+      "weight_rationale": "UI visibility and E2E testing are elevated because frontend agents frequently break visual layouts and user flows that only browser-level checks can catch. Observability slightly reduced since frontend services generate fewer server-side signals.",
       "weights": {
         "dim1_arch_docs": 0.15,
-        "dim2_mechanical": 0.20,
+        "dim2_mechanical": 0.2,
         "dim3_observability": 0.11,
         "dim4_testing": 0.19,
-        "dim5_context": 0.10,
-        "dim6_entropy": 0.10,
-        "dim7_long_running": 0.10,
+        "dim5_context": 0.1,
+        "dim6_entropy": 0.1,
+        "dim7_long_running": 0.1,
         "dim8_safety": 0.05
       },
-      "critical_items": ["2.5", "3.1", "3.4", "4.5"],
+      "critical_items": [
+        "2.5",
+        "3.1",
+        "3.4",
+        "4.5"
+      ],
       "skip_items": [],
       "substitute_items": {
         "3.2": "Client-side error tracking and performance monitoring (Sentry, LogRocket, etc.)"
@@ -50,7 +57,9 @@
         "spa": {
           "name": "Single-Page Application",
           "description": "Pure SPA (React, Vue, Svelte, Angular) — no server-side rendering",
-          "skip_items_add": ["3.2"],
+          "skip_items_add": [
+            "3.2"
+          ],
           "notes": "Server-side metrics (3.2) less relevant; substitute with client-side error tracking."
         },
         "ssr": {
@@ -61,7 +70,10 @@
         "browser-extension": {
           "name": "Browser Extension",
           "description": "Chrome, Firefox, Safari browser extension",
-          "critical_items_add": ["8.1", "8.5"],
+          "critical_items_add": [
+            "8.1",
+            "8.5"
+          ],
           "notes": "Security is elevated due to browser API access."
         }
       }
@@ -69,6 +81,7 @@
     "backend": {
       "name": "Backend Service",
       "description": "REST/GraphQL API, web server, or microservice",
+      "weight_rationale": "Observability is the highest-weighted dimension because backend services fail silently without structured logging and tracing. Safety elevated to 0.10 due to direct exposure to user data and external APIs.",
       "weights": {
         "dim1_arch_docs": 0.13,
         "dim2_mechanical": 0.18,
@@ -77,10 +90,20 @@
         "dim5_context": 0.08,
         "dim6_entropy": 0.08,
         "dim7_long_running": 0.08,
-        "dim8_safety": 0.10
+        "dim8_safety": 0.1
       },
-      "critical_items": ["3.1", "3.2", "3.3", "3.5", "8.1", "8.2", "8.4"],
-      "skip_items": ["3.4"],
+      "critical_items": [
+        "3.1",
+        "3.2",
+        "3.3",
+        "3.5",
+        "8.1",
+        "8.2",
+        "8.4"
+      ],
+      "skip_items": [
+        "3.4"
+      ],
       "substitute_items": {
         "3.4": "API response inspection and endpoint health monitoring"
       },
@@ -94,7 +117,9 @@
         "microservice": {
           "name": "Microservice",
           "description": "Microservice in a distributed system",
-          "critical_items_add": ["8.2"],
+          "critical_items_add": [
+            "8.2"
+          ],
           "substitute_items": {
             "3.4": "Service mesh visibility and inter-service tracing"
           },
@@ -105,35 +130,51 @@
     "fullstack": {
       "name": "Full-Stack Application",
       "description": "Monolithic full-stack app (frontend + backend in one repo)",
+      "weight_rationale": "Default weights apply as full-stack projects have balanced concerns across all dimensions. Dependency direction between frontend and backend layers is flagged as critical.",
       "weights": {
         "dim1_arch_docs": 0.15,
-        "dim2_mechanical": 0.20,
+        "dim2_mechanical": 0.2,
         "dim3_observability": 0.15,
         "dim4_testing": 0.15,
-        "dim5_context": 0.10,
-        "dim6_entropy": 0.10,
-        "dim7_long_running": 0.10,
+        "dim5_context": 0.1,
+        "dim6_entropy": 0.1,
+        "dim7_long_running": 0.1,
         "dim8_safety": 0.05
       },
-      "critical_items": ["2.5", "3.4", "4.5"],
+      "critical_items": [
+        "2.5",
+        "3.4",
+        "4.5"
+      ],
       "skip_items": [],
       "notes": "Default weights apply. Dependency direction between frontend/backend layers is critical."
     },
     "library": {
       "name": "Library / Package / CLI Tool",
       "description": "Reusable library, CLI utility, or developer tool published to npm, PyPI, crates.io, Maven, etc.",
+      "weight_rationale": "Testing and mechanical constraints dominate because libraries are consumed as dependencies — supply chain trust requires robust verification. Safety elevated from 0.02 to 0.05 to reflect supply chain attack vectors (event-stream, ua-parser-js, colors.js incidents). Long-running tasks reduced to 0.02 as libraries rarely involve multi-session agent workflows.",
       "weights": {
         "dim1_arch_docs": 0.18,
         "dim2_mechanical": 0.25,
         "dim3_observability": 0.05,
         "dim4_testing": 0.25,
-        "dim5_context": 0.10,
-        "dim6_entropy": 0.10,
-        "dim7_long_running": 0.05,
-        "dim8_safety": 0.02
+        "dim5_context": 0.1,
+        "dim6_entropy": 0.1,
+        "dim7_long_running": 0.02,
+        "dim8_safety": 0.05
       },
-      "critical_items": ["2.2", "2.4", "3.5", "4.1", "4.3"],
-      "skip_items": ["3.2", "3.3", "3.4"],
+      "critical_items": [
+        "2.2",
+        "2.4",
+        "3.5",
+        "4.1",
+        "4.3"
+      ],
+      "skip_items": [
+        "3.2",
+        "3.3",
+        "3.4"
+      ],
       "substitute_items": {
         "3.2": "N/A for libraries and CLI tools",
         "3.3": "N/A for libraries and CLI tools",
@@ -151,18 +192,25 @@
     "client-app": {
       "name": "Client Application",
       "description": "Desktop or mobile app (Electron, Tauri, React Native, Flutter, SwiftUI, native)",
+      "weight_rationale": "Testing elevated to 0.20 because client app regressions are expensive to ship and slow to fix via app store updates. UI visibility is critical for agent-driven development of visual interfaces.",
       "weights": {
         "dim1_arch_docs": 0.15,
-        "dim2_mechanical": 0.20,
-        "dim3_observability": 0.10,
-        "dim4_testing": 0.20,
-        "dim5_context": 0.10,
-        "dim6_entropy": 0.10,
-        "dim7_long_running": 0.10,
+        "dim2_mechanical": 0.2,
+        "dim3_observability": 0.1,
+        "dim4_testing": 0.2,
+        "dim5_context": 0.1,
+        "dim6_entropy": 0.1,
+        "dim7_long_running": 0.1,
         "dim8_safety": 0.05
       },
-      "critical_items": ["2.5", "3.4", "4.5"],
-      "skip_items": ["3.2"],
+      "critical_items": [
+        "2.5",
+        "3.4",
+        "4.5"
+      ],
+      "skip_items": [
+        "3.2"
+      ],
       "substitute_items": {
         "3.2": "Application crash reporting and performance monitoring (Firebase, Sentry)",
         "3.3": "Device log access and remote debugging capability"
@@ -177,7 +225,9 @@
         "mobile": {
           "name": "Mobile Application",
           "description": "Mobile app (React Native, Flutter, SwiftUI, Kotlin/Compose, native iOS/Android)",
-          "skip_items_add": ["3.3"],
+          "skip_items_add": [
+            "3.3"
+          ],
           "notes": "Device testing and UI automation are key."
         }
       }
@@ -185,6 +235,7 @@
     "system-infra": {
       "name": "System / Infrastructure / Specialized",
       "description": "OS-level code, drivers, embedded systems, game engines, smart contracts, or other safety-critical software",
+      "weight_rationale": "Mechanical constraints and testing are paramount due to safety-critical nature. Safety elevated to 0.10 because errors in system/infra code can cause data loss, security breaches, or hardware damage.",
       "weights": {
         "dim1_arch_docs": 0.12,
         "dim2_mechanical": 0.25,
@@ -193,10 +244,21 @@
         "dim5_context": 0.08,
         "dim6_entropy": 0.08,
         "dim7_long_running": 0.07,
-        "dim8_safety": 0.10
+        "dim8_safety": 0.1
       },
-      "critical_items": ["2.2", "2.4", "4.1", "8.1", "8.3", "8.4"],
-      "skip_items": ["3.3", "3.4", "5.3"],
+      "critical_items": [
+        "2.2",
+        "2.4",
+        "4.1",
+        "8.1",
+        "8.3",
+        "8.4"
+      ],
+      "skip_items": [
+        "3.3",
+        "3.4",
+        "5.3"
+      ],
       "substitute_items": {
         "3.4": "Hardware-in-the-loop testing, emulator verification, or local blockchain testing"
       },
@@ -205,7 +267,11 @@
         "game": {
           "name": "Game",
           "description": "Game project (Unity, Unreal, Godot, custom engine)",
-          "critical_items_add": ["1.3", "2.5", "5.5"],
+          "critical_items_add": [
+            "1.3",
+            "2.5",
+            "5.5"
+          ],
           "substitute_items": {
             "3.2": "In-game debug console and profiler integration",
             "3.3": "Editor-integrated debugging and play-mode testing"
@@ -215,7 +281,10 @@
         "smart-contract": {
           "name": "Smart Contract / Blockchain",
           "description": "Solidity, Rust (Solana), Move, CosmWasm smart contracts",
-          "critical_items_add": ["4.5", "8.5"],
+          "critical_items_add": [
+            "4.5",
+            "8.5"
+          ],
           "notes": "Immutable deployments make safety and testing the most critical dimensions."
         }
       }
@@ -223,18 +292,26 @@
     "data-ml": {
       "name": "Data / ML Pipeline",
       "description": "Data processing, ML training, ETL pipelines, Jupyter notebooks",
+      "weight_rationale": "Long-running tasks elevated to 0.15 because ML training jobs and data pipelines are inherently long-running, requiring durable execution and progress tracking. Testing elevated due to data correctness requirements.",
       "weights": {
-        "dim1_arch_docs": 0.10,
+        "dim1_arch_docs": 0.1,
         "dim2_mechanical": 0.15,
         "dim3_observability": 0.15,
-        "dim4_testing": 0.20,
-        "dim5_context": 0.10,
-        "dim6_entropy": 0.10,
+        "dim4_testing": 0.2,
+        "dim5_context": 0.1,
+        "dim6_entropy": 0.1,
         "dim7_long_running": 0.15,
         "dim8_safety": 0.05
       },
-      "critical_items": ["4.1", "7.1", "7.2", "7.6"],
-      "skip_items": ["3.4"],
+      "critical_items": [
+        "4.1",
+        "7.1",
+        "7.2",
+        "7.6"
+      ],
+      "skip_items": [
+        "3.4"
+      ],
       "substitute_items": {
         "3.4": "Experiment tracking UI (MLflow, W&B, TensorBoard)"
       },
@@ -243,18 +320,29 @@
     "devops-iac": {
       "name": "DevOps / IaC / Automation",
       "description": "Infrastructure as Code, utility scripts, cron jobs, build tools (Terraform, Pulumi, Ansible, Helm)",
+      "weight_rationale": "Safety is the highest-weighted dimension (0.15) because IaC directly provisions infrastructure — a misconfigured Terraform plan can destroy production resources. Human confirmation gates and rollback capability are critical.",
       "weights": {
         "dim1_arch_docs": 0.15,
-        "dim2_mechanical": 0.20,
-        "dim3_observability": 0.10,
+        "dim2_mechanical": 0.2,
+        "dim3_observability": 0.1,
         "dim4_testing": 0.15,
         "dim5_context": 0.08,
         "dim6_entropy": 0.07,
-        "dim7_long_running": 0.10,
+        "dim7_long_running": 0.1,
         "dim8_safety": 0.15
       },
-      "critical_items": ["2.1", "2.2", "4.1", "8.1", "8.3", "8.4"],
-      "skip_items": ["3.3", "3.4"],
+      "critical_items": [
+        "2.1",
+        "2.2",
+        "4.1",
+        "8.1",
+        "8.3",
+        "8.4"
+      ],
+      "skip_items": [
+        "3.3",
+        "3.4"
+      ],
       "substitute_items": {
         "3.4": "Terraform plan output review and drift detection"
       },
@@ -263,7 +351,11 @@
         "script-automation": {
           "name": "Script / Automation",
           "description": "Utility scripts, cron jobs, one-off automation, build tools",
-          "skip_items_add": ["3.2", "5.3", "5.4"],
+          "skip_items_add": [
+            "3.2",
+            "5.3",
+            "5.4"
+          ],
           "notes": "Keep it simple. Lint, test, and safety basics. Long-running support matters for scheduled jobs."
         }
       }
@@ -271,6 +363,7 @@
     "monorepo": {
       "name": "Monorepo",
       "description": "Multi-package repository (pnpm workspaces, Turborepo, Nx, Lerna, Cargo workspace, Go modules)",
+      "weight_rationale": "Mechanical constraints elevated to 0.22 because cross-package boundary enforcement is essential in multi-package repos. Entropy management elevated to 0.12 due to scale-driven drift.",
       "weights": {
         "dim1_arch_docs": 0.13,
         "dim2_mechanical": 0.22,
@@ -278,10 +371,15 @@
         "dim4_testing": 0.13,
         "dim5_context": 0.12,
         "dim6_entropy": 0.12,
-        "dim7_long_running": 0.10,
+        "dim7_long_running": 0.1,
         "dim8_safety": 0.05
       },
-      "critical_items": ["2.5", "2.7", "5.5", "6.2"],
+      "critical_items": [
+        "2.5",
+        "2.7",
+        "5.5",
+        "6.2"
+      ],
       "skip_items": [],
       "notes": "Cross-package boundary enforcement is critical. Entropy management matters more due to scale. See references/monorepo-patterns.md for audit flow.",
       "special_handling": "per_package_audit"
@@ -289,6 +387,7 @@
     "ai-agent-runtime": {
       "name": "AI Agent Runtime / Framework",
       "description": "Agent frameworks, LLM orchestrators, autonomous agent runtimes (e.g., OpenClaw, LangGraph, CrewAI, AutoGen)",
+      "weight_rationale": "Context engineering elevated to 0.13 because agent frameworks must manage their own context windows and memory. Long-running tasks elevated to 0.12 due to session persistence requirements. Safety at 0.10 reflects tool protocol trust boundaries.",
       "weights": {
         "dim1_arch_docs": 0.12,
         "dim2_mechanical": 0.15,
@@ -297,10 +396,19 @@
         "dim5_context": 0.13,
         "dim6_entropy": 0.08,
         "dim7_long_running": 0.12,
-        "dim8_safety": 0.10
+        "dim8_safety": 0.1
       },
-      "critical_items": ["3.3", "5.5", "7.1", "7.6", "8.1", "8.6"],
-      "skip_items": ["3.4"],
+      "critical_items": [
+        "3.3",
+        "5.5",
+        "7.1",
+        "7.6",
+        "8.1",
+        "8.6"
+      ],
+      "skip_items": [
+        "3.4"
+      ],
       "substitute_items": {
         "3.4": "Agent session replay and execution trace inspection"
       },

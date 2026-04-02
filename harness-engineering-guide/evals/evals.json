@@ -9,7 +9,16 @@
     "report_output": "reports/<YYYY-MM-DD>_<repo-name>_eval.md",
     "validation": {
       "score_tolerance": 5,
-      "key_findings_match_rate": 0.8
+      "key_findings_match_rate": 0.8,
+      "human_verification_protocol": {
+        "description": "After running an eval, manually verify: (1) each key_finding maps to real evidence in the repo, (2) no critical findings were missed, (3) anti-pattern identification is accurate. Record verification status in the ground_truth_verified field of each eval's expectations.",
+        "verification_checklist": [
+          "Each key_finding has a corresponding file/config in the repo",
+          "Score is within tolerance of independent manual scoring",
+          "No false negatives on must_identify_anti_patterns",
+          "No false positives in key_findings (finding references something that does not exist)"
+        ]
+      }
     },
     "report_path_note": "report_path values are OUTPUT destinations, not pre-existing files. Reports are generated when evals are run. Paths under examples/ serve as golden references once generated."
   },
@@ -23,9 +32,12 @@
       "profile": "monorepo",
       "stage": "mature",
       "language": "en",
-      "purpose": "Historical baseline — harness state before date-based versioning",
+      "purpose": "Regression baseline — harness state before date-based versioning",
       "expectations": {
-        "score_range": [65, 78],
+        "score_range": [
+          65,
+          78
+        ],
         "grade": "B-/C+",
         "key_findings": [
           "AGENTS.md quality — check line count and progressive disclosure",
@@ -34,7 +46,8 @@
           "Monorepo tooling (workspace configuration)",
           "Entropy management gaps likely present"
         ],
-        "must_identify_anti_patterns": []
+        "must_identify_anti_patterns": [],
+        "ground_truth_verified": false
       },
       "report_path": "examples/2025-12_openclaw_v2.0.0-beta5_audit.md"
     },
@@ -47,16 +60,20 @@
       "profile": "monorepo",
       "stage": "mature",
       "language": "en",
-      "purpose": "Time-series point 2 — track harness maturity evolution",
+      "purpose": "Regression tracking — time-series point 2, track harness maturity evolution",
       "expectations": {
-        "score_range": [70, 82],
+        "score_range": [
+          70,
+          82
+        ],
         "grade": "B/B+",
         "key_findings": [
           "Improvements over beta5 baseline",
           "CI pipeline maturity",
           "Documentation structure changes"
         ],
-        "must_identify_anti_patterns": []
+        "must_identify_anti_patterns": [],
+        "ground_truth_verified": false
       },
       "report_path": "examples/2026-01_openclaw_v2026.1.30_audit.md"
     },
@@ -69,16 +86,20 @@
       "profile": "monorepo",
       "stage": "mature",
       "language": "en",
-      "purpose": "Time-series point 3 — track harness maturity evolution",
+      "purpose": "Regression tracking — time-series point 3, track harness maturity evolution",
       "expectations": {
-        "score_range": [72, 85],
+        "score_range": [
+          72,
+          85
+        ],
         "grade": "B/B+",
         "key_findings": [
           "Continued evolution from Jan baseline",
           "Testing and verification improvements",
           "Context engineering maturity"
         ],
-        "must_identify_anti_patterns": []
+        "must_identify_anti_patterns": [],
+        "ground_truth_verified": false
       },
       "report_path": "examples/2026-02_openclaw_v2026.2.26_audit.md"
     },
@@ -91,10 +112,13 @@
       "profile": "monorepo",
       "stage": "mature",
       "language": "en",
-      "purpose": "Golden reference eval — most recent state, used as primary benchmark for skill regression testing",
+      "purpose": "Regression golden reference — most recent state, primary benchmark for skill regression testing",
       "golden_reference": true,
       "expectations": {
-        "score_range": [75, 88],
+        "score_range": [
+          75,
+          88
+        ],
         "grade": "B+/A-",
         "key_findings": [
           "AGENTS.md exists — check conciseness against dynamic threshold",
@@ -108,12 +132,16 @@
         ],
         "must_identify_anti_patterns": [
           "Encyclopedia AGENTS.md (if applicable)"
-        ]
+        ],
+        "ground_truth_verified": false
       },
       "report_path": "examples/2026-03_openclaw_v2026.3.31_audit.md",
       "quick_mode_expectations": {
         "audit_command": "bash scripts/harness-audit.sh /tmp/harness-eval/openclaw --quick --profile monorepo",
-        "score_range": [70, 85],
+        "score_range": [
+          70,
+          85
+        ],
         "grade": "B/B+",
         "key_findings": [
           "1.1 AGENTS.md exists — check conciseness",
@@ -137,7 +165,10 @@
       "language": "en",
       "purpose": "Large TS monorepo (Bun + Turbo) — calibration for high-velocity development projects",
       "expectations": {
-        "score_range": [58, 68],
+        "score_range": [
+          58,
+          68
+        ],
         "grade": "C/C+",
         "key_findings": [
           "32 GitHub Actions workflows — exemplary CI pipeline (2.1 PASS)",
@@ -155,7 +186,8 @@
         "must_identify_anti_patterns": [
           "Trust the agent (no dependency direction enforcement in 20+ package monorepo)",
           "Mislabeled lint script (packages/opencode lint runs bun test --coverage)"
-        ]
+        ],
+        "ground_truth_verified": false
       },
       "report_path": "reports/"
     },
@@ -170,7 +202,10 @@
       "language": "en",
       "purpose": "Rust multi-crate system — validates scoring for safety-critical infrastructure projects",
       "expectations": {
-        "score_range": [63, 72],
+        "score_range": [
+          63,
+          72
+        ],
         "grade": "C+/B-",
         "key_findings": [
           "Rust cargo workspace with multiple crates",
@@ -184,7 +219,8 @@
         ],
         "must_identify_anti_patterns": [
           "Trust the agent (partial — dependency direction not enforced)"
-        ]
+        ],
+        "ground_truth_verified": false
       },
       "report_path": "reports/"
     },
@@ -199,7 +235,10 @@
       "language": "en",
       "purpose": "Electron desktop app — validates desktop-app profile and dual agent instruction file handling",
       "expectations": {
-        "score_range": [75, 82],
+        "score_range": [
+          75,
+          82
+        ],
         "grade": "B/B+",
         "key_findings": [
           "Electron multi-process architecture (renderer + main)",
@@ -209,7 +248,8 @@
           "E2E testing for desktop app",
           "Build and packaging pipeline"
         ],
-        "must_identify_anti_patterns": []
+        "must_identify_anti_patterns": [],
+        "ground_truth_verified": false
       },
       "report_path": "reports/"
     },
@@ -224,7 +264,10 @@
       "language": "en",
       "purpose": "Full-stack orchestration platform (Node + React) — validates fullstack profile scoring",
       "expectations": {
-        "score_range": [70, 78],
+        "score_range": [
+          70,
+          78
+        ],
         "grade": "B/B-",
         "key_findings": [
           "Full-stack Node.js + React architecture",
@@ -233,14 +276,20 @@
           "Testing strategy across frontend and backend",
           "Dependency direction enforcement"
         ],
-        "must_identify_anti_patterns": []
+        "must_identify_anti_patterns": [],
+        "ground_truth_verified": false
       },
       "report_path": "reports/"
     }
   ],
   "time_series_analysis": {
     "description": "OpenClaw evals 1a-1d form a time series showing harness maturity evolution over 4 months. After running all four audits, compare scores and findings to validate that the skill detects incremental improvements.",
-    "repos": ["1a", "1b", "1c", "1d"],
+    "repos": [
+      "1a",
+      "1b",
+      "1c",
+      "1d"
+    ],
     "expected_trend": "generally upward or stable trend; investigate any large drops (>10 points) for regression causes; specific dimension improvements should be identifiable at each checkpoint"
   }
 }
