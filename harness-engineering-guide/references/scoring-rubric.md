@@ -205,6 +205,16 @@ The distinction is between "we told agents the rules" (PARTIAL) and "we made the
 | Test path restriction (bunfig.toml test root) | Type checking (tsc strict) |
 | Auto-compliance workflows (close non-conforming PRs) | Standard compiler warnings |
 
+### 2.4 Type Safety: what counts as "strict mode"
+
+**The question**: "Is static type checking enabled at the language's standard strict level and enforced in CI?"
+
+- **PASS**: Type checker runs in CI and blocks merges, **and** the language's standard strict flag is enabled — TypeScript `strict: true` in `tsconfig.json`, Python mypy `--strict`, Rust default compiler behavior. Project-level extra strictness flags (e.g. `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`) are **not** required for PASS; their absence does not demote to PARTIAL.
+- **PARTIAL**: Type checker runs in CI but strict mode is not enabled, **or** strict mode is enabled but `any`/`ignore` overrides are widespread (>5% of source files).
+- **FAIL**: No type checking or type checker does not run in CI.
+
+The rationale: the standard strict flag represents the language community's agreed-upon baseline. Requiring additional flags would make the audit opinion-dependent and version-volatile.
+
 ### 3.1 Structured Logging: framework capability vs output format
 
 **The question**: "Does the application use a structured logging approach, regardless of output format?"

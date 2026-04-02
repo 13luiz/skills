@@ -144,7 +144,7 @@ Process items by `script_role` (see `data/checklist-items.json` § `_meta.assess
 - **`prescreen`** (27 items): Read the mapped script output field as structural evidence, then read the actual files to judge quality — PASS/PARTIAL/FAIL per rubric.
 - **`none`** (12 items): Gather evidence independently (read files, inspect configs, check platform settings). Script output has no relevant signal for these.
 
-**Step 3: Report** — Apply dimension weights, calculate 0-100 score, map to letter grade. Use the report template from `references/report-format.md`. Save to `reports/<YYYY-MM-DD>_<repo>_audit[.<lang>].md`.
+**Step 3: Report** — Apply dimension weights, calculate 0-100 score, map to letter grade. Use the report template from `references/report-format.md`. Save to `reports/<YYYY-MM-DD>_<repo>_audit[.<lang>].md`. **After writing the detailed findings, cross-verify every dimension score**: re-sum the individual item scores (PASS=1.0, PARTIAL=0.5, FAIL=0.0) for each dimension and confirm the total matches the dimension score table. Fix any discrepancy before calculating the weighted total.
 
 **Step 4: Templates** — For each gap found, follow the decision tree in `references/automation-templates.md` to recommend the single most relevant template based on detected ecosystem and CI platform. Do not list all templates.
 
