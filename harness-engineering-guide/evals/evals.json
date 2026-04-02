@@ -137,16 +137,25 @@
       "language": "en",
       "purpose": "Large TS monorepo (Bun + Turbo) — calibration for high-velocity development projects",
       "expectations": {
-        "score_range": [70, 80],
-        "grade": "B-/B+",
+        "score_range": [58, 68],
+        "grade": "C/C+",
         "key_findings": [
-          "Bun + Turbo monorepo tooling",
-          "CI pipeline configuration",
-          "TypeScript configuration strictness",
-          "Documentation structure",
-          "Testing strategy across packages"
+          "32 GitHub Actions workflows — exemplary CI pipeline (2.1 PASS)",
+          "No root docs/ directory; documentation at non-standard paths packages/docs/ and packages/web/src/content/docs/ (1.2 PARTIAL)",
+          "No ARCHITECTURE.md; CONTRIBUTING.md lacks domain boundaries and dependency direction (1.3 FAIL)",
+          "ESLint only in sdks/vscode/, core workspace packages have no linter; CI has no lint step (2.2 FAIL/PARTIAL)",
+          "Prettier configured but no CI format check (2.3 PARTIAL)",
+          "No eslint-plugin-boundaries or explicit dependency direction enforcement (2.5 FAIL)",
+          "TypeScript strict mode + typecheck.yml in CI (2.4 PASS)",
+          "Effect framework is niche and AI-unfriendly, reducing tech composability (5.4 PARTIAL)",
+          "rmslop command exists but is manual, not automated via lint rules (6.4 PARTIAL)",
+          "flake.nix + Dockerfile provide strong environment recovery (7.4 PASS)",
+          "Git tag releases enable ad-hoc rollback but no documented playbook (8.3 PARTIAL)"
         ],
-        "must_identify_anti_patterns": []
+        "must_identify_anti_patterns": [
+          "Trust the agent (no dependency direction enforcement in 20+ package monorepo)",
+          "Mislabeled lint script (packages/opencode lint runs bun test --coverage)"
+        ]
       },
       "report_path": "reports/"
     },
@@ -161,16 +170,21 @@
       "language": "en",
       "purpose": "Rust multi-crate system — validates scoring for safety-critical infrastructure projects",
       "expectations": {
-        "score_range": [75, 82],
-        "grade": "B/B+",
+        "score_range": [63, 72],
+        "grade": "C+/B-",
         "key_findings": [
           "Rust cargo workspace with multiple crates",
-          "Clippy and cargo fmt enforcement",
-          "Safety rail configuration for system-level code",
-          "Testing across crate boundaries",
-          "Documentation for agent instruction"
+          "Clippy and cargo fmt enforcement in CI",
+          "CLAUDE.md exists but lacks cross-references to docs/ (1.1 PARTIAL)",
+          "Progressive disclosure chain broken at agent entry point (1.4 PARTIAL)",
+          "Project-specific conventions documented but not mechanically enforced (2.7 PARTIAL)",
+          "No AI-specific slop detection rules (6.4 FAIL, distinct from linter in 2.2)",
+          "No coverage thresholds (4.3 FAIL)",
+          "xtask crate is empty stub (7.1 FAIL)"
         ],
-        "must_identify_anti_patterns": []
+        "must_identify_anti_patterns": [
+          "Trust the agent (partial — dependency direction not enforced)"
+        ]
       },
       "report_path": "reports/"
     },

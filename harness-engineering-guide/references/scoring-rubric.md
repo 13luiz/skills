@@ -85,6 +85,16 @@ When scoring, agents may encounter items that seem to overlap between dimensions
 
 A project can PASS 2.2 (linter exists and blocks) but FAIL 6.4 (no AI-specific rules within the linter). The linter is the tool (Dim 2); the AI-specific rules are the policy (Dim 6).
 
+### 2.2 Linter Enforcement: scope must cover core code
+
+**The question**: "Does the linter cover the code an agent would actually modify?"
+
+- **PASS**: Linter configured for the project's core source code and enforced in CI.
+- **PARTIAL**: Linter configured for core code but not enforced in CI (runs locally only).
+- **FAIL**: Linter not configured for core code. A linter that only covers a non-core sub-project (e.g., a VS Code extension SDK in a separate directory with its own lockfile) does not count — agents working on the main codebase receive no linting feedback.
+
+In monorepos, evaluate whether the linter covers the workspace packages that constitute the primary product. A linter in `sdks/vscode/` that does not apply to `packages/*` is equivalent to no linter for scoring purposes.
+
 ### Dim 3 (Feedback & Observability) vs Dim 5 (Context Engineering)
 
 **The question**: "Is this about runtime signals (Dim 3) or information architecture (Dim 5)?"
@@ -102,6 +112,66 @@ A project can PASS 2.2 (linter exists and blocks) but FAIL 6.4 (no AI-specific r
 - **Dim 8** gates prevent catastrophic actions (human confirmation for deploys, rollback capability, credential scoping).
 
 If a CI check blocks a bad import, that is Dim 2. If a CI check requires manual approval before a database migration, that is Dim 8.
+
+### 8.3 Rollback Capability: "ad-hoc" vs "no strategy"
+
+**The question**: "Can agent-made changes be reversed, and how?"
+
+- **PASS**: Documented rollback playbook or automated rollback scripts exist. Operators know what to run.
+- **PARTIAL**: Rollback is technically possible through ad-hoc means (e.g., git revert, re-deploying a previous release tag, reverting a database migration) but there is no documented procedure. The capability exists implicitly.
+- **FAIL**: No rollback mechanism — neither documented nor implied. A bad change requires manual forensics to undo.
+
+Git tag-based releases where a previous tag can be re-deployed count as ad-hoc rollback (PARTIAL). The distinction is between "we could figure it out" (PARTIAL) and "we have no path back" (FAIL).
+
+### 1.2 Structured Knowledge Base: documentation location matters
+
+**The question**: "Can an agent discover the project's documentation from the repository root?"
+
+- **PASS**: A root-level `docs/` directory (or equivalent like `doc/`) exists with subdirectories and an index. Alternatively, the root README directly links to documentation entry points with clear navigation.
+- **PARTIAL**: Documentation exists but at non-standard paths (e.g., `packages/docs/`, `packages/web/src/content/docs/`). An agent browsing the repo root would not discover it without prior knowledge. Also applies when docs exist at root but lack an index or meaningful structure.
+- **FAIL**: No documentation directory or files beyond README.
+
+For monorepos with documentation packages (e.g., Mintlify, Docusaurus, Starlight sites), the documentation site content is user-facing — not the same as a developer knowledge base. Score based on whether an agent can find development documentation from the root, not whether user docs exist somewhere in the tree.
+
+### 1.4 Progressive Disclosure: navigation chain must be explicit
+
+**The question**: "Can an agent follow a clear path from the entry file to domain-specific guidance?"
+
+- **PASS**: The root agent instruction file (AGENTS.md / CLAUDE.md / CODEX.md) contains an explicit TOC or link list where each pointer resolves to an existing file. In monorepos, this means the root file references each sub-package agent file by path.
+- **PARTIAL**: Sub-package agent files exist and provide domain layering, but the root file does not link to them — an agent must independently discover them via directory traversal.
+- **FAIL**: No layering exists; all guidance is in a single file or no agent files exist.
+
+The key test: if an agent reads only the root agent file, can it find all relevant sub-files without guessing? If not, score PARTIAL even when the sub-files are individually well-written.
+
+### 2.7 Structural Conventions: "documented" vs "enforced"
+
+**The question**: "Are naming, file structure, and workflow conventions mechanically enforced, not just written down?"
+
+- **PASS**: At least 2 mechanical enforcement mechanisms exist. Examples: CI checks for conventional commits (`pr-standards.yml`), config-level guards (`bunfig.toml` test root restriction), pre-commit hooks (Husky/lefthook), automated compliance workflows (`compliance-close.yml`).
+- **PARTIAL**: Conventions are documented in AGENTS.md or CONTRIBUTING.md but rely on human/agent compliance. Fewer than 2 mechanical enforcement mechanisms.
+- **FAIL**: No documented conventions or enforcement.
+
+The distinction is between "we told agents the rules" (PARTIAL) and "we made the rules impossible to break" (PASS). PR template requirements enforced by CI count as mechanical.
+
+### 6.4 AI Slop Detection: manual commands vs automated rules
+
+**The question**: "Does the project automatically detect AI-generated code patterns?"
+
+- **PASS**: Automated rules in the linter or CI that target AI-specific patterns: dead code detection, duplicate utility flagging, over-abstraction warnings. These run without human intervention on every PR.
+- **PARTIAL**: AI slop awareness exists — dedicated commands (e.g., `rmslop`), PR template warnings against AI-generated text, or documented conventions. These require manual invocation or human vigilance.
+- **FAIL**: No AI-specific detection — neither automated nor manual.
+
+A dedicated slop-removal command that must be manually invoked is PARTIAL, not PASS. The item asks about detection automation, not awareness.
+
+### 8.2 Audit Logging: platform-native vs dedicated
+
+**The question**: "Can agent actions be traced and queried after the fact?"
+
+- **PASS**: Dedicated audit logging beyond platform defaults — structured audit log files, queryable action history, or explicit workflow audit trails with timestamps and actor attribution.
+- **PARTIAL**: Platform-native audit trails only (GitHub PR history, Actions run logs, git history). These provide implicit traceability but are not designed for systematic querying or compliance review.
+- **FAIL**: No audit trail — actions are not recorded or traceable.
+
+GitHub's built-in PR and Actions history counts as PARTIAL because it provides traceability but not a purpose-built audit system. The distinction matters for compliance-sensitive projects.
 
 ---
 

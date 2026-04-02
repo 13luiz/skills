@@ -87,7 +87,8 @@ function Invoke-Dim1Scan {
 function Invoke-Dim2Scan {
     $script:ciConfigs = @()
     if (Test-Path ".github/workflows") {
-        Get-ChildItem ".github/workflows" -Include @("*.yml", "*.yaml") -ErrorAction SilentlyContinue |
+        Get-ChildItem ".github/workflows" -File -ErrorAction SilentlyContinue |
+            Where-Object { $_.Extension -in @(".yml", ".yaml") } |
             ForEach-Object { $script:ciConfigs += ".github/workflows/$($_.Name)" }
     }
     foreach ($f in @(".gitlab-ci.yml", "Jenkinsfile", "azure-pipelines.yml")) {
@@ -131,11 +132,11 @@ function Invoke-Dim2Scan {
     }
     foreach ($cf in $script:ciConfigs) {
         if (-not (Test-Path $cf)) { continue }
-        if (Test-FileContains $cf "eslint|biome check|biome lint|ruff check|golangci-lint|clippy|rubocop|pylint|flake8") { $ciContent.ci_runs_lint = $true }
-        if (Test-FileContains $cf "npm test|npx vitest|npx jest|pytest|go test|cargo test|rspec|dotnet test|mvn test|gradle test") { $ciContent.ci_runs_test = $true }
-        if (Test-FileContains $cf "tsc --noEmit|tsc -b|mypy|pyright|go vet|cargo check") { $ciContent.ci_runs_typecheck = $true }
+        if (Test-FileContains $cf "eslint|biome check|biome lint|ruff check|golangci-lint|clippy|rubocop|pylint|flake8|bun (run )?lint|turbo lint") { $ciContent.ci_runs_lint = $true }
+        if (Test-FileContains $cf "npm test|npx vitest|npx jest|pytest|go test|cargo test|rspec|dotnet test|mvn test|gradle test|bun test|bun turbo test|turbo test|bunx vitest") { $ciContent.ci_runs_test = $true }
+        if (Test-FileContains $cf "tsc --noEmit|tsc -b|mypy|pyright|go vet|cargo check|bun typecheck|bun run typecheck|bunx tsc") { $ciContent.ci_runs_typecheck = $true }
         if (Test-FileContains $cf "prettier|biome format|ruff format|gofmt|cargo fmt|rustfmt") { $ciContent.ci_runs_format = $true }
-        if (Test-FileContains $cf "npm run build|cargo build|go build|dotnet build|mvn package|gradle build") { $ciContent.ci_runs_build = $true }
+        if (Test-FileContains $cf "npm run build|cargo build|go build|dotnet build|mvn package|gradle build|bun (run )?build|turbo build") { $ciContent.ci_runs_build = $true }
         if (Test-FileContains $cf "gitleaks|trufflehog|detect-secrets|git-secrets|secretlint") { $ciContent.ci_runs_secret_scan = $true }
         if (Test-FileContains $cf "when:\s*manual|required_reviewers|protection_rules|approval|manual-trigger") { $ciContent.ci_has_human_gates = $true }
     }
@@ -320,11 +321,23 @@ function Invoke-Dim6Scan {
         }
     }
 
+    $hasSlopCommand = $false; $hasSlopPolicy = $false
+    foreach ($cmdDir in @(".opencode/command", ".claude/commands", ".cursor/rules")) {
+        if (Test-Path $cmdDir -PathType Container) {
+            $slopFiles = Get-ChildItem $cmdDir -File -Recurse -ErrorAction SilentlyContinue |
+                Where-Object { Select-String -Path $_.FullName -Pattern "slop|rmslop|remove.*ai|clean.*ai|ai.*generated" -Quiet -ErrorAction SilentlyContinue }
+            if ($slopFiles) { $hasSlopCommand = $true }
+        }
+    }
+    foreach ($pf in @(".github/pull_request_template.md", "CONTRIBUTING.md", "AGENTS.md", "CLAUDE.md", "CODEX.md")) {
+        if ((Test-Path $pf) -and (Test-FileContains $pf "ai.*slop|ai.generated|no ai|AI.*wall.*text")) { $hasSlopPolicy = $true }
+    }
+
     return [ordered]@{
         has_quality_score = $script:hasQualityScore
         golden_principles = [ordered]@{ principle_references = $principleRefs }
         tech_debt         = [ordered]@{ todo_files = $todoF; fixme_files = $fixmeF; hack_files = $hackF; has_tracker = $script:hasQualityScore; tracker_has_content = $trackerContent }
-        ai_slop_detection = [ordered]@{ has_dead_code_rules = $deadCode; has_duplicate_rules = $dupRules }
+        ai_slop_detection = [ordered]@{ has_dead_code_rules = $deadCode; has_duplicate_rules = $dupRules; has_manual_slop_command = $hasSlopCommand; has_slop_policy = $hasSlopPolicy }
     }
 }
 
@@ -335,7 +348,8 @@ function Invoke-Dim6Scan {
 function Invoke-Dim7Scan {
     $script:hasInitScript = (Test-Path "init.sh") -or (Test-Path "setup.sh") -or
         (Test-Path "Makefile") -or (Test-Path "docker-compose.yml") -or
-        (Test-Path "docker-compose.yaml") -or (Test-Path "devcontainer.json") -or (Test-Path ".devcontainer")
+        (Test-Path "docker-compose.yaml") -or (Test-Path "devcontainer.json") -or (Test-Path ".devcontainer") -or
+        (Test-Path "flake.nix") -or (Test-Path "shell.nix")
     $script:hasProgressTracking = (Test-Path "progress.txt") -or (Test-Path "progress.md") -or
         (Test-Path "progress.json") -or (Test-Path "exec-plans") -or (Test-Path "docs/exec-plans")
 
@@ -368,11 +382,24 @@ function Invoke-Dim8Scan {
     }
     if (Test-Path ".cursor/mcp.json") { $script:hasMcpConfig = $true; $script:mcpConfigFiles += ".cursor/mcp.json" }
 
+    # Release / deploy workflow detection (for 8.3 rollback capability assessment)
+    $hasReleaseWorkflow = $false; $releaseWorkflowFiles = @()
+    foreach ($cf in $script:ciConfigs) {
+        if (-not (Test-Path $cf)) { continue }
+        $bn = Split-Path $cf -Leaf
+        if ($bn -match "publish|release|deploy") {
+            $hasReleaseWorkflow = $true; $releaseWorkflowFiles += $cf
+        } elseif (Test-FileContains $cf "gh release|npm publish|cargo publish|docker push|pypi.*upload") {
+            $hasReleaseWorkflow = $true; $releaseWorkflowFiles += $cf
+        }
+    }
+
     return [ordered]@{
         has_codeowners        = $script:hasCodeowners
         has_secret_scanning   = $script:hasSecretScanning
         secret_scanning_tools = @($script:secretScanningTools)
         mcp_config            = [ordered]@{ has_mcp_config = $script:hasMcpConfig; files = @($script:mcpConfigFiles) }
+        release_workflows     = [ordered]@{ has_release_workflow = $hasReleaseWorkflow; files = @($releaseWorkflowFiles) }
     }
 }
 

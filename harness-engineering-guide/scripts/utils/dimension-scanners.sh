@@ -105,16 +105,17 @@ scan_dim2() {
 
   # --- CI configs ---
   CI_CONFIGS=()
-  while IFS= read -r f; do
-    [ -n "$f" ] && CI_CONFIGS+=("$f")
-  done < <(find . -maxdepth 4 -path "./.git" -prune -o \( \
-    -path "*/.github/workflows/*.yml" -o \
-    -path "*/.github/workflows/*.yaml" -o \
-    -name ".gitlab-ci.yml" -o \
-    -name "Jenkinsfile" -o \
-    -name "azure-pipelines.yml" -o \
-    -name ".circleci/config.yml" \
-    \) -print 2>/dev/null | sed 's|^\./||' | sort)
+  # GitHub Actions: direct directory scan (find -path glob unreliable for dotdirs on some platforms)
+  if [ -d ".github/workflows" ]; then
+    while IFS= read -r f; do
+      [ -n "$f" ] && CI_CONFIGS+=("$f")
+    done < <(find .github/workflows -maxdepth 1 -type f \( -name "*.yml" -o -name "*.yaml" \) 2>/dev/null | sort)
+  fi
+  # Other CI systems: direct file checks
+  for ci_file in .gitlab-ci.yml Jenkinsfile azure-pipelines.yml; do
+    [ -f "$ci_file" ] && CI_CONFIGS+=("$ci_file")
+  done
+  [ -f ".circleci/config.yml" ] && CI_CONFIGS+=(".circleci/config.yml")
 
   # --- Linter configs ---
   LINTER_CONFIGS=()
@@ -160,11 +161,11 @@ scan_dim2() {
   local ci_has_human_gates=false
   for cf in "${CI_CONFIGS[@]+"${CI_CONFIGS[@]}"}"; do
     [ -f "$cf" ] || continue
-    grep -qiE 'eslint|biome check|biome lint|ruff check|golangci-lint|clippy|rubocop|pylint|flake8' "$cf" 2>/dev/null && ci_runs_lint=true
-    grep -qiE 'npm test|npx vitest|npx jest|pytest|go test|cargo test|rspec|dotnet test|mvn test|gradle test' "$cf" 2>/dev/null && ci_runs_test=true
-    grep -qiE 'tsc --noEmit|tsc -b|mypy|pyright|go vet|cargo check' "$cf" 2>/dev/null && ci_runs_typecheck=true
+    grep -qiE 'eslint|biome check|biome lint|ruff check|golangci-lint|clippy|rubocop|pylint|flake8|bun (run )?lint|turbo lint' "$cf" 2>/dev/null && ci_runs_lint=true
+    grep -qiE 'npm test|npx vitest|npx jest|pytest|go test|cargo test|rspec|dotnet test|mvn test|gradle test|bun test|bun turbo test|turbo test|bunx vitest' "$cf" 2>/dev/null && ci_runs_test=true
+    grep -qiE 'tsc --noEmit|tsc -b|mypy|pyright|go vet|cargo check|bun typecheck|bun run typecheck|bunx tsc' "$cf" 2>/dev/null && ci_runs_typecheck=true
     grep -qiE 'prettier|biome format|ruff format|gofmt|cargo fmt|rustfmt' "$cf" 2>/dev/null && ci_runs_format=true
-    grep -qiE 'npm run build|cargo build|go build|dotnet build|mvn package|gradle build' "$cf" 2>/dev/null && ci_runs_build=true
+    grep -qiE 'npm run build|cargo build|go build|dotnet build|mvn package|gradle build|bun (run )?build|turbo build' "$cf" 2>/dev/null && ci_runs_build=true
     grep -qiE 'gitleaks|trufflehog|detect-secrets|git-secrets|secretlint' "$cf" 2>/dev/null && ci_runs_secret_scan=true
     grep -qiE 'when:\s*manual|required_reviewers|protection_rules|approval|manual-trigger' "$cf" 2>/dev/null && ci_has_human_gates=true
   done
@@ -408,7 +409,7 @@ scan_dim6() {
     fi
   done
 
-  # AI slop detection rules
+  # AI slop detection rules (automated)
   local dead_code=false dup_rules=false
   for cfg in .eslintrc .eslintrc.js .eslintrc.json eslint.config.js eslint.config.mjs \
     biome.json biome.jsonc ruff.toml pyproject.toml .golangci.yml .golangci.yaml; do
@@ -418,12 +419,27 @@ scan_dim6() {
     fi
   done
 
+  # AI slop detection (manual commands / awareness)
+  local has_slop_command=false has_slop_policy=false
+  for cmd_dir in .opencode/command .claude/commands .cursor/rules; do
+    if [ -d "$cmd_dir" ]; then
+      local sc
+      sc=$(grep -rli 'slop\|rmslop\|remove.*ai\|clean.*ai\|ai.*generated' "$cmd_dir" 2>/dev/null | head -3 | wc -l | tr -d ' ')
+      [ "$sc" -gt 0 ] && has_slop_command=true
+    fi
+  done
+  for pf in .github/pull_request_template.md CONTRIBUTING.md AGENTS.md CLAUDE.md CODEX.md; do
+    if [ -f "$pf" ]; then
+      grep -qi 'ai.*slop\|ai.generated\|no ai\|AI.*wall.*text' "$pf" 2>/dev/null && has_slop_policy=true
+    fi
+  done
+
   DIM6_JSON=$(cat <<EOF
 {
   "has_quality_score": $HAS_QUALITY_SCORE,
   "golden_principles": {"principle_references": $principle_refs},
   "tech_debt": {"todo_files": $todo_f, "fixme_files": $fixme_f, "hack_files": $hack_f, "has_tracker": $HAS_QUALITY_SCORE, "tracker_has_content": $tracker_content},
-  "ai_slop_detection": {"has_dead_code_rules": $dead_code, "has_duplicate_rules": $dup_rules}
+  "ai_slop_detection": {"has_dead_code_rules": $dead_code, "has_duplicate_rules": $dup_rules, "has_manual_slop_command": $has_slop_command, "has_slop_policy": $has_slop_policy}
 }
 EOF
   )
@@ -435,7 +451,7 @@ EOF
 
 scan_dim7() {
   HAS_INIT_SCRIPT=false
-  for name in init.sh setup.sh Makefile docker-compose.yml docker-compose.yaml devcontainer.json; do
+  for name in init.sh setup.sh Makefile docker-compose.yml docker-compose.yaml devcontainer.json flake.nix shell.nix; do
     [ -f "$name" ] && HAS_INIT_SCRIPT=true && break
   done
   [ -d ".devcontainer" ] && HAS_INIT_SCRIPT=true
@@ -479,12 +495,28 @@ scan_dim8() {
   done
   [ -f ".cursor/mcp.json" ] && HAS_MCP_CONFIG=true && MCP_CONFIG_FILES+=(".cursor/mcp.json")
 
+  # Release / deploy workflow detection (for 8.3 rollback capability assessment)
+  local has_release_workflow=false
+  RELEASE_WORKFLOW_FILES=()
+  for cf in "${CI_CONFIGS[@]+"${CI_CONFIGS[@]}"}"; do
+    [ -f "$cf" ] || continue
+    local bn; bn=$(basename "$cf" 2>/dev/null)
+    if echo "$bn" | grep -qiE 'publish|release|deploy'; then
+      has_release_workflow=true
+      RELEASE_WORKFLOW_FILES+=("$cf")
+    elif grep -qiE 'gh release|npm publish|cargo publish|docker push|pypi.*upload' "$cf" 2>/dev/null; then
+      has_release_workflow=true
+      RELEASE_WORKFLOW_FILES+=("$cf")
+    fi
+  done
+
   DIM8_JSON=$(cat <<EOF
 {
   "has_codeowners": $HAS_CODEOWNERS,
   "has_secret_scanning": $HAS_SECRET_SCANNING,
   "secret_scanning_tools": $(json_array "${SECRET_SCANNING_TOOLS[@]+"${SECRET_SCANNING_TOOLS[@]}"}"),
-  "mcp_config": {"has_mcp_config": $HAS_MCP_CONFIG, "files": $(json_array "${MCP_CONFIG_FILES[@]+"${MCP_CONFIG_FILES[@]}"}")}
+  "mcp_config": {"has_mcp_config": $HAS_MCP_CONFIG, "files": $(json_array "${MCP_CONFIG_FILES[@]+"${MCP_CONFIG_FILES[@]}"}")},
+  "release_workflows": {"has_release_workflow": $has_release_workflow, "files": $(json_array "${RELEASE_WORKFLOW_FILES[@]+"${RELEASE_WORKFLOW_FILES[@]}"}")}
 }
 EOF
   )
