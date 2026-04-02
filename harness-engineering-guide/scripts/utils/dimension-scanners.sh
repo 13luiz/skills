@@ -70,11 +70,12 @@ scan_dim1() {
     [ -n "$f" ] && AGENT_FILES+=("$f")
   done < <(find . -maxdepth 4 -path "*/.cursor/rules/*.md" -print 2>/dev/null | sed 's|^\./||' | sort)
 
-  AGENT_FILE_LINE_COUNT=0; AGENT_FILE_NONEMPTY=false
+  AGENT_FILE_LINE_COUNT=0; AGENT_FILE_NONEMPTY=false; AGENT_FILE_SUBSTANTIVE_LINES=0
   for af in AGENTS.md CLAUDE.md CODEX.md; do
     if [ -f "$af" ]; then
       AGENT_FILE_LINE_COUNT=$(wc -l < "$af" | tr -d ' ')
-      [ "$AGENT_FILE_LINE_COUNT" -gt 1 ] && AGENT_FILE_NONEMPTY=true
+      AGENT_FILE_SUBSTANTIVE_LINES=$(grep -cv '^#\|^$\|^[[:space:]]*$' "$af" 2>/dev/null || echo "0")
+      [ "$AGENT_FILE_SUBSTANTIVE_LINES" -ge 3 ] && AGENT_FILE_NONEMPTY=true
       break
     fi
   done
@@ -97,6 +98,7 @@ scan_dim1() {
 {
   "agent_instruction_files": $(json_array "${AGENT_FILES[@]+"${AGENT_FILES[@]}"}"),
   "agent_file_line_count": $AGENT_FILE_LINE_COUNT,
+  "agent_file_substantive_lines": $AGENT_FILE_SUBSTANTIVE_LINES,
   "agent_file_nonempty": $AGENT_FILE_NONEMPTY,
   "docs_exists": $DOCS_EXISTS,
   "docs_has_index": $DOCS_HAS_INDEX,
@@ -278,16 +280,19 @@ scan_dim4() {
     -name "*.test.*" -o -name "*.spec.*" -o -name "*_test.*" -o -name "test_*" \
     \) -print 2>/dev/null | wc -l | tr -d ' ')
 
-  TEST_FILES_NONEMPTY=0; TEST_FILES_SAMPLED=0
-  while IFS= read -r tf && [ "$TEST_FILES_SAMPLED" -lt 5 ]; do
+  TEST_FILES_NONEMPTY=0; TEST_FILES_SAMPLED=0; TEST_FILES_WITH_ASSERTIONS=0
+  local sample_limit=20
+  while IFS= read -r tf && [ "$TEST_FILES_SAMPLED" -lt "$sample_limit" ]; do
     [ -z "$tf" ] && continue
     local lc
     lc=$(wc -l < "$tf" | tr -d ' ')
     TEST_FILES_SAMPLED=$((TEST_FILES_SAMPLED + 1))
     [ "$lc" -gt 10 ] && TEST_FILES_NONEMPTY=$((TEST_FILES_NONEMPTY + 1))
+    grep -qE 'describe\(|it\(|test\(|expect\(|assert|should|assertEqual|assert_eq!|#\[test\]|@Test|def test_|func Test' "$tf" 2>/dev/null \
+      && TEST_FILES_WITH_ASSERTIONS=$((TEST_FILES_WITH_ASSERTIONS + 1))
   done < <(find . -maxdepth 5 -path "./.git" -prune -o \( \
     -name "*.test.*" -o -name "*.spec.*" -o -name "*_test.*" -o -name "test_*" \
-    \) -print 2>/dev/null | head -5)
+    \) -print 2>/dev/null | head -$sample_limit)
 
   HAS_FEATURE_TRACKER=false
   for name in features.json feature-checklist.json; do
@@ -321,7 +326,7 @@ scan_dim4() {
 {
   "test_dirs": $(json_array "${TEST_DIRS[@]+"${TEST_DIRS[@]}"}"),
   "test_files_count": $TEST_FILES_COUNT,
-  "test_files_nonempty_sample": {"sampled": $TEST_FILES_SAMPLED, "nonempty": $TEST_FILES_NONEMPTY},
+  "test_files_nonempty_sample": {"sampled": $TEST_FILES_SAMPLED, "nonempty": $TEST_FILES_NONEMPTY, "with_assertions": $TEST_FILES_WITH_ASSERTIONS},
   "ci_runs_test": $CI_RUNS_TEST,
   "has_feature_tracker": $HAS_FEATURE_TRACKER,
   "coverage_thresholds": {"has_threshold": $cov_threshold, "has_coverage_tool": $cov_tool, "ci_has_coverage": $ci_cov}

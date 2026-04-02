@@ -120,7 +120,7 @@ ESLint (JS/TS)、import-linter (Python)、depguard (Go)、clippy + Cargo workspa
 | **CI 成熟度** | 无 | 基础（1-2 个 job） | 多 job 流水线 |
 | **AI Agent 角色** | 未使用/偶尔使用 | 常规辅助 | 主要开发流程 |
 
-路由规则：取所有信号中的**最高级别**。用户可随时覆盖。
+路由规则：取所有信号中的**最高级别**。阈值为经验性启发式规则，处于边界附近的项目应由审计者自行判断。用户可随时覆盖。
 
 ### 双层评估模型
 审计评分分离脚本检测（Tier 1）和 LLM 评估（Tier 2）：
@@ -128,15 +128,15 @@ ESLint (JS/TS)、import-linter (Python)、depguard (Go)、clippy + Cargo workspa
 - **Tier 1 — 脚本预检**：`dimension-scanners.sh` 采集结构信号（文件存在性、行数、框架检测、CI 内容分析）。快速、确定性、可复现。
 - **Tier 2 — LLM 终评**：LLM 将脚本输出作为证据，读取文件后做 PASS/PARTIAL/FAIL 判断。处理脚本无法回答的质量问题。
 
-每个检查项携带 `script_role` 字段：`definitive`（6 项 — 脚本输出即最终评分）、`prescreen`（27 项 — 脚本提供证据，LLM 决定）、`none`（12 项 — 纯 LLM/人工评估）。详见 `references/scoring-rubric.md` § Two-Tier Assessment Model。
+每个检查项携带 `script_role` 字段：`definitive`（6 项 — 脚本输出即最终评分）、`prescreen`（27 项 — 脚本提供证据，LLM 决定）、`none`（12 项 — 纯 LLM/人工评估）。`data/checklist-items.json` 中的 `script_output_mapping` 表提供了每个检查项 ID 到脚本 JSON 输出字段的显式映射，确保 LLM 能准确关联脚本信号与对应检查项。详见 `references/scoring-rubric.md` § Two-Tier Assessment Model。
 
 ### 增强审计脚本
 超越文件存在性的内容级分析：
-- Agent 指令文件质量信号（行数、非空检查）
+- Agent 指令文件质量信号（行数、实质内容行数、非空检查）
 - 结构化日志框架检测
 - 指标/追踪配置检测
 - AGENTS.md 质量分析（行数、文档链接、命令引用）
-- 测试文件非空抽样（过滤占位测试文件）
+- 测试文件抽样与断言模式检测（最多 20 个文件；检查 `describe`/`it`/`test`/`expect`/`assert` 等模式，而非仅行数）
 - Init 脚本内容深度检查（区分空壳和真实脚本）
 - 技术债务密度扫描（TODO/FIXME/HACK）
 - Monorepo 自动检测和包发现

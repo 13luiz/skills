@@ -8,10 +8,18 @@ Common anti-patterns found in harness engineering. Flag these during audit (Mode
 
 Anti-patterns are classified by whether the harness can **eliminate** or only **reduce** the problem:
 
-- **Preventable** — The harness can eliminate the problem through mechanical constraints: CI gates, lint rules, permission scoping, structural enforcement. Applies to items #1–22, #25.
-- **Mitigable** — The problem originates from inherent LLM limitations; the harness can reduce frequency and blast radius but cannot fully eliminate it. Applies to items #23 (infinite tool call loops), #24 (context overflow hallucinations).
+- **Preventable** — The harness can eliminate the root cause or its symptoms through mechanical constraints: CI gates, lint rules, permission scoping, structural enforcement. Applies to items #1–6, #8–13, #15, #17–22, #25.
+- **Mitigable** — The problem originates from inherent LLM limitations or human/organizational behavior that the harness can detect and reduce but cannot fully eliminate. The harness lowers frequency and blast radius through defense-in-depth (circuit breakers, structured checkpoints, documentation gates, awareness policies), but residual risk remains. Applies to items #7, #14, #16, #23, #24.
 
-For mitigable anti-patterns, use defense-in-depth: circuit breakers, structured checkpoints, proactive session management. Communicate residual risk honestly — do not promise elimination.
+| # | Anti-Pattern | Classification | Rationale |
+|---|---|---|---|
+| #7 | LLM-generated agent config | Mitigable | No mechanical way to distinguish human-written vs LLM-generated content; review policies reduce but cannot eliminate |
+| #14 | Knowledge lives in Slack | Mitigable | Harness can require docs to exist (gate), but cannot prevent humans from keeping knowledge in external channels |
+| #16 | Optimizing prompts instead of harness | Mitigable | Process/mindset issue; harness guidelines can redirect focus but cannot mechanically prevent prompt-first thinking |
+| #23 | Infinite tool call loops | Mitigable | Inherent LLM limitation; circuit breakers reduce but cannot eliminate |
+| #24 | Context overflow hallucinations | Mitigable | Inherent LLM limitation; session management reduces but cannot eliminate |
+
+For mitigable anti-patterns, communicate residual risk honestly — do not promise elimination.
 
 ---
 
@@ -26,7 +34,7 @@ For mitigable anti-patterns, use defense-in-depth: circuit breakers, structured 
 ## Documentation Anti-Patterns
 
 6. **Encyclopedia AGENTS.md** — Files exceeding the dynamic threshold (default 150 lines; monorepo: up to 300). Should be a concise TOC with pointers to deeper docs.
-7. **LLM-generated agent config** — Human-crafted instruction files outperform AI-generated ones because they encode domain-specific constraints.
+7. **[Mitigable] LLM-generated agent config** — Human-crafted instruction files outperform AI-generated ones because they encode domain-specific constraints. No mechanical detection exists; mitigate with PR review policies requiring human authorship for agent instruction files.
 8. **Full test suite in agent context** — Floods context with passing output. Configure CI to surface errors only (succeed silently, fail verbosely).
 
 ## Tool & Context Anti-Patterns
@@ -43,13 +51,13 @@ For mitigable anti-patterns, use defense-in-depth: circuit breakers, structured 
 
 ## Context & Knowledge Anti-Patterns
 
-14. **Knowledge lives in Slack** — Critical decisions, conventions, and context exist only in chat threads, Notion pages, or email. Agents cannot access external channels. Externalize to in-repo docs or ADRs.
+14. **[Mitigable] Knowledge lives in Slack** — Critical decisions, conventions, and context exist only in chat threads, Notion pages, or email. Agents cannot access external channels. Harness can require in-repo docs to exist (documentation gates), but cannot prevent humans from keeping discussions in external channels. Externalize to in-repo docs or ADRs; use doc freshness checks to detect gaps.
 15. **TODO-driven debt management** — Using `TODO` / `FIXME` / `HACK` comments as the sole mechanism for tracking tech debt. Comments are invisible to planning and trend analysis. Use a maintained tracker artifact.
 24. **[Mitigable] Context overflow hallucinations** — Agent's context window fills up, causing it to lose sight of earlier files, instructions, or constraints. The agent then "hallucinates" about code it can no longer see — referencing functions that don't exist, misremembering file structures, or silently dropping requirements. Mitigate with streaming audit batches (see SKILL.md § Streaming Audit Protocol), structured checkpoint files, and proactive session restarts at ~80% context capacity rather than pushing to the limit.
 
 ## Process Anti-Patterns
 
-16. **Optimizing prompts instead of harness** — Improve the environment (constraints, feedback, verification), not the phrasing. Ask "what capability is missing?" not "how do I word this better?"
+16. **[Mitigable] Optimizing prompts instead of harness** — Improve the environment (constraints, feedback, verification), not the phrasing. Ask "what capability is missing?" not "how do I word this better?" This is a process/mindset anti-pattern; harness guidelines can redirect focus but cannot mechanically prevent prompt-first thinking.
 17. **Manual garbage collection** — Automate cleanup with scheduled agents or CI jobs. "Friday cleanup sprints" don't scale.
 18. **No crash recovery** — Multi-step tasks need structured checkpoint files (`progress.json`) and documented recovery protocols.
 19. **No environment health check** — Agents building on broken environments compound errors. Use `init.sh` with health checks.
@@ -74,7 +82,7 @@ When reviewing a codebase, check for these red flags:
 | CI runs linter but exits 0 on violations | #12 | Set linter to fail build on any violation |
 | Tests written by same agent that wrote code | #1 | Independent verifier agent |
 | High coverage but trivial assertions | #13 | Audit test quality, not just coverage numbers |
-| Key decisions only in Slack/Notion | #14 | Externalize to in-repo docs or ADRs |
+| Key decisions only in Slack/Notion | #14 [Mitigable] | Externalize to in-repo docs or ADRs; add doc freshness gates |
 | Tech debt tracked only via TODO comments | #15 | Add `tech-debt-tracker.json` or issue labels |
 | 15+ MCP servers loaded | #9 | Audit and remove rarely-used servers |
 | No `progress.json` or checkpoint files | #18 | Add durable execution support |

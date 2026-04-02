@@ -32,6 +32,8 @@ Before running an audit, assess 4 complexity signals to determine audit depth. U
 
 **Routing rule**: The audit depth equals the **highest level** triggered by any signal. If even one signal points to Full Audit, route to Full Audit.
 
+> **Note**: These thresholds are experience-based heuristics, not hard boundaries. Projects near a boundary (e.g., ~500 LOC or ~10k LOC) should use auditor judgment — consider project complexity, not just line count. Users can always override with `--quick` or request Full Audit directly.
+
 | Route | What You Get |
 |-------|--------------|
 | **Full Audit** | All 45 items scored across 8 dimensions. Detailed report with improvement roadmap. |
@@ -137,6 +139,11 @@ Run the Pre-Assessment Gate first to determine audit depth based on complexity s
 
 **Step 2: Score** — For each active item: PASS (1.0) / PARTIAL (0.5) / FAIL (0.0) with evidence. Use `references/scoring-rubric.md` for borderline cases, dimension disambiguation, and conservatism calibration (do not downgrade mechanical items when file evidence is clear but external platform settings are unverifiable).
 
+Process items by `script_role` (see `data/checklist-items.json` § `_meta.assessment_model.script_output_mapping` for the JSON field → item ID mapping):
+- **`definitive`** (6 items): Accept script output as the score. If the script found the artifact, PASS; if not, FAIL.
+- **`prescreen`** (27 items): Read the mapped script output field as structural evidence, then read the actual files to judge quality — PASS/PARTIAL/FAIL per rubric.
+- **`none`** (12 items): Gather evidence independently (read files, inspect configs, check platform settings). Script output has no relevant signal for these.
+
 **Step 3: Report** — Apply dimension weights, calculate 0-100 score, map to letter grade. Use the report template from `references/report-format.md`. Save to `reports/<YYYY-MM-DD>_<repo>_audit[.<lang>].md`.
 
 **Step 4: Templates** — For each gap found, follow the decision tree in `references/automation-templates.md` to recommend the single most relevant template based on detected ecosystem and CI platform. Do not list all templates.
@@ -173,7 +180,7 @@ Covers 15 `[Q]`-marked items — the highest-leverage check per dimension. Produ
 
 **Step 1: Scan** — Run `bash scripts/harness-audit.sh <repo> --quick --profile <type>` (or `pwsh scripts/harness-audit.ps1 -Quick`). For manual scan, check only items marked `[Q]` in the Quick Reference above.
 
-**Step 2: Score** — Score 15 items with PASS/PARTIAL/FAIL. Apply dimension weights (default or profile). Use `references/scoring-rubric.md` § Quick Mode Scoring.
+**Step 2: Score** — Score 15 items with PASS/PARTIAL/FAIL. Apply dimension weights (default or profile). Use `references/scoring-rubric.md` § Quick Mode Scoring. Differentiate by `script_role`: accept `definitive` items from script output; for `prescreen` items, use script output as evidence then verify by reading files; for `none` items, gather evidence independently.
 
 **Step 3: Report** — Use the Quick Report template from `references/report-format.md`. Save to `reports/<YYYY-MM-DD>_<repo>_quick-audit[.<lang>].md`. Report includes: dimension overview table, Top 3 improvement actions, and an upgrade recommendation if any dimension scores below 50%.
 

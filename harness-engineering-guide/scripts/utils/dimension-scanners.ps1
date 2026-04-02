@@ -65,11 +65,13 @@ function Invoke-Dim1Scan {
         ForEach-Object { $_.FullName.Replace((Get-Location).Path + [IO.Path]::DirectorySeparatorChar, '').Replace('\', '/') }
     if ($cursorRules) { $script:agentFiles = @($script:agentFiles) + @($cursorRules) | Sort-Object -Unique }
 
-    $script:agentFileLineCount = 0; $script:agentFileNonempty = $false
+    $script:agentFileLineCount = 0; $script:agentFileNonempty = $false; $script:agentFileSubstantiveLines = 0
     foreach ($af in @("AGENTS.md", "CLAUDE.md", "CODEX.md")) {
         if (Test-Path $af) {
             $script:agentFileLineCount = (Get-Content $af -ErrorAction SilentlyContinue | Measure-Object).Count
-            if ($script:agentFileLineCount -gt 1) { $script:agentFileNonempty = $true }
+            $script:agentFileSubstantiveLines = (Get-Content $af -ErrorAction SilentlyContinue |
+                Where-Object { $_ -notmatch '^\s*$' -and $_ -notmatch '^#' } | Measure-Object).Count
+            if ($script:agentFileSubstantiveLines -ge 3) { $script:agentFileNonempty = $true }
             break
         }
     }
@@ -82,8 +84,9 @@ function Invoke-Dim1Scan {
 
     return [ordered]@{
         agent_instruction_files = @($script:agentFiles)
-        agent_file_line_count   = $script:agentFileLineCount
-        agent_file_nonempty     = $script:agentFileNonempty
+        agent_file_line_count          = $script:agentFileLineCount
+        agent_file_substantive_lines   = $script:agentFileSubstantiveLines
+        agent_file_nonempty            = $script:agentFileNonempty
         docs_exists             = $script:docsExists
         docs_has_index          = $script:docsHasIndex
         docs_has_architecture   = $script:docsHasArch
@@ -213,14 +216,17 @@ function Invoke-Dim4Scan {
         Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and ($_.Name -match '\.(test|spec)\.' -or $_.Name -match '(_test\.|test_)') } |
         Measure-Object).Count
 
-    $testFilesSampled = 0; $testFilesNonempty = 0
+    $testFilesSampled = 0; $testFilesNonempty = 0; $testFilesWithAssertions = 0
     $sampleFiles = Get-ChildItem -Path . -Recurse -Depth 5 -File -ErrorAction SilentlyContinue |
         Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and ($_.Name -match '\.(test|spec)\.' -or $_.Name -match '(_test\.|test_)') } |
-        Select-Object -First 5
+        Select-Object -First 20
     foreach ($tf in $sampleFiles) {
         $testFilesSampled++
         $lc = (Get-Content $tf.FullName -ErrorAction SilentlyContinue | Measure-Object).Count
         if ($lc -gt 10) { $testFilesNonempty++ }
+        if (Select-String -Path $tf.FullName -Pattern 'describe\(|it\(|test\(|expect\(|assert|should|assertEqual|assert_eq!|#\[test\]|@Test|def test_|func Test' -Quiet -ErrorAction SilentlyContinue) {
+            $testFilesWithAssertions++
+        }
     }
 
     $script:hasFeatureTracker = (Test-Path "features.json") -or (Test-Path "feature-checklist.json") -or
@@ -250,7 +256,7 @@ function Invoke-Dim4Scan {
     return [ordered]@{
         test_dirs                  = @($script:testDirs)
         test_files_count           = $script:testFilesCount
-        test_files_nonempty_sample = [ordered]@{ sampled = $testFilesSampled; nonempty = $testFilesNonempty }
+        test_files_nonempty_sample = [ordered]@{ sampled = $testFilesSampled; nonempty = $testFilesNonempty; with_assertions = $testFilesWithAssertions }
         ci_runs_test               = $ciContent.ci_runs_test
         has_feature_tracker        = $script:hasFeatureTracker
         coverage_thresholds        = $covResult

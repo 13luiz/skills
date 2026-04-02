@@ -121,7 +121,7 @@ A complexity-signal router that matches audit depth to project size and AI usage
 | **CI maturity** | None | Basic (1–2 jobs) | Multi-job pipeline |
 | **AI agent role** | Not used | Regular assist | Primary workflow |
 
-Route = highest level triggered by any signal. User override always available.
+Route = highest level triggered by any signal. Thresholds are experience-based heuristics; projects near a boundary should use auditor judgment. User override always available.
 
 ### Two-Tier Assessment Model
 Audit scoring separates script detection (Tier 1) from LLM evaluation (Tier 2):
@@ -129,15 +129,15 @@ Audit scoring separates script detection (Tier 1) from LLM evaluation (Tier 2):
 - **Tier 1 — Script pre-screening**: `dimension-scanners.sh` collects structural signals (file existence, line counts, framework detection via grep, CI content analysis). Fast, deterministic, reproducible.
 - **Tier 2 — LLM final scoring**: The LLM reads script output as evidence, then reads files to make PASS/PARTIAL/FAIL judgments. Handles quality questions scripts cannot answer.
 
-Each checklist item carries a `script_role` field: `definitive` (6 items — script output IS the score), `prescreen` (27 items — script provides evidence, LLM decides), or `none` (12 items — purely LLM/human assessed). See `references/scoring-rubric.md` § Two-Tier Assessment Model.
+Each checklist item carries a `script_role` field: `definitive` (6 items — script output IS the score), `prescreen` (27 items — script provides evidence, LLM decides), or `none` (12 items — purely LLM/human assessed). An explicit `script_output_mapping` in `data/checklist-items.json` maps each item ID to its corresponding JSON output field, so the LLM knows exactly which script signal applies to which checklist item. See `references/scoring-rubric.md` § Two-Tier Assessment Model.
 
 ### Enhanced Audit Scripts
 Content-level analysis beyond file existence:
-- Agent instruction file quality signals (line count, non-empty check)
+- Agent instruction file quality signals (line count, substantive content lines, non-empty check)
 - Structured logging framework detection
 - Metrics/tracing configuration detection
 - AGENTS.md quality analysis (line count, doc links, command refs)
-- Test file non-empty sampling (filters out placeholder test files)
+- Test file sampling with assertion pattern detection (up to 20 files; checks for `describe`/`it`/`test`/`expect`/`assert` patterns beyond raw line count)
 - Init script content depth check (distinguishes stubs from real scripts)
 - Tech debt density scanning (TODO/FIXME/HACK)
 - Monorepo auto-detection and package discovery

@@ -25,7 +25,7 @@
       "smart-contract": "system-infra",
       "script-automation": "devops-iac"
     },
-    "calibration_notes": "Weights reflect the relative importance of each dimension for the project type, derived from: (1) industry incident analysis (supply chain attacks, production outages, data breaches), (2) control theory leverage (mechanical constraints have highest leverage on agent code quality), (3) diminishing returns (observability adds little value for non-service code). Initial weights were calibrated against 8 real-repo audits (see evals/evals.json) and are adjusted as more data accumulates. Each profile includes a weight_rationale field explaining its specific calibration."
+    "calibration_notes": "Weights reflect the relative importance of each dimension for the project type, derived from: (1) industry incident analysis (supply chain attacks, production outages, data breaches), (2) control theory leverage (mechanical constraints have highest leverage on agent code quality), (3) diminishing returns (observability adds little value for non-service code). Initial weights were calibrated against 8 real-repo audits (see evals/evals.json) and are adjusted as more data accumulates. Each profile includes a weight_rationale field that documents the specific reasoning behind its weight distribution — including which dimensions were elevated or reduced and why. When a weight changes between versions, the rationale field is updated to reflect the change and its motivation (e.g., library dim8_safety was elevated from 0.02 to 0.05 based on supply chain incident data)."
   },
   "profiles": {
     "frontend": {
