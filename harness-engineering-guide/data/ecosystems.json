@@ -219,7 +219,7 @@
       "logging_frameworks": ["slf4j", "logback", "log4j2"],
       "observability": ["micrometer", "opentelemetry-java"],
       "e2e_tools": ["selenium", "playwright"],
-      "boundary_template": null
+      "boundary_template": "templates/linting/archunit-boundary-test.java"
     },
     "csharp": {
       "name": "C# / .NET",
@@ -354,7 +354,7 @@
       "logging_frameworks": ["monolog", "Illuminate\\Support\\Facades\\Log"],
       "observability": ["opentelemetry-php", "sentry-laravel", "datadog"],
       "e2e_tools": ["Laravel Dusk", "playwright", "cypress"],
-      "boundary_template": null,
+      "boundary_template": "templates/linting/deptrac.yaml",
       "monorepo_markers": [],
       "monorepo_workspace_field": null
     },

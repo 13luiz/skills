@@ -106,6 +106,10 @@ flowchart TD
 ### 多生态支持（11 种生态）
 Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin、Dart/Flutter、PHP
 
+**边界强制模板**（item 2.5）覆盖 6 种生态：
+ESLint (JS/TS)、import-linter (Python)、depguard (Go)、clippy + Cargo workspace (Rust)、ArchUnit (Java)、deptrac (PHP)。
+其余生态提供检测规则和 CI 命令；边界规则需手动配置。
+
 ### Pre-Assessment Gate（预评估门控）
 5 个问题的分流机制，路由到合适的审计深度：
 
@@ -129,7 +133,7 @@ Node.js/TypeScript、Python、Go、Rust、Ruby、Java、C#/.NET、Swift、Kotlin
 
 ### 多平台模板
 - **CI**：GitHub Actions、GitLab CI、Azure DevOps
-- **Lint 边界规则**：ESLint (JS/TS)、import-linter (Python)、depguard (Go)、clippy (Rust)
+- **Lint 边界规则**：ESLint (JS/TS)、import-linter (Python)、depguard (Go)、clippy (Rust)、ArchUnit (Java)、deptrac (PHP)
 - **环境恢复**：Bash 和 PowerShell
 
 ## 目录结构
@@ -154,7 +158,7 @@ harness-engineering-guide/
 ├── templates/
 │   ├── universal/                     ← 语言无关模板（5 个文件）
 │   ├── ci/                            ← CI 模板：GitHub Actions、GitLab、Azure
-│   ├── linting/                       ← 边界规则：ESLint、import-linter、depguard、clippy
+│   ├── linting/                       ← 边界规则：ESLint、import-linter、depguard、clippy、ArchUnit、deptrac
 │   └── init/                          ← 环境恢复：Bash、PowerShell
 ├── reports/                           ← 审计报告输出目录
 ├── examples/                          ← 示例审计报告

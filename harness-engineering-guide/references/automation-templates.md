@@ -28,7 +28,9 @@ Detect ecosystem from repo (use `data/ecosystems.json` detect fields):
 - `package.json` → `templates/linting/eslint-boundary-rule.js`
 - `pyproject.toml` / `requirements.txt` → `templates/linting/import-linter.cfg`
 - `go.mod` → `templates/linting/depguard.yml`
-- `Cargo.toml` → `templates/linting/clippy-workspace.toml`
+- `Cargo.toml` → `templates/linting/clippy-workspace.toml` (code quality + workspace lints; Cargo dependencies provide built-in boundary enforcement)
+- `pom.xml` / `build.gradle` → `templates/linting/archunit-boundary-test.java`
+- `composer.json` → `templates/linting/deptrac.yaml`
 - Other ecosystems → implement custom lint rule (no template available; document the rule in AGENTS.md)
 
 ### Gap 4.4 — No Formalized Done Criteria
@@ -75,11 +77,13 @@ templates/
 │   │   └── doc-freshness.yml     # Doc staleness detection
 │   ├── gitlab-ci.yml             # GitLab CI equivalent
 │   └── azure-pipelines.yml       # Azure DevOps equivalent
-├── linting/                      # Architectural boundary rules
-│   ├── eslint-boundary-rule.js   # JS/TS (Node ecosystem)
-│   ├── import-linter.cfg         # Python ecosystem
-│   ├── depguard.yml              # Go ecosystem
-│   └── clippy-workspace.toml     # Rust ecosystem
+├── linting/                          # Architectural boundary rules
+│   ├── eslint-boundary-rule.js       # JS/TS (Node ecosystem)
+│   ├── import-linter.cfg             # Python ecosystem
+│   ├── depguard.yml                  # Go ecosystem
+│   ├── clippy-workspace.toml         # Rust ecosystem (code quality + workspace lints)
+│   ├── archunit-boundary-test.java   # Java ecosystem (ArchUnit test)
+│   └── deptrac.yaml                  # PHP ecosystem (deptrac config)
 └── init/                         # Environment recovery scripts
     ├── init.sh                   # Bash (auto-detects ecosystem)
     └── init.ps1                  # PowerShell equivalent

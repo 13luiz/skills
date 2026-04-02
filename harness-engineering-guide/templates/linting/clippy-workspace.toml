@@ -3,6 +3,16 @@
 #
 # Run: cargo clippy -- -D warnings
 # CI: cargo clippy -- -D warnings (fails on any warning)
+#
+# BOUNDARY ENFORCEMENT NOTE:
+# Unlike other ecosystems that need external tools (ESLint/depguard/ArchUnit) to enforce
+# dependency direction, Rust's Cargo workspace provides BUILT-IN boundary enforcement:
+# - Each crate must explicitly declare dependencies in its Cargo.toml
+# - A crate cannot import from another crate without declaring it as a dependency
+# - `[workspace.dependencies]` centralizes version management across crates
+# This means the Cargo dependency graph IS your architecture boundary. To enforce that
+# crate A must not depend on crate B, simply don't add B to A's [dependencies].
+# Use `cargo tree` to visualize and audit the dependency graph.
 
 # Enforce explicit error handling
 disallowed-methods = [
@@ -17,10 +27,22 @@ too-many-arguments-threshold = 7
 too-many-lines-threshold = 100
 type-complexity-threshold = 250
 
-# For workspace-wide deny in Cargo.toml, add:
+# ── Workspace-wide lint configuration (Rust 1.74+) ──
+# Add the following to your root Cargo.toml for unified enforcement.
+# Each crate inherits these lints via `[lints] workspace = true` in its own Cargo.toml.
+#
 # [workspace.lints.clippy]
 # pedantic = "warn"
 # unwrap_used = "deny"
 # expect_used = "deny"
 # panic = "deny"
 # todo = "warn"
+# unreachable_pub = "warn"
+#
+# [workspace.lints.rust]
+# unsafe_code = "deny"
+# missing_docs = "warn"
+#
+# Then in each crate's Cargo.toml:
+# [lints]
+# workspace = true

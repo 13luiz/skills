@@ -1,0 +1,55 @@
+# deptrac.yaml — PHP architectural boundary enforcement
+# Install: composer require --dev qossmic/deptrac-shim
+# Run: vendor/bin/deptrac analyse
+# CI: Add `vendor/bin/deptrac analyse` to your CI lint step
+#
+# Layer direction: Domain -> Repository -> Service -> Controller -> App
+# Each layer may only depend on layers below it in the stack.
+# Customize paths under `collectors` to match your project's directory structure.
+#
+# REMEDIATION (shown via deptrac output):
+# "App\Domain\Order depends on App\Controller\OrderController
+#  (Domain is not allowed to depend on Controller)"
+# Fix: Move shared logic to a lower layer, or introduce an interface
+# in the lower layer that the upper layer implements.
+
+deptrac:
+  paths:
+    - ./src
+
+  layers:
+    - name: Domain
+      collectors:
+        - type: directory
+          value: src/Domain/.*
+    - name: Repository
+      collectors:
+        - type: directory
+          value: src/Repository/.*
+        - type: directory
+          value: src/Persistence/.*
+    - name: Service
+      collectors:
+        - type: directory
+          value: src/Service/.*
+    - name: Controller
+      collectors:
+        - type: directory
+          value: src/Controller/.*
+        - type: directory
+          value: src/Api/.*
+
+  ruleset:
+    Domain: ~
+    Repository:
+      - Domain
+    Service:
+      - Domain
+      - Repository
+    Controller:
+      - Service
+      - Domain
+
+  formatters:
+    graphviz:
+      hidden_layers: []

@@ -107,6 +107,10 @@ Reduces audit scope for projects at different maturity levels:
 Detection rules, tool recommendations, and CI commands for:
 Node.js/TypeScript, Python, Go, Rust, Ruby, Java, C#/.NET, Swift, Kotlin, Dart/Flutter, PHP
 
+**Boundary enforcement templates** (item 2.5) available for 6 ecosystems:
+ESLint (JS/TS), import-linter (Python), depguard (Go), clippy + Cargo workspace (Rust), ArchUnit (Java), deptrac (PHP).
+Other ecosystems provide detection + CI commands; boundary rules require manual setup.
+
 ### Pre-Assessment Gate
 A 5-question triage that routes to the right audit depth:
 
@@ -131,7 +135,7 @@ Content-level analysis beyond file existence:
 
 ### Multi-Platform Templates
 - **CI**: GitHub Actions, GitLab CI, Azure DevOps
-- **Linting boundaries**: ESLint (JS/TS), import-linter (Python), depguard (Go), clippy (Rust)
+- **Linting boundaries**: ESLint (JS/TS), import-linter (Python), depguard (Go), clippy (Rust), ArchUnit (Java), deptrac (PHP)
 - **Environment recovery**: Bash and PowerShell
 
 ## Directory Structure
@@ -158,7 +162,7 @@ harness-engineering-guide/
 ├── templates/
 │   ├── universal/                     ← Language-agnostic templates (5 files)
 │   ├── ci/                            ← CI templates: GitHub Actions, GitLab, Azure
-│   ├── linting/                       ← Boundary rules: ESLint, import-linter, depguard, clippy
+│   ├── linting/                       ← Boundary rules: ESLint, import-linter, depguard, clippy, ArchUnit, deptrac
 │   └── init/                          ← Environment recovery: Bash, PowerShell
 ├── reports/                           ← Audit report output directory
 ├── examples/                          ← Example audit reports
