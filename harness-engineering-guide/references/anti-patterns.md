@@ -23,6 +23,7 @@ Common anti-patterns found in harness engineering. Flag these during audit (Mode
 9. **Tool hoarding** — Dozens of MCP servers bloat context and break cache stability. Target <10 always-loaded servers.
 10. **Dynamic tool catalog mid-session** — Invalidates prompt cache. Fix the tool catalog at session start.
 11. **Trusting tool output blindly** — MCP server output is untrusted input. Validate before acting on results.
+23. **Infinite tool call loops** — Agent calls a tool whose output triggers the agent to call the same tool again, creating an unbounded cycle (distinct from retry loops in harness components). Common patterns: search→read→search→read on the same file, or agent-spawn chains where child agents spawn more children. Add explicit loop detection (call count limits per tool per session) and circuit breakers that escalate to human after N repeated calls.
 
 ## Constraint Anti-Patterns
 
@@ -33,6 +34,7 @@ Common anti-patterns found in harness engineering. Flag these during audit (Mode
 
 14. **Knowledge lives in Slack** — Critical decisions, conventions, and context exist only in chat threads, Notion pages, or email. Agents cannot access external channels. Externalize to in-repo docs or ADRs.
 15. **TODO-driven debt management** — Using `TODO` / `FIXME` / `HACK` comments as the sole mechanism for tracking tech debt. Comments are invisible to planning and trend analysis. Use a maintained tracker artifact.
+24. **Context overflow hallucinations** — Agent's context window fills up, causing it to lose sight of earlier files, instructions, or constraints. The agent then "hallucinates" about code it can no longer see — referencing functions that don't exist, misremembering file structures, or silently dropping requirements. Mitigate with streaming audit batches (see SKILL.md § Streaming Audit Protocol), structured checkpoint files, and proactive session restarts at ~80% context capacity rather than pushing to the limit.
 
 ## Process Anti-Patterns
 
@@ -41,10 +43,12 @@ Common anti-patterns found in harness engineering. Flag these during audit (Mode
 18. **No crash recovery** — Multi-step tasks need structured checkpoint files (`progress.json`) and documented recovery protocols.
 19. **No environment health check** — Agents building on broken environments compound errors. Use `init.sh` with health checks.
 20. **Stateless multi-session** — Each agent session starts from scratch with no awareness of previous progress. Without structured handoff artifacts (progress logs, execution plans, feature status), agents repeat work or contradict earlier decisions.
+25. **Parallel agent file conflicts** — Multiple agents (or subagents) write to the same file concurrently without coordination, causing silent data loss, merge conflicts, or corrupted state. Common in fan-out topologies and parallel subagent workflows (e.g., Cursor Task tool). Mitigate with directory isolation (each agent writes to its own workspace), file-level locking, or sequential merge points. See `references/agent-team-patterns.md` § Fan-out / Fan-in for the full pattern.
 
 ## Safety Anti-Patterns
 
 21. **Convenience admin token** — Using a single broad-permission token for all agent operations because scoping is "too much work." A compromised or misbehaving agent with admin access has unlimited blast radius. Scope tokens to the minimum required permissions per operation.
+22. **Agent self-modifying harness config** — Agent edits AGENTS.md, .cursorrules, CLAUDE.md, or CI configuration during a task. This lets the agent weaken its own guardrails (removing boundary rules, relaxing lint configs, disabling CI checks). Agent instruction files and CI configs should be read-only for agents; changes require human review via PR.
 
 ---
 
@@ -66,3 +70,7 @@ When reviewing a codebase, check for these red flags:
 | Each session starts without handoff context | #20 | Structured progress logs + feature status |
 | Verifier report has no "Command run" blocks | #3 | Require executable evidence |
 | Agent tokens have admin/write-all permissions | #21 | Scope to minimum required permissions |
+| Agent edits AGENTS.md / .cursorrules / CI config | #22 | Mark harness config files read-only for agents |
+| Same tool called 10+ times in a single turn | #23 | Add per-tool call count limits + circuit breaker |
+| Agent references code/files it hasn't read recently | #24 | Streaming audit batches; restart at ~80% context |
+| Multiple subagents writing to the same file | #25 | Directory isolation per agent; sequential merge |

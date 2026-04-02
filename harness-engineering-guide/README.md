@@ -1,6 +1,6 @@
 # Harness Engineering Guide
 
-A comprehensive skill for auditing, designing, and implementing environment constraints and feedback loops for AI coding agents. Supports **Quick Audit** (15 vital-sign items) and **Full Audit** (45 items) across **10 project profiles**, **11 language ecosystems**, **3 lifecycle stages**, and **21 anti-patterns**.
+A comprehensive skill for auditing, designing, and implementing environment constraints and feedback loops for AI coding agents. Supports **Quick Audit** (15 vital-sign items) and **Full Audit** (45 items) across **10 project profiles**, **11 language ecosystems**, **3 lifecycle stages**, **25 anti-patterns**, and **6 platform adapters**.
 
 ## What is Harness Engineering?
 
@@ -41,6 +41,40 @@ Set up specific harness components on demand: AGENTS.md, CI pipelines, lint rule
 
 ### Mode 3: Design
 Design a complete harness strategy scaled to team size, across three maturity levels (Solo / Small Team / Production).
+
+## How It Works
+
+```mermaid
+flowchart TD
+    Start["Skill Triggered"] --> ModeSelect{"Select Mode"}
+    ModeSelect -->|"Audit"| PreGate["Pre-Assessment Gate\n(5 questions)"]
+    ModeSelect -->|"Implement"| Implement["Mode 2: Set Up Components"]
+    ModeSelect -->|"Design"| Design["Mode 3: Design Strategy"]
+
+    PreGate -->|"0-1 Yes"| Skip["Skip: Basic AGENTS.md\n+ lint + pre-commit"]
+    PreGate -->|"2-3 Yes"| QuickAudit["Quick Audit\n(15 vital-sign items)"]
+    PreGate -->|"4-5 Yes"| FullRoute["Full Audit"]
+
+    FullRoute --> DetectProfile["Detect / Select\nProject Profile"]
+    FullRoute --> DetectStage["Detect / Select\nLifecycle Stage"]
+
+    DetectProfile --> FilterItems["Filter Items\n+ Adjust Weights"]
+    DetectStage --> FilterItems
+
+    FilterItems -->|"Bootstrap"| Items9["9 items"]
+    FilterItems -->|"Growth"| Items29["29 items"]
+    FilterItems -->|"Mature"| Items45["45 items"]
+
+    Items9 --> StreamAudit["Streaming Audit\n(batch by dimension)"]
+    Items29 --> StreamAudit
+    Items45 --> StreamAudit
+
+    StreamAudit --> Report["Scored Report (A-F)\n+ Improvement Roadmap"]
+    QuickAudit --> QuickReport["Streamlined Report\n+ Top 3 Actions"]
+
+    Implement --> RefDocs["Read reference docs\n+ apply templates"]
+    Design --> Maturity["Design by maturity level\n(Solo / Team / Production)"]
+```
 
 ## Features
 
@@ -124,9 +158,9 @@ harness-engineering-guide/
 │   └── init/                          ← Environment recovery: Bash, PowerShell
 ├── reports/                           ← Audit report output directory
 ├── examples/                          ← Example audit reports
-├── references/                        ← Deep-dive reference docs (19 files)
+├── references/                        ← Deep-dive reference docs (20 files)
 │   ├── adversarial-verification.md    ← Adversarial verification (patterns + prompt template + platform guide)
-│   ├── anti-patterns.md               ← 21 anti-patterns with quick diagnostic table
+│   ├── anti-patterns.md               ← 25 anti-patterns with quick diagnostic table
 │   ├── checklist.md                   ← 8-dimension, 45-item audit checklist
 │   ├── scoring-rubric.md              ← Scoring, disambiguation, maturity annotations
 │   ├── report-format.md               ← Audit report template and naming conventions
@@ -139,6 +173,8 @@ harness-engineering-guide/
 │   ├── testing-patterns.md            ← Testing strategy
 │   ├── review-practices.md            ← Code review practices
 │   ├── long-running-agents.md         ← Multi-session agent patterns
+│   ├── agent-team-patterns.md         ← Multi-agent coordination (6 topologies)
+│   ├── platform-adaptation.md         ← Cross-platform config mapping (6 platforms)
 │   ├── cache-stability.md             ← Cache stability & context management
 │   ├── durable-execution.md           ← Durable execution & crash recovery
 │   ├── protocol-hygiene.md            ← Protocol hygiene (MCP/ACP/A2A)
@@ -190,3 +226,4 @@ pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Persist
 - **OpenAI**: Shipped 1 million lines with zero human-written code in 5 months — harness investment, not model upgrades
 - **LangChain**: Changing only the harness jumped Terminal Bench 2.0 from 52.8% to 66.5% (Top 30 → Top 5)
 - **Anthropic**: Generator-Evaluator separation is the most effective pattern for long-running agents
+- **Google DeepMind**: Gemini Deep Think's Aletheia agent uses generate→verify→revise loops with balanced prompting (simultaneous prove/disprove) — confirming that better scaffolding delivers higher reasoning quality at lower compute cost

@@ -1,6 +1,6 @@
 # Harness Engineering Guide（Harness 工程指南）
 
-一个全面的技能，用于审计、设计和实施 AI 编码代理的环境约束和反馈循环。支持**快速审计**（15 项生命体征检查）和**完整审计**（45 项），覆盖 **10 种项目配置**、**11 种语言生态**、**3 个生命周期阶段** 和 **21 个反模式**。
+一个全面的技能，用于审计、设计和实施 AI 编码代理的环境约束和反馈循环。支持**快速审计**（15 项生命体征检查）和**完整审计**（45 项），覆盖 **10 种项目配置**、**11 种语言生态**、**3 个生命周期阶段**、**25 个反模式** 和 **6 个平台适配器**。
 
 ## 什么是 Harness Engineering？
 
@@ -41,6 +41,40 @@
 
 ### 模式 3：设计
 设计完整的 harness 策略，按团队规模分为三个成熟度级别（个人/小团队/生产组织）。
+
+## 运行机制
+
+```mermaid
+flowchart TD
+    Start["触发技能"] --> ModeSelect{"选择模式"}
+    ModeSelect -->|"审计"| PreGate["Pre-Assessment Gate\n(5 个问题)"]
+    ModeSelect -->|"实施"| Implement["模式 2: 设置组件"]
+    ModeSelect -->|"设计"| Design["模式 3: 设计策略"]
+
+    PreGate -->|"0-1 Yes"| Skip["跳过: 基础 AGENTS.md\n+ lint + pre-commit"]
+    PreGate -->|"2-3 Yes"| QuickAudit["快速审计\n(15 项生命体征)"]
+    PreGate -->|"4-5 Yes"| FullRoute["完整审计"]
+
+    FullRoute --> DetectProfile["检测/选择\n项目类型配置"]
+    FullRoute --> DetectStage["检测/选择\n生命周期阶段"]
+
+    DetectProfile --> FilterItems["过滤审计项\n+ 调整权重"]
+    DetectStage --> FilterItems
+
+    FilterItems -->|"Bootstrap"| Items9["9 项"]
+    FilterItems -->|"Growth"| Items29["29 项"]
+    FilterItems -->|"Mature"| Items45["45 项"]
+
+    Items9 --> StreamAudit["流式审计\n(按维度分批)"]
+    Items29 --> StreamAudit
+    Items45 --> StreamAudit
+
+    StreamAudit --> Report["评分报告 (A-F)\n+ 改进路线图"]
+    QuickAudit --> QuickReport["精简报告\n+ Top 3 行动"]
+
+    Implement --> RefDocs["读取参考文档\n+ 应用模板"]
+    Design --> Maturity["按成熟度级别设计\n(个人/团队/生产)"]
+```
 
 ## 功能特性
 
@@ -123,9 +157,9 @@ harness-engineering-guide/
 │   └── init/                          ← 环境恢复：Bash、PowerShell
 ├── reports/                           ← 审计报告输出目录
 ├── examples/                          ← 示例审计报告
-├── references/                        ← 深度参考文档（19 个文件）
+├── references/                        ← 深度参考文档（20 个文件）
 │   ├── adversarial-verification.md    ← 对抗性验证（模式 + prompt 模板 + 平台实现指南）
-│   ├── anti-patterns.md               ← 21 个反模式及快速诊断表
+│   ├── anti-patterns.md               ← 25 个反模式及快速诊断表
 │   ├── checklist.md                   ← 8 维度 45 项审计清单
 │   ├── scoring-rubric.md              ← 评分方法论、维度消歧、成熟度标注
 │   ├── report-format.md               ← 审计报告模板和命名规范
@@ -133,6 +167,7 @@ harness-engineering-guide/
 │   ├── improvement-patterns.md        ← 快速改进、战略投资、关键指标、常见痛点
 │   ├── automation-templates.md        ← 缺口驱动的模板决策树
 │   ├── monorepo-patterns.md           ← Monorepo 审计和设计模式
+│   ├── platform-adaptation.md         ← 跨平台配置映射（6 个平台）
 │   └── ...                            ← 更多参考文档（agents-md-guide、ci-cd-patterns 等）
 └── evals/
     └── evals.json                     ← 8 个真实仓库评估基准（5 个仓库，OpenClaw x4）
@@ -181,6 +216,7 @@ pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Persist
 - **OpenAI**：5 个月内交付 100 万行代码，零人工编写 —— 关键是 harness 投资，而非模型升级
 - **LangChain**：仅改变 harness（不改模型），Terminal Bench 2.0 得分从 52.8% 跳升至 66.5%（Top 30 → Top 5）
 - **Anthropic**：生成器-评估器分离是长时间运行代理最有效的 harness 模式
+- **Google DeepMind**：Gemini Deep Think 的 Aletheia 代理使用生成→验证→修正循环和平衡提示（同时证明/反证）—— 证实了更好的脚手架在更低的计算成本下能产出更高质量的推理
 
 ---
 

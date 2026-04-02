@@ -140,6 +140,28 @@ Run the Pre-Assessment Gate first to determine audit depth: **Full Audit** (4-5 
 
 **Monorepo**: Audit shared infra first, then per-package with appropriate profile. See `references/monorepo-patterns.md`.
 
+#### Streaming Audit Protocol (Full Audit context management)
+
+When auditing large or mature repos (29+ items), process dimensions in batches to prevent context overflow and omissions:
+
+| Batch | Dimensions | Reference Files Needed |
+|-------|-----------|----------------------|
+| **A** | Dim 1-3 (Arch Docs, Mechanical, Observability) | `checklist.md` §1-3, `scoring-rubric.md` §Borderline |
+| **B** | Dim 4-6 (Testing, Context, Entropy) | `checklist.md` §4-6, `scoring-rubric.md` §Disambiguation |
+| **C** | Dim 7-8 (Long-Running, Safety) | `checklist.md` §7-8 |
+
+**Procedure**:
+1. Complete one batch fully (scan → score → evidence) before moving to the next
+2. After each batch, save intermediate results to the report file (append scored dimensions)
+3. Only read reference files relevant to the current batch — do not preload all references
+4. If context is running low mid-batch, commit the partial report and start a fresh session; the next session reads the partial report and continues from the next unscored dimension
+5. After all batches, calculate final weighted score and generate the summary
+
+**Checkpoint format** (append to report after each batch):
+```
+<!-- CHECKPOINT: Batch A complete. Dims 1-3 scored. Resume from Dim 4. -->
+```
+
 #### Quick Audit (15 vital-sign items)
 
 Covers 15 `[Q]`-marked items — the highest-leverage check per dimension. Produces a streamlined report in ~30 minutes.
@@ -161,6 +183,7 @@ Read the relevant reference file for the component:
 | Component | Reference |
 |-----------|-----------|
 | AGENTS.md | `references/agents-md-guide.md` |
+| Platform-specific config | `references/platform-adaptation.md` |
 | CI/CD | `references/ci-cd-patterns.md` |
 | Linting | `references/linting-strategy.md` |
 | Testing | `references/testing-patterns.md` |
@@ -197,9 +220,9 @@ Understand context: team size, tech stack (`data/ecosystems.json`), project type
 
 Read as needed — do not load all at once.
 
-**Audit & Scoring**: `references/checklist.md` (45-item criteria) · `references/scoring-rubric.md` (scoring + disambiguation + maturity annotations) · `references/report-format.md` (report template) · `references/anti-patterns.md` (21 anti-patterns)
+**Audit & Scoring**: `references/checklist.md` (45-item criteria) · `references/scoring-rubric.md` (scoring + disambiguation + maturity annotations + reproducibility) · `references/report-format.md` (report template) · `references/anti-patterns.md` (25 anti-patterns)
 
-**Implementation**: `references/agents-md-guide.md` · `references/ci-cd-patterns.md` · `references/linting-strategy.md` · `references/testing-patterns.md` · `references/review-practices.md` · `references/adversarial-verification.md` (verification + prompt template + platform guide)
+**Implementation**: `references/agents-md-guide.md` · `references/platform-adaptation.md` (cross-platform config) · `references/ci-cd-patterns.md` · `references/linting-strategy.md` · `references/testing-patterns.md` · `references/review-practices.md` · `references/adversarial-verification.md` (verification + prompt template + platform guide)
 
 **Architecture**: `references/control-theory.md` · `references/improvement-patterns.md` (patterns + metrics + sticking points) · `references/cache-stability.md` · `references/monorepo-patterns.md` · `references/agent-team-patterns.md`
 

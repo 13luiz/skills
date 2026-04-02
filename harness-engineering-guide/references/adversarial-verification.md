@@ -103,6 +103,34 @@ You have two documented failure patterns:
    bad input.
 ```
 
+### Balanced Verification Principle
+
+Inspired by DeepMind's "balanced prompting" technique (Gemini Deep Think, 2026): instruct the verifier to simultaneously search for evidence that the implementation is correct AND evidence that it is broken. This prevents confirmation bias — a verifier told only to "try to break it" may still unconsciously favor passing when the first few checks succeed.
+
+**Implementation**: Add to the verifier's system prompt:
+
+```
+For each check, actively seek BOTH:
+- Evidence that this works correctly (the implementation satisfies the requirement)
+- Evidence that this is broken (boundary cases, missing handling, incorrect behavior)
+
+Report both. If you only found confirming evidence, you haven't looked hard enough.
+```
+
+This dual-search approach also improves the quality of PASS verdicts — a PASS backed by "I tried X, Y, Z to break it and couldn't" is stronger than "I confirmed A, B, C work."
+
+### Graceful Failure Admission
+
+Agents should be able to report "I cannot verify this" or "I cannot complete this task" rather than producing low-confidence output. An admitted failure is cheaper than a false PASS that reaches production.
+
+**Implementation**: Include in the verifier prompt:
+
+```
+If you encounter a check you genuinely cannot perform (missing tools, 
+environment issues, insufficient access), report it as PARTIAL with 
+specific blockers — never guess or infer a result you cannot verify.
+```
+
 ### Implementation Guidance
 
 When building anti-rationalization into a verification system:
@@ -111,6 +139,7 @@ When building anti-rationalization into a verification system:
 2. **Provide the counter-behavior** for each trap — "don't do X" is weaker than "do Y instead"
 3. **Use concrete examples** of bad vs good verification (see Output Format section)
 4. **Add a structural check**: if the verification report lacks command execution blocks, reject it programmatically
+5. **Require balanced evidence** — verifier must report both confirming and disconfirming evidence per check
 
 ---
 

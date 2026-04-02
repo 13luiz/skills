@@ -292,3 +292,34 @@ When in doubt, upgrade to Full Audit.
 **F (0-39): "Fix the harness before using agents"**
 - Using agents will likely cause more harm than good
 - Start with quick wins from the improvement roadmap
+
+---
+
+## Reproducibility & Item Classification
+
+Not all checklist items are equally objective. Items are classified as **mechanical** (deterministic, automatable) or **judgment** (requires qualitative assessment). This classification sets expectations for inter-auditor consistency.
+
+### Classification Table
+
+| Type | Items | Expected Variance | Description |
+|------|-------|-------------------|-------------|
+| **Mechanical** | 1.1, 2.1, 2.2, 2.3, 2.4, 2.5, 2.7, 3.2, 4.1, 4.2, 4.3, 4.5, 5.2, 5.5, 6.3, 7.2, 7.4, 7.6, 8.1, 8.2, 8.3, 8.4, 8.5, 8.6 | Low (< 0.5 point) | Verifiable by file existence, line count, config presence, or command output. Two auditors should reach the same score. |
+| **Judgment** | 1.2, 1.3, 1.4, 1.5, 2.6, 3.1, 3.3, 3.4, 3.5, 4.4, 4.6, 4.7, 5.1, 5.3, 5.4, 6.1, 6.2, 6.4, 7.1, 7.3, 7.5 | Moderate (up to 1.0 point) | Requires qualitative assessment of content quality, effectiveness, or completeness. |
+
+### Minimum Evidence Rules for Judgment Items
+
+To reduce scoring variance on judgment items, apply these anchoring rules:
+
+| Item | Judgment Question | Minimum Evidence for PASS |
+|------|------------------|--------------------------|
+| 1.2 | "Is docs/ well-organized?" | Has subdirectories + an index file linking to contents |
+| 1.3 | "Is architecture doc useful?" | Names at least 3 modules/domains with explicit dependency direction |
+| 1.4 | "Is navigation clear?" | Entry file has TOC where each pointer resolves to an existing file |
+| 2.6 | "Are error messages helpful?" | At least 2 custom lint rules include a "Fix:" or "Instead, use:" message |
+| 3.5 | "Is error context sufficient?" | Errors include at least 2 of: stack trace, relevant state, suggested fix |
+| 4.7 | "Is adversarial verification present?" | Verifier is permission-isolated + report has command-run blocks |
+| 5.1 | "Is knowledge externalized?" | No critical decisions found only in external channels during audit |
+| 5.4 | "Is the stack agent-friendly?" | No dependencies lacking public documentation or type definitions |
+| 6.1 | "Are principles effective?" | Principles referenced from agent instruction file (linked, not duplicated) |
+
+When a judgment item meets the minimum evidence threshold, score PASS. When evidence is absent, score FAIL. Score PARTIAL only when evidence partially meets the threshold. This reduces the gray area where auditor subjectivity dominates.
