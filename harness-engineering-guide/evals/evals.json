@@ -11,7 +11,8 @@
       "score_tolerance": 5,
       "key_findings_match_rate": 0.8,
       "human_verification_protocol": {
-        "description": "After running an eval, manually verify: (1) each key_finding maps to real evidence in the repo, (2) no critical findings were missed, (3) anti-pattern identification is accurate. Record verification status in the ground_truth_verified field of each eval's expectations.",
+        "description": "Manual post-eval protocol (not automated). After running an eval, a human reviewer verifies: (1) each key_finding maps to real evidence in the repo, (2) no critical findings were missed, (3) anti-pattern identification is accurate. Record verification status in the ground_truth_verified field of each eval's expectations.",
+        "automation_status": "manual",
         "verification_checklist": [
           "Each key_finding has a corresponding file/config in the repo",
           "Score is within tolerance of independent manual scoring",
@@ -189,7 +190,7 @@
         ],
         "ground_truth_verified": false
       },
-      "report_path": "reports/"
+      "report_path": "examples/"
     },
     {
       "id": "3",
@@ -222,7 +223,7 @@
         ],
         "ground_truth_verified": false
       },
-      "report_path": "reports/"
+      "report_path": "examples/"
     },
     {
       "id": "4",

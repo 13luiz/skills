@@ -129,7 +129,7 @@ Audit scoring separates script detection (Tier 1) from LLM evaluation (Tier 2):
 - **Tier 1 — Script pre-screening**: `dimension-scanners.sh` collects structural signals (file existence, line counts, framework detection via grep, CI content analysis). Fast, deterministic, reproducible.
 - **Tier 2 — LLM final scoring**: The LLM reads script output as evidence, then reads files to make PASS/PARTIAL/FAIL judgments. Handles quality questions scripts cannot answer.
 
-Each checklist item carries a `script_role` field: `definitive` (6 items — script output IS the score), `prescreen` (27 items — script provides evidence, LLM decides), or `none` (12 items — purely LLM/human assessed). An explicit `script_output_mapping` in `data/checklist-items.json` maps each item ID to its corresponding JSON output field, so the LLM knows exactly which script signal applies to which checklist item. See `references/scoring-rubric.md` § Two-Tier Assessment Model.
+Each checklist item carries a `script_role` field: `definitive` (6 items — script output IS the score), `prescreen` (27 items — script provides evidence, LLM decides), or `none` (12 items — purely LLM/human assessed). A complete `script_output_mapping` in `data/checklist-items.json` covers all 45 items: mapped items reference their JSON output paths, `none` items are explicitly marked `no_script_signal`. See `references/scoring-rubric.md` § Two-Tier Assessment Model.
 
 ### Enhanced Audit Scripts
 Content-level analysis beyond file existence:
@@ -178,8 +178,8 @@ harness-engineering-guide/
 │   ├── ci/                            ← CI templates: GitHub Actions, GitLab, Azure
 │   ├── linting/                       ← Boundary rules: ESLint, import-linter, depguard, clippy, ArchUnit, deptrac
 │   └── init/                          ← Environment recovery: Bash, PowerShell
-├── reports/                           ← Audit report output directory
-├── examples/                          ← Example audit reports
+├── reports/                           ← Transient audit report output (not committed)
+├── examples/                          ← Golden reference audit reports (committed)
 ├── references/                        ← Deep-dive reference docs (20 files)
 │   ├── adversarial-verification.md    ← Adversarial verification (patterns + prompt template + platform guide)
 │   ├── anti-patterns.md               ← 25 anti-patterns with quick diagnostic table

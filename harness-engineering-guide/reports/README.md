@@ -50,4 +50,4 @@ Timestamp-based naming supports tracking audit scores over time. Compare JSON re
 
 ## Note
 
-This directory is `.gitkeep`'d and its contents (except this README) should be in `.gitignore` to avoid committing audit results of other repositories.
+This directory is for **transient output only** — generated reports should not be committed here. Reports worth preserving as golden references belong in `examples/` instead. This README is the only tracked file in this directory.

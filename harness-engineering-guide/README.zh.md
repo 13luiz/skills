@@ -128,7 +128,7 @@ ESLint (JS/TS)、import-linter (Python)、depguard (Go)、clippy + Cargo workspa
 - **Tier 1 — 脚本预检**：`dimension-scanners.sh` 采集结构信号（文件存在性、行数、框架检测、CI 内容分析）。快速、确定性、可复现。
 - **Tier 2 — LLM 终评**：LLM 将脚本输出作为证据，读取文件后做 PASS/PARTIAL/FAIL 判断。处理脚本无法回答的质量问题。
 
-每个检查项携带 `script_role` 字段：`definitive`（6 项 — 脚本输出即最终评分）、`prescreen`（27 项 — 脚本提供证据，LLM 决定）、`none`（12 项 — 纯 LLM/人工评估）。`data/checklist-items.json` 中的 `script_output_mapping` 表提供了每个检查项 ID 到脚本 JSON 输出字段的显式映射，确保 LLM 能准确关联脚本信号与对应检查项。详见 `references/scoring-rubric.md` § Two-Tier Assessment Model。
+每个检查项携带 `script_role` 字段：`definitive`（6 项 — 脚本输出即最终评分）、`prescreen`（27 项 — 脚本提供证据，LLM 决定）、`none`（12 项 — 纯 LLM/人工评估）。`data/checklist-items.json` 中的 `script_output_mapping` 完整覆盖全部 45 项：有映射的项指向对应 JSON 输出路径，`none` 项显式标注为 `no_script_signal`。详见 `references/scoring-rubric.md` § Two-Tier Assessment Model。
 
 ### 增强审计脚本
 超越文件存在性的内容级分析：
@@ -174,8 +174,8 @@ harness-engineering-guide/
 │   ├── ci/                            ← CI 模板：GitHub Actions、GitLab、Azure
 │   ├── linting/                       ← 边界规则：ESLint、import-linter、depguard、clippy、ArchUnit、deptrac
 │   └── init/                          ← 环境恢复：Bash、PowerShell
-├── reports/                           ← 审计报告输出目录
-├── examples/                          ← 示例审计报告
+├── reports/                           ← 临时审计报告输出目录（不提交）
+├── examples/                          ← 黄金参考审计报告（已提交）
 ├── references/                        ← 深度参考文档（20 个文件）
 │   ├── adversarial-verification.md    ← 对抗性验证（模式 + prompt 模板 + 平台实现指南）
 │   ├── anti-patterns.md               ← 25 个反模式及快速诊断表
