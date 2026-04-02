@@ -1,25 +1,24 @@
 #!/usr/bin/env bash
-# harness-audit.sh — Enhanced harness engineering audit scanner
+# harness-audit.sh -- Harness engineering audit scanner
+# Responsibility: CLI argument parsing, scoring, output formatting (JSON/Markdown/Blueprint).
+# All detection logic lives in utils/dimension-scanners.sh.
+#
 # Usage: bash harness-audit.sh [repo_root] [options]
 # Options:
-#   --quick             Quick Audit mode: scan only 15 vital-sign items across all 8 dimensions
+#   --quick             Quick Audit mode: scan only 15 vital-sign items
 #   --profile <type>    Project type profile (see data/profiles.json)
 #   --stage <stage>     Lifecycle stage: bootstrap | growth | mature
-#   --monorepo          Enable monorepo detection (discovers packages; per-package audit requires agent iteration)
+#   --monorepo          Enable monorepo detection
 #   --output <dir>      Output directory for reports (default: stdout)
 #   --format <fmt>      Output format: json (default) | markdown
-#   --blueprint         Generate actionable blueprint with gap analysis and template recommendations
-#   --persist           Generate blueprint and save to harness-system/MASTER.md in the repo
-# Output: JSON, Markdown scan report, or Markdown blueprint
+#   --blueprint         Generate actionable blueprint with gap analysis
+#   --persist           Save blueprint to harness-system/MASTER.md
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-SKILL_ROOT="$(dirname "$SCRIPT_DIR")"
+source "$SCRIPT_DIR/utils/dimension-scanners.sh"
 
-# Source content analyzers
-source "$SCRIPT_DIR/utils/content-analyzers.sh"
-
-# --- Parse arguments ---
+# ===== Parse arguments =====
 REPO=""
 PROFILE=""
 STAGE=""
@@ -50,164 +49,10 @@ cd "$REPO"
 REPO_ABS="$(pwd)"
 TIMESTAMP="$(date -u +%Y-%m-%dT%H:%M:%SZ 2>/dev/null || date +%Y-%m-%dT%H:%M:%SZ)"
 
-# --- Helper functions ---
-json_array() {
-  local arr=("$@")
-  if [ ${#arr[@]} -eq 0 ]; then
-    echo "[]"
-    return
-  fi
-  printf '['
-  for i in "${!arr[@]}"; do
-    printf '"%s"' "${arr[$i]}"
-    [ "$i" -lt $((${#arr[@]} - 1)) ] && printf ','
-  done
-  printf ']'
-}
+# ===== Run all dimension scans =====
+run_all_scans "$REPO_ABS"
 
-find_files() {
-  local pattern="$1"
-  find . -maxdepth 4 -path "./.git" -prune -o -name "$pattern" -print 2>/dev/null | sed 's|^\./||' | sort
-}
-
-find_dirs() {
-  local pattern="$1"
-  find . -maxdepth 4 -path "./.git" -prune -o -type d -name "$pattern" -print 2>/dev/null | sed 's|^\./||' | sort
-}
-
-# --- Dimension 1: Agent Instruction Files ---
-AGENT_FILES=()
-for name in AGENTS.md CLAUDE.md CODEX.md .cursorrules; do
-  while IFS= read -r f; do
-    [ -n "$f" ] && AGENT_FILES+=("$f")
-  done < <(find_files "$name")
-done
-while IFS= read -r f; do
-  [ -n "$f" ] && AGENT_FILES+=("$f")
-done < <(find . -maxdepth 4 -path "*/.cursor/rules/*.md" -print 2>/dev/null | sed 's|^\./||' | sort)
-
-# --- Dimension 1: Docs Structure ---
-DOCS_EXISTS=false
-DOCS_HAS_INDEX=false
-DOCS_HAS_ARCH=false
-if [ -d "docs" ]; then
-  DOCS_EXISTS=true
-  for idx in docs/index.md docs/INDEX.md docs/README.md; do
-    [ -f "$idx" ] && DOCS_HAS_INDEX=true && break
-  done
-  for arch in docs/ARCHITECTURE.md ARCHITECTURE.md; do
-    [ -f "$arch" ] && DOCS_HAS_ARCH=true && break
-  done
-fi
-
-# Check for ADR/design doc directories
-HAS_DESIGN_DOCS=false
-for dd in docs/design-docs docs/adr docs/adrs docs/decisions docs/exec-plans; do
-  [ -d "$dd" ] && HAS_DESIGN_DOCS=true && break
-done
-
-# --- Dimension 2: CI Configs ---
-CI_CONFIGS=()
-while IFS= read -r f; do
-  [ -n "$f" ] && CI_CONFIGS+=("$f")
-done < <(find . -maxdepth 4 -path "./.git" -prune -o \( \
-  -path "*/.github/workflows/*.yml" -o \
-  -path "*/.github/workflows/*.yaml" -o \
-  -name ".gitlab-ci.yml" -o \
-  -name "Jenkinsfile" -o \
-  -name "azure-pipelines.yml" -o \
-  -name ".circleci/config.yml" \
-  \) -print 2>/dev/null | sed 's|^\./||' | sort)
-
-# --- Dimension 2: Linter/Formatter Configs ---
-LINTER_CONFIGS=()
-for name in .eslintrc .eslintrc.js .eslintrc.json .eslintrc.yml eslint.config.js eslint.config.mjs \
-  .prettierrc .prettierrc.json .prettierrc.yml prettier.config.js \
-  biome.json biome.jsonc \
-  ruff.toml .flake8 .pylintrc \
-  .golangci.yml .golangci.yaml \
-  clippy.toml .clippy.toml \
-  .rubocop.yml \
-  checkstyle.xml \
-  .swiftlint.yml \
-  analysis_options.yaml \
-  detekt.yml \
-  .editorconfig; do
-  while IFS= read -r f; do
-    [ -n "$f" ] && LINTER_CONFIGS+=("$f")
-  done < <(find_files "$name")
-done
-
-# --- Dimension 2: Type Checking ---
-TYPE_CONFIGS=()
-for name in tsconfig.json mypy.ini .mypy.ini pyrightconfig.json; do
-  while IFS= read -r f; do
-    [ -n "$f" ] && TYPE_CONFIGS+=("$f")
-  done < <(find_files "$name")
-done
-if [ -f "pyproject.toml" ] && grep -q "\[tool\.mypy\]\|\[tool\.pyright\]" pyproject.toml 2>/dev/null; then
-  TYPE_CONFIGS+=("pyproject.toml (type config)")
-fi
-
-# --- Dimension 4: Test Directories ---
-TEST_DIRS=()
-for name in tests __tests__ test spec; do
-  while IFS= read -r d; do
-    [ -n "$d" ] && TEST_DIRS+=("$d")
-  done < <(find_dirs "$name")
-done
-TEST_FILES_COUNT=$(find . -maxdepth 5 -path "./.git" -prune -o \( \
-  -name "*.test.*" -o -name "*.spec.*" -o -name "*_test.*" -o -name "test_*" \
-  \) -print 2>/dev/null | wc -l | tr -d ' ')
-
-# --- Dimension 6: Golden Principles / Tech Debt ---
-HAS_QUALITY_SCORE=false
-for name in QUALITY_SCORE.md quality-score.md tech-debt-tracker.json; do
-  [ -f "$name" ] || [ -f "docs/$name" ] && HAS_QUALITY_SCORE=true && break
-done
-
-# --- Dimension 7: Long-Running Support ---
-HAS_INIT_SCRIPT=false
-for name in init.sh setup.sh Makefile docker-compose.yml docker-compose.yaml devcontainer.json; do
-  [ -f "$name" ] && HAS_INIT_SCRIPT=true && break
-done
-[ -d ".devcontainer" ] && HAS_INIT_SCRIPT=true
-
-HAS_PROGRESS_TRACKING=false
-for name in progress.txt progress.md progress.json; do
-  [ -f "$name" ] && HAS_PROGRESS_TRACKING=true && break
-done
-[ -d "exec-plans" ] || [ -d "docs/exec-plans" ] && HAS_PROGRESS_TRACKING=true
-
-# --- Dimension 8: Safety ---
-HAS_CODEOWNERS=false
-[ -f "CODEOWNERS" ] || [ -f ".github/CODEOWNERS" ] || [ -f "docs/CODEOWNERS" ] && HAS_CODEOWNERS=true
-
-# --- Package Ecosystem ---
-ECOSYSTEM="unknown"
-ECOSYSTEMS_DETECTED=()
-[ -f "package.json" ] && ECOSYSTEM="node" && ECOSYSTEMS_DETECTED+=("node")
-([ -f "pyproject.toml" ] || [ -f "requirements.txt" ] || [ -f "setup.py" ] || [ -f "Pipfile" ]) && ECOSYSTEM="python" && ECOSYSTEMS_DETECTED+=("python")
-[ -f "go.mod" ] && ECOSYSTEM="go" && ECOSYSTEMS_DETECTED+=("go")
-[ -f "Cargo.toml" ] && ECOSYSTEM="rust" && ECOSYSTEMS_DETECTED+=("rust")
-[ -f "Gemfile" ] && ECOSYSTEM="ruby" && ECOSYSTEMS_DETECTED+=("ruby")
-([ -f "pom.xml" ] || [ -f "build.gradle" ]) && ECOSYSTEMS_DETECTED+=("java")
-[ -f "build.gradle.kts" ] || [ -f "settings.gradle.kts" ] && {
-  if compgen -G "src/**/*.kt" >/dev/null 2>&1 || compgen -G "**/*.kt" >/dev/null 2>&1; then
-    ECOSYSTEMS_DETECTED+=("kotlin")
-  else
-    ECOSYSTEMS_DETECTED+=("java")
-  fi
-}
-compgen -G "*.csproj" >/dev/null 2>&1 || compgen -G "*.sln" >/dev/null 2>&1 || [ -f "global.json" ] && ECOSYSTEMS_DETECTED+=("csharp")
-[ -f "Package.swift" ] && ECOSYSTEMS_DETECTED+=("swift")
-[ -f "pubspec.yaml" ] && ECOSYSTEM="dart" && ECOSYSTEMS_DETECTED+=("dart")
-[ -f "composer.json" ] && ECOSYSTEM="php" && ECOSYSTEMS_DETECTED+=("php")
-
-# --- Content Analysis (new deep inspection) ---
-CONTENT_ANALYSIS=$(run_content_analysis "$REPO_ABS")
-
-# --- Quick Assessment ---
+# ===== Quick Assessment =====
 score=0
 [ ${#AGENT_FILES[@]} -gt 0 ] && score=$((score + 1))
 [ ${#CI_CONFIGS[@]} -gt 0 ] && score=$((score + 1))
@@ -217,70 +62,56 @@ score=0
 [ "$DOCS_EXISTS" = true ] && score=$((score + 1))
 
 if [ $score -ge 5 ]; then
-  QUICK_ASSESSMENT="Good foundation — proceed to detailed audit"
+  QUICK_ASSESSMENT="Good foundation ? proceed to detailed audit"
 elif [ $score -ge 3 ]; then
-  QUICK_ASSESSMENT="Partial harness — significant gaps likely"
+  QUICK_ASSESSMENT="Partial harness ? significant gaps likely"
 else
-  QUICK_ASSESSMENT="Minimal harness — expect low scores across most dimensions"
+  QUICK_ASSESSMENT="Minimal harness ? expect low scores across most dimensions"
 fi
 
 AUDIT_MODE="full"
 [ "$QUICK_MODE" = true ] && AUDIT_MODE="quick"
 
-# --- Build JSON output ---
+# ===== JSON Output =====
 JSON_OUTPUT=$(cat <<EOF
 {
   "repo_root": "$REPO_ABS",
   "timestamp": "$TIMESTAMP",
-  "ecosystem": "$ECOSYSTEM",
-  "ecosystems_detected": $(json_array "${ECOSYSTEMS_DETECTED[@]+"${ECOSYSTEMS_DETECTED[@]}"}"),
+  "ecosystem": $ECOSYSTEM_JSON,
   "audit_mode": "$AUDIT_MODE",
   "profile": "${PROFILE:-auto}",
   "stage": "${STAGE:-auto}",
   "monorepo_mode": $MONOREPO_MODE,
   "dimensions": {
-    "1_architecture_docs": {
-      "agent_instruction_files": $(json_array "${AGENT_FILES[@]+"${AGENT_FILES[@]}"}"),
-      "docs_exists": $DOCS_EXISTS,
-      "docs_has_index": $DOCS_HAS_INDEX,
-      "docs_has_architecture": $DOCS_HAS_ARCH,
-      "has_design_docs": $HAS_DESIGN_DOCS
-    },
-    "2_mechanical_constraints": {
-      "ci_configs": $(json_array "${CI_CONFIGS[@]+"${CI_CONFIGS[@]}"}"),
-      "linter_configs": $(json_array "${LINTER_CONFIGS[@]+"${LINTER_CONFIGS[@]}"}"),
-      "type_configs": $(json_array "${TYPE_CONFIGS[@]+"${TYPE_CONFIGS[@]}"}")
-    },
-    "4_testing": {
-      "test_dirs": $(json_array "${TEST_DIRS[@]+"${TEST_DIRS[@]}"}"),
-      "test_files_count": $TEST_FILES_COUNT
-    },
-    "6_entropy_management": {
-      "has_quality_score": $HAS_QUALITY_SCORE
-    },
-    "7_long_running": {
-      "has_init_script": $HAS_INIT_SCRIPT,
-      "has_progress_tracking": $HAS_PROGRESS_TRACKING
-    },
-    "8_safety": {
-      "has_codeowners": $HAS_CODEOWNERS
-    }
+    "1_architecture_docs": $DIM1_JSON,
+    "2_mechanical_constraints": $DIM2_JSON,
+    "3_observability": $DIM3_JSON,
+    "4_testing": $DIM4_JSON,
+    "5_context_engineering": $DIM5_JSON,
+    "6_entropy_management": $DIM6_JSON,
+    "7_long_running": $DIM7_JSON,
+    "8_safety": $DIM8_JSON
   },
-  "content_analysis": $CONTENT_ANALYSIS,
+  "monorepo": $MONOREPO_JSON,
   "summary": {
     "agent_files_count": ${#AGENT_FILES[@]},
     "ci_configs_count": ${#CI_CONFIGS[@]},
     "linter_configs_count": ${#LINTER_CONFIGS[@]},
+    "formatter_configs_count": ${#FORMATTER_CONFIGS[@]},
     "type_configs_count": ${#TYPE_CONFIGS[@]},
+    "has_precommit": $HAS_PRECOMMIT,
     "test_dirs_count": ${#TEST_DIRS[@]},
     "test_files_count": $TEST_FILES_COUNT,
+    "has_feature_tracker": $HAS_FEATURE_TRACKER,
+    "has_secret_scanning": $HAS_SECRET_SCANNING,
+    "has_mcp_config": $HAS_MCP_CONFIG,
     "quick_assessment": "$QUICK_ASSESSMENT"
   }
 }
 EOF
 )
 
-# --- Gap analysis for blueprint/markdown ---
+# ===== Gap Analysis =====
 generate_gaps() {
   local gaps=()
   [ ${#AGENT_FILES[@]} -eq 0 ] && gaps+=("NO_AGENT_FILE")
@@ -298,48 +129,63 @@ generate_gaps() {
   echo "${gaps[@]}"
 }
 
+# ===== Markdown Report =====
 generate_markdown() {
   local REPO_NAME
   REPO_NAME=$(basename "$REPO_ABS")
-  local GAPS
-  GAPS=$(generate_gaps)
 
   local TITLE_PREFIX="Harness Audit"
   [ "$QUICK_MODE" = true ] && TITLE_PREFIX="Quick Harness Audit"
-  cat <<MDEOF
-# ${TITLE_PREFIX}: $REPO_NAME
 
-**Date**: $TIMESTAMP
-**Mode**: $([ "$QUICK_MODE" = true ] && echo "Quick Audit (15 vital-sign items)" || echo "Full Audit")
-**Profile**: ${PROFILE:-auto} | **Stage**: ${STAGE:-auto} | **Ecosystem**: $ECOSYSTEM
-**Assessment**: $QUICK_ASSESSMENT
+  local precommit_detail="none"
+  [ "$HAS_PRECOMMIT" = true ] && precommit_detail="$(IFS=', '; echo "${PRECOMMIT_TOOLS[*]}")"
+  local secret_detail="none"
+  [ "$HAS_SECRET_SCANNING" = true ] && secret_detail="$(IFS=', '; echo "${SECRET_SCANNING_TOOLS[*]}")"
+  local mcp_detail="none"
+  [ "$HAS_MCP_CONFIG" = true ] && mcp_detail="$(IFS=', '; echo "${MCP_CONFIG_FILES[*]}")"
 
-## Scan Results
+  local md=""
+  md+="# ${TITLE_PREFIX}: $REPO_NAME"
+  md+=$'\n'
+  md+=$'\n'"**Date**: $TIMESTAMP"
+  md+=$'\n'"**Mode**: $([ "$QUICK_MODE" = true ] && echo "Quick Audit (15 vital-sign items)" || echo "Full Audit")"
+  md+=$'\n'"**Profile**: ${PROFILE:-auto} | **Stage**: ${STAGE:-auto} | **Ecosystem**: $ECOSYSTEM"
+  md+=$'\n'"**Assessment**: $QUICK_ASSESSMENT"
+  md+=$'\n'
+  md+=$'\n'"## Scan Results"
+  md+=$'\n'
+  md+=$'\n'"| Dimension | Finding | Status |"
+  md+=$'\n'"|-----------|---------|--------|"
+  md+=$'\n'"| Agent instruction files | ${#AGENT_FILES[@]} found | $([ ${#AGENT_FILES[@]} -gt 0 ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| docs/ directory | $([ "$DOCS_EXISTS" = true ] && echo "exists" || echo "missing") | $([ "$DOCS_EXISTS" = true ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| ARCHITECTURE.md | $([ "$DOCS_HAS_ARCH" = true ] && echo "exists" || echo "missing") | $([ "$DOCS_HAS_ARCH" = true ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| CI configs | ${#CI_CONFIGS[@]} found | $([ ${#CI_CONFIGS[@]} -gt 0 ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| Linter configs | ${#LINTER_CONFIGS[@]} found | $([ ${#LINTER_CONFIGS[@]} -gt 0 ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| Formatter configs | ${#FORMATTER_CONFIGS[@]} found | $([ ${#FORMATTER_CONFIGS[@]} -gt 0 ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| Type checker configs | ${#TYPE_CONFIGS[@]} found | $([ ${#TYPE_CONFIGS[@]} -gt 0 ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| Pre-commit hooks | $precommit_detail | $([ "$HAS_PRECOMMIT" = true ] && echo "PASS" || echo "INFO") |"
+  md+=$'\n'"| Test directories | ${#TEST_DIRS[@]} found ($TEST_FILES_COUNT test files) | $([ ${#TEST_DIRS[@]} -gt 0 ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| Feature tracker | $([ "$HAS_FEATURE_TRACKER" = true ] && echo "exists" || echo "none") | $([ "$HAS_FEATURE_TRACKER" = true ] && echo "PASS" || echo "INFO") |"
+  md+=$'\n'"| Tech debt tracking | $([ "$HAS_QUALITY_SCORE" = true ] && echo "exists" || echo "missing") | $([ "$HAS_QUALITY_SCORE" = true ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| Environment recovery | $([ "$HAS_INIT_SCRIPT" = true ] && echo "exists" || echo "missing") | $([ "$HAS_INIT_SCRIPT" = true ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| Progress tracking | $([ "$HAS_PROGRESS_TRACKING" = true ] && echo "exists" || echo "missing") | $([ "$HAS_PROGRESS_TRACKING" = true ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| CODEOWNERS | $([ "$HAS_CODEOWNERS" = true ] && echo "exists" || echo "missing") | $([ "$HAS_CODEOWNERS" = true ] && echo "PASS" || echo "FAIL") |"
+  md+=$'\n'"| Secret scanning | $secret_detail | $([ "$HAS_SECRET_SCANNING" = true ] && echo "PASS" || echo "INFO") |"
+  md+=$'\n'"| MCP config | $mcp_detail | $([ "$HAS_MCP_CONFIG" = true ] && echo "PASS" || echo "INFO") |"
+  md+=$'\n'
+  md+=$'\n'"## Detected Files"
+  md+=$'\n'
+  md+=$'\n'"$([ ${#AGENT_FILES[@]} -gt 0 ] && printf '**Agent files**: %s' "$(IFS=', '; echo "${AGENT_FILES[*]}")" || echo "**Agent files**: none")"
+  md+=$'\n'"$([ ${#CI_CONFIGS[@]} -gt 0 ] && printf '**CI configs**: %s' "$(IFS=', '; echo "${CI_CONFIGS[*]}")" || echo "**CI configs**: none")"
+  md+=$'\n'"$([ ${#LINTER_CONFIGS[@]} -gt 0 ] && printf '**Linter configs**: %s' "$(IFS=', '; echo "${LINTER_CONFIGS[*]}")" || echo "**Linter configs**: none")"
+  md+=$'\n'"$([ ${#FORMATTER_CONFIGS[@]} -gt 0 ] && printf '**Formatter configs**: %s' "$(IFS=', '; echo "${FORMATTER_CONFIGS[*]}")" || echo "**Formatter configs**: none")"
+  md+=$'\n'"$([ ${#TYPE_CONFIGS[@]} -gt 0 ] && printf '**Type configs**: %s' "$(IFS=', '; echo "${TYPE_CONFIGS[*]}")" || echo "**Type configs**: none")"
+  md+=$'\n'"$([ ${#TEST_DIRS[@]} -gt 0 ] && printf '**Test dirs**: %s' "$(IFS=', '; echo "${TEST_DIRS[*]}")" || echo "**Test dirs**: none")"
 
-| Dimension | Finding | Status |
-|-----------|---------|--------|
-| Agent instruction files | ${#AGENT_FILES[@]} found | $([ ${#AGENT_FILES[@]} -gt 0 ] && echo "PASS" || echo "FAIL") |
-| docs/ directory | $([ "$DOCS_EXISTS" = true ] && echo "exists" || echo "missing") | $([ "$DOCS_EXISTS" = true ] && echo "PASS" || echo "FAIL") |
-| ARCHITECTURE.md | $([ "$DOCS_HAS_ARCH" = true ] && echo "exists" || echo "missing") | $([ "$DOCS_HAS_ARCH" = true ] && echo "PASS" || echo "FAIL") |
-| CI configs | ${#CI_CONFIGS[@]} found | $([ ${#CI_CONFIGS[@]} -gt 0 ] && echo "PASS" || echo "FAIL") |
-| Linter configs | ${#LINTER_CONFIGS[@]} found | $([ ${#LINTER_CONFIGS[@]} -gt 0 ] && echo "PASS" || echo "FAIL") |
-| Type checker configs | ${#TYPE_CONFIGS[@]} found | $([ ${#TYPE_CONFIGS[@]} -gt 0 ] && echo "PASS" || echo "FAIL") |
-| Test directories | ${#TEST_DIRS[@]} found ($TEST_FILES_COUNT test files) | $([ ${#TEST_DIRS[@]} -gt 0 ] && echo "PASS" || echo "FAIL") |
-| Tech debt tracking | $([ "$HAS_QUALITY_SCORE" = true ] && echo "exists" || echo "missing") | $([ "$HAS_QUALITY_SCORE" = true ] && echo "PASS" || echo "FAIL") |
-| Environment recovery | $([ "$HAS_INIT_SCRIPT" = true ] && echo "exists" || echo "missing") | $([ "$HAS_INIT_SCRIPT" = true ] && echo "PASS" || echo "FAIL") |
-| Progress tracking | $([ "$HAS_PROGRESS_TRACKING" = true ] && echo "exists" || echo "missing") | $([ "$HAS_PROGRESS_TRACKING" = true ] && echo "PASS" || echo "FAIL") |
-| CODEOWNERS | $([ "$HAS_CODEOWNERS" = true ] && echo "exists" || echo "missing") | $([ "$HAS_CODEOWNERS" = true ] && echo "PASS" || echo "FAIL") |
-
-## Detected Files
-
-$([ ${#AGENT_FILES[@]} -gt 0 ] && printf '**Agent files**: %s\n' "$(IFS=', '; echo "${AGENT_FILES[*]}")" || echo "**Agent files**: none")
-$([ ${#CI_CONFIGS[@]} -gt 0 ] && printf '**CI configs**: %s\n' "$(IFS=', '; echo "${CI_CONFIGS[*]}")" || echo "**CI configs**: none")
-$([ ${#LINTER_CONFIGS[@]} -gt 0 ] && printf '**Linter configs**: %s\n' "$(IFS=', '; echo "${LINTER_CONFIGS[*]}")" || echo "**Linter configs**: none")
-$([ ${#TYPE_CONFIGS[@]} -gt 0 ] && printf '**Type configs**: %s\n' "$(IFS=', '; echo "${TYPE_CONFIGS[*]}")" || echo "**Type configs**: none")
-$([ ${#TEST_DIRS[@]} -gt 0 ] && printf '**Test dirs**: %s\n' "$(IFS=', '; echo "${TEST_DIRS[*]}")" || echo "**Test dirs**: none")
-MDEOF
+  echo "$md"
 }
 
+# ===== Blueprint Report =====
 generate_blueprint() {
   local REPO_NAME
   REPO_NAME=$(basename "$REPO_ABS")
@@ -356,13 +202,12 @@ generate_blueprint() {
 
 BPEOF
 
-  # Map each gap to a recommendation
   for gap in $GAPS; do
     case "$gap" in
       NO_AGENT_FILE)
         cat <<'REC'
 ### Missing: Agent Instruction File (Dim 1)
-- **Impact**: Agents have no project-specific guidance — they guess at conventions
+- **Impact**: Agents have no project-specific guidance ? they guess at conventions
 - **Fix**: Create AGENTS.md using `templates/universal/agents-md-scaffold.md`
 - **Effort**: 30 min | **Priority**: HIGH
 
@@ -389,8 +234,8 @@ REC
       NO_CI_PIPELINE)
         cat <<'REC'
 ### Missing: CI Pipeline (Dim 2)
-- **Impact**: No mechanical enforcement — agents can merge broken code
-- **Fix**: Add CI using `templates/ci/github-actions/standard-pipeline.yml` (or gitlab-ci.yml / azure-pipelines.yml)
+- **Impact**: No mechanical enforcement ? agents can merge broken code
+- **Fix**: Add CI using `templates/ci/github-actions/standard-pipeline.yml`
 - **Effort**: 1 hour | **Priority**: CRITICAL
 
 REC
@@ -399,7 +244,7 @@ REC
         cat <<'REC'
 ### Missing: Linter Configuration (Dim 2)
 - **Impact**: No style or correctness enforcement on agent-generated code
-- **Fix**: Add linter config for your ecosystem (see `data/ecosystems.json` for recommendations)
+- **Fix**: Add linter config for your ecosystem (see `data/ecosystems.json`)
 - **Effort**: 30 min | **Priority**: CRITICAL
 
 REC
@@ -408,7 +253,7 @@ REC
         cat <<'REC'
 ### Missing: Type Checker (Dim 2)
 - **Impact**: Agent can produce type-unsafe code that passes CI
-- **Fix**: Add type checking in strict mode (see `data/ecosystems.json` for ecosystem-specific setup)
+- **Fix**: Add type checking in strict mode (see `data/ecosystems.json`)
 - **Effort**: 1 hour | **Priority**: CRITICAL
 
 REC
@@ -416,7 +261,7 @@ REC
       NO_TESTS)
         cat <<'REC'
 ### Missing: Test Suite (Dim 4)
-- **Impact**: No regression detection — agent changes may silently break features
+- **Impact**: No regression detection ? agent changes may silently break features
 - **Fix**: Create test directory and add initial tests for core modules
 - **Effort**: 2-4 hours | **Priority**: CRITICAL
 
@@ -426,7 +271,7 @@ REC
         cat <<'REC'
 ### Missing: Tech Debt Tracking (Dim 6)
 - **Impact**: Quality degradation invisible until crisis
-- **Fix**: Add `templates/universal/tech-debt-tracker.json` to track quality scores per module
+- **Fix**: Add `templates/universal/tech-debt-tracker.json` to track quality scores
 - **Effort**: 15 min | **Priority**: LOW
 
 REC
@@ -435,7 +280,7 @@ REC
         cat <<'REC'
 ### Missing: Environment Recovery Script (Dim 7)
 - **Impact**: Agents cannot reliably bootstrap development environment
-- **Fix**: Create init script using `templates/init/init.sh` or `templates/init/init.ps1`
+- **Fix**: Create init script using `templates/init/init.sh` or `init.ps1`
 - **Effort**: 30 min | **Priority**: MEDIUM
 
 REC
@@ -461,7 +306,6 @@ REC
     esac
   done
 
-  # Quick wins section
   cat <<QWEOF
 ## Quick Wins (implement today)
 
@@ -477,10 +321,9 @@ QWEOF
       NO_TESTS) echo "$win_num. Create initial test suite with CI integration"; win_num=$((win_num+1)) ;;
     esac
   done
-  [ $win_num -eq 1 ] && echo "No critical gaps found — focus on deepening existing checks."
+  [ $win_num -eq 1 ] && echo "No critical gaps found ? focus on deepening existing checks."
   echo ""
 
-  # Recommended templates section
   cat <<TMEOF
 ## Recommended Templates
 
@@ -499,7 +342,6 @@ TMEOF
   done
   echo ""
 
-  # Ecosystem-specific CI commands
   cat <<CIEOF
 ## Ecosystem CI Commands ($ECOSYSTEM)
 
@@ -569,7 +411,7 @@ RUSTEOF
 NEOF
 }
 
-# --- Write output ---
+# ===== Write Output =====
 REPO_NAME=$(basename "$REPO_ABS")
 DATE_STR=$(date +%Y-%m-%d 2>/dev/null || date +%Y-%m-%d)
 
@@ -591,13 +433,9 @@ elif [ -n "$OUTPUT_DIR" ]; then
   mkdir -p "$OUTPUT_DIR"
   if [ "$OUTPUT_FORMAT" = "markdown" ] || [ "$BLUEPRINT_MODE" = true ]; then
     EXT="md"
-    if [ "$BLUEPRINT_MODE" = true ]; then
-      SUFFIX="blueprint"
-    elif [ "$QUICK_MODE" = true ]; then
-      SUFFIX="quick-audit"
-    else
-      SUFFIX="audit"
-    fi
+    if [ "$BLUEPRINT_MODE" = true ]; then SUFFIX="blueprint"
+    elif [ "$QUICK_MODE" = true ]; then SUFFIX="quick-audit"
+    else SUFFIX="audit"; fi
   else
     EXT="json"
     SUFFIX=$([ "$QUICK_MODE" = true ] && echo "quick-audit" || echo "audit")

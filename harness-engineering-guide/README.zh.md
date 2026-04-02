@@ -146,10 +146,11 @@ harness-engineering-guide/
 │   ├── ecosystems.json                ← 11 种生态检测规则和工具映射
 │   └── checklist-items.json           ← 45 项机器可读格式
 ├── scripts/
-│   ├── harness-audit.sh               ← 增强版 Bash 审计（内容分析 + 配置/阶段）
-│   ├── harness-audit.ps1              ← 增强版 PowerShell 审计
+│   ├── harness-audit.sh               ← CLI + 评分 + 输出格式化 (Bash)
+│   ├── harness-audit.ps1              ← CLI + 评分 + 输出格式化 (PowerShell)
 │   └── utils/
-│       └── content-analyzers.sh       ← 内容级分析函数（维度 3/5/6）
+│       ├── dimension-scanners.sh      ← 全 8 维度检测逻辑 (Bash)
+│       └── dimension-scanners.ps1     ← 全 8 维度检测逻辑 (PowerShell)
 ├── templates/
 │   ├── universal/                     ← 语言无关模板（5 个文件）
 │   ├── ci/                            ← CI 模板：GitHub Actions、GitLab、Azure

@@ -147,10 +147,11 @@ harness-engineering-guide/
 │   ├── ecosystems.json                ← 11 ecosystem detection rules and tool mappings
 │   └── checklist-items.json           ← 45 items in machine-readable format
 ├── scripts/
-│   ├── harness-audit.sh               ← Enhanced Bash audit (content analysis + profiles/stages)
-│   ├── harness-audit.ps1              ← Enhanced PowerShell audit
+│   ├── harness-audit.sh               ← CLI + scoring + output formatting (Bash)
+│   ├── harness-audit.ps1              ← CLI + scoring + output formatting (PowerShell)
 │   └── utils/
-│       └── content-analyzers.sh       ← Content-level analysis functions (Dim 3/5/6)
+│       ├── dimension-scanners.sh      ← All 8 dimension detection logic (Bash)
+│       └── dimension-scanners.ps1     ← All 8 dimension detection logic (PowerShell)
 ├── templates/
 │   ├── universal/                     ← Language-agnostic templates (5 files)
 │   ├── ci/                            ← CI templates: GitHub Actions, GitLab, Azure
