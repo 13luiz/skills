@@ -156,6 +156,7 @@ ESLint (JS/TS)、import-linter (Python)、depguard (Go)、clippy + Cargo workspa
 harness-engineering-guide/
 ├── SKILL.md                           ← Agent 入口（~190 行，薄指令层 + Quick Reference）
 ├── skill.json                         ← Skill 元数据（名称、版本、平台、关键词）
+├── .gitattributes                     ← 换行符强制规则（.sh 用 LF，.ps1 用 CRLF）
 ├── README.md                          ← 英文版
 ├── README.zh.md                       ← 你在这里（中文版）
 ├── data/

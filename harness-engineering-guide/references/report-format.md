@@ -143,6 +143,7 @@ Used by Quick Audit mode (15 vital-sign items). Streamlined format focused on di
 
 ```
 reports/<YYYY-MM-DD>_<repo-name>_audit[.<lang>].md
+reports/<YYYY-MM-DD>_<repo-name>_quick-audit[.<lang>].md
 ```
 
 - English reports omit the language suffix: `2026-04-01_acme_audit.md`

@@ -2,7 +2,7 @@
   "name": "harness-engineering-guide",
   "displayName": "Harness Engineering Guide",
   "description": "Audit, design, and implement AI agent harnesses — the constraints, feedback loops, and verification systems that make AI coding agents reliable. Two-tier assessment model (script pre-screening + LLM final scoring) with explicit script-to-item field mapping, Quick Audit (15 vital-sign items) or Full Audit (45 items), 8 dimensions, 10 project profiles with calibrated weights, 11 ecosystems, 3 lifecycle stages, 25 anti-patterns (preventable/mitigable classification), 6 platform adapters, streaming audit protocol.",
-  "version": "1.5.3",
+  "version": "1.5.4",
   "author": "Luiz",
   "license": "Apache-2.0",
   "repository": "https://github.com/13luiz/skills",

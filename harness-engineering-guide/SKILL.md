@@ -48,12 +48,12 @@ The user can also explicitly request Quick or Full mode regardless of the gate r
 
 | Priority | Dimension | Weight | Quick Check | Anti-Pattern |
 |----------|-----------|--------|-------------|--------------|
-| 1 | Mechanical Constraints (Dim 2) | 20% | CI blocks PR? Linter enforced? Types strict? | "Trust the agent" |
+| 1 | Mechanical Constraints (Dim 2) | 20% | CI blocks PR? Linter enforced? Types strict? | "Lint but don't block" |
 | 2 | Testing & Verification (Dim 4) | 15% | Tests in CI? Coverage threshold? E2E exists? | "AI tests verifying AI code" |
 | 3 | Architecture Docs (Dim 1) | 15% | AGENTS.md exists and concise? docs/ structured? | "Encyclopedia AGENTS.md" |
 | 4 | Feedback & Observability (Dim 3) | 15% | Structured logging? Metrics? Agent-queryable? | "Ad-hoc print debugging" |
 | 5 | Context Engineering (Dim 5) | 10% | Decisions in-repo? Docs fresh? Cache-friendly? | "Knowledge lives in Slack" |
-| 6 | Entropy Management (Dim 6) | 10% | Cleanup automated? Tech debt tracked? | "Manual Friday cleanup" |
+| 6 | Entropy Management (Dim 6) | 10% | Cleanup automated? Tech debt tracked? | "Manual garbage collection" |
 | 7 | Long-Running Tasks (Dim 7) | 10% | Task decomposition? Checkpoints? Handoff bridges? | "No crash recovery" |
 | 8 | Safety Rails (Dim 8) | 5% | Least privilege? Rollback? Human gates? | "Trusting tool output" |
 
@@ -63,7 +63,7 @@ The user can also explicitly request Quick or Full mode regardless of the gate r
 *Items marked `[Q]` are included in Quick Audit mode (15 vital-sign items).*
 
 ### Dim 1: Architecture Documentation (15%) — GOAL STATE
-- `1.1` `[Q]` **agent-instruction-file** — AGENTS.md/CLAUDE.md exists and concise (<100 lines)
+- `1.1` `[Q]` **agent-instruction-file** — AGENTS.md/CLAUDE.md exists and concise (<150 lines)
 - `1.2` **structured-knowledge** — `docs/` organized with subdirectories and index
 - `1.3` `[Q]` **architecture-docs** — ARCHITECTURE.md with domain boundaries and dependency rules
 - `1.4` **progressive-disclosure** — Short entry point → deeper docs

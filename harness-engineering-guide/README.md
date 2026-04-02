@@ -158,6 +158,7 @@ Content-level analysis beyond file existence:
 harness-engineering-guide/
 ├── SKILL.md                           ← Agent entry point (~190 lines, thin orchestrator + Quick Reference)
 ├── skill.json                         ← Skill metadata (name, version, platforms, keywords)
+├── .gitattributes                     ← Line ending enforcement (LF for .sh, CRLF for .ps1)
 ├── README.md                          ← You are here (English)
 ├── README.zh.md                       ← Chinese version
 ├── data/

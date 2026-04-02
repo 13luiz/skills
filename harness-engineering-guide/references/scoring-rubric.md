@@ -378,6 +378,7 @@ Quick Audit uses 15 vital-sign items (marked `quick_mode: true` in `data/checkli
 - Use the same per-item PASS (1.0) / PARTIAL (0.5) / FAIL (0.0) scale.
 - Dimension scores are calculated the same way: `(sum of quick item points / number of quick items in dimension) * 100`.
 - Dimension weights use default weights (or profile weights if a profile is selected). Dimensions with 1 item get their full default weight. Normalize so weights sum to 1.0.
+- **Stage does not apply**: Quick Audit always scores the fixed 15-item set regardless of lifecycle stage. Stage weight overrides and active-item filtering do not apply. Profile weight overrides apply normally.
 - Final score and grade thresholds are identical to Full Audit.
 
 ### Escalation Rule
