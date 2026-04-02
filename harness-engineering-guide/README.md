@@ -166,7 +166,7 @@ harness-engineering-guide/
 │   ├── adversarial-verification.md    ← Adversarial verification (patterns + prompt template + platform guide)
 │   ├── anti-patterns.md               ← 25 anti-patterns with quick diagnostic table
 │   ├── checklist.md                   ← 8-dimension, 45-item audit checklist
-│   ├── scoring-rubric.md              ← Scoring, disambiguation, maturity annotations
+│   ├── scoring-rubric.md              ← Scoring, disambiguation, maturity annotations, conservatism calibration
 │   ├── report-format.md               ← Audit report template and naming conventions
 │   ├── control-theory.md              ← Control theory foundation
 │   ├── improvement-patterns.md        ← Quick wins, strategic investments, metrics, sticking points

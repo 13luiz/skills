@@ -143,6 +143,16 @@ For monorepos with documentation packages (e.g., Mintlify, Docusaurus, Starlight
 
 The key test: if an agent reads only the root agent file, can it find all relevant sub-files without guessing? If not, score PARTIAL even when the sub-files are individually well-written.
 
+### 2.1/4.2 CI Pipeline Blocks / Tests Block: verifying merge-blocking behavior
+
+**The question**: "Does CI effectively gate merges, even when branch protection cannot be verified from within the repository?"
+
+- **PASS**: CI workflow runs on PRs (`on: pull_request`) and its job names or workflow structure clearly indicate gate-keeping intent (e.g., `ci.yml`, `test.yml` with required status pattern). The inability to verify branch protection settings from within the repo does NOT downgrade the score.
+- **PARTIAL**: CI exists but explicitly does not block (`continue-on-error: true`), only runs on push to main, or is an optional/informational check.
+- **FAIL**: No CI pipeline or no test execution in CI.
+
+Branch protection is a platform setting external to the repository. When CI workflows are designed as PR gates, score PASS unless there is positive evidence that they do not block merges.
+
 ### 2.7 Structural Conventions: "documented" vs "enforced"
 
 **The question**: "Are naming, file structure, and workflow conventions mechanically enforced, not just written down?"
@@ -152,6 +162,24 @@ The key test: if an agent reads only the root agent file, can it find all releva
 - **FAIL**: No documented conventions or enforcement.
 
 The distinction is between "we told agents the rules" (PARTIAL) and "we made the rules impossible to break" (PASS). PR template requirements enforced by CI count as mechanical.
+
+**Examples of structural conventions vs generic tooling**:
+
+| Counts as structural convention | Does NOT count |
+|--------------------------------|----------------|
+| File naming rules (eslint-plugin-filenames) | Generic code style (prettier) |
+| Import restrictions (no-restricted-imports) | Generic lint defaults (clippy defaults) |
+| PR title format (conventional-commits CI) | Basic formatting (rustfmt) |
+| Test path restriction (bunfig.toml test root) | Type checking (tsc strict) |
+| Auto-compliance workflows (close non-conforming PRs) | Standard compiler warnings |
+
+### 3.1 Structured Logging: framework capability vs output format
+
+**The question**: "Does the application use a structured logging approach, regardless of output format?"
+
+- **PASS**: Uses a structured logging framework (tracing, log4j, winston, slog, zerolog, etc.) with at least 2 of: log levels, context fields/spans, correlation IDs. JSON output format is NOT required — the framework itself provides structured data that can be queried and analyzed.
+- **PARTIAL**: Mixed structured and unstructured logging, or framework present but used inconsistently (most logs are bare strings).
+- **FAIL**: Only ad-hoc print statements with no logging framework.
 
 ### 6.4 AI Slop Detection: manual commands vs automated rules
 
@@ -393,3 +421,17 @@ To reduce scoring variance on judgment items, apply these anchoring rules:
 | 6.1 | "Are principles effective?" | Principles referenced from agent instruction file (linked, not duplicated) |
 
 When a judgment item meets the minimum evidence threshold, score PASS. When evidence is absent, score FAIL. Score PARTIAL only when evidence partially meets the threshold. This reduces the gray area where auditor subjectivity dominates.
+
+---
+
+## Conservatism Calibration
+
+When scoring mechanical items (classified in the Classification Table above), apply these calibration rules to prevent over-conservative scoring:
+
+1. **File evidence is authoritative**: If a config file, workflow file, or script exists in the repository and its content matches the PASS criteria, score PASS. Do not downgrade because an external platform setting (e.g., GitHub branch protection, registry permissions) cannot be verified from within the repository.
+
+2. **Designed-as-gate counts**: CI workflows triggered by `pull_request` events with names implying gate behavior (e.g., `ci`, `test`, `check`, `lint`) should be scored as blocking unless positive counter-evidence exists (e.g., `continue-on-error: true`).
+
+3. **Cron automation counts**: Scheduled workflows (`schedule` / cron triggers) that perform cleanup operations (closing stale PRs/issues, compliance enforcement) satisfy recurring automation criteria. Manual discovery of these workflows is expected during the scan phase.
+
+4. **Partial evidence is not absence**: When a checklist item's description includes an intermediate state (PARTIAL criteria), do not score FAIL simply because the evidence is imperfect. Score FAIL only when the practice is genuinely absent or non-functional.

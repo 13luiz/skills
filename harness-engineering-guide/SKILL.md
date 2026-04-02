@@ -132,7 +132,7 @@ Run the Pre-Assessment Gate first to determine audit depth: **Full Audit** (4-5 
 
 **Step 1: Scan** — Run `bash scripts/harness-audit.sh <repo> --profile <type> --stage <stage>` (or `pwsh scripts/harness-audit.ps1`). Add `--monorepo` for monorepo, `--blueprint` for gap analysis. For manual scan, use Glob/Grep patterns from `references/checklist.md`.
 
-**Step 2: Score** — For each active item: PASS (1.0) / PARTIAL (0.5) / FAIL (0.0) with evidence. Use `references/scoring-rubric.md` for borderline cases and dimension disambiguation.
+**Step 2: Score** — For each active item: PASS (1.0) / PARTIAL (0.5) / FAIL (0.0) with evidence. Use `references/scoring-rubric.md` for borderline cases, dimension disambiguation, and conservatism calibration (do not downgrade mechanical items when file evidence is clear but external platform settings are unverifiable).
 
 **Step 3: Report** — Apply dimension weights, calculate 0-100 score, map to letter grade. Use the report template from `references/report-format.md`. Save to `reports/<YYYY-MM-DD>_<repo>_audit[.<lang>].md`.
 
@@ -220,7 +220,7 @@ Understand context: team size, tech stack (`data/ecosystems.json`), project type
 
 Read as needed — do not load all at once.
 
-**Audit & Scoring**: `references/checklist.md` (45-item criteria) · `references/scoring-rubric.md` (scoring + disambiguation + maturity annotations + reproducibility) · `references/report-format.md` (report template) · `references/anti-patterns.md` (25 anti-patterns)
+**Audit & Scoring**: `references/checklist.md` (45-item criteria) · `references/scoring-rubric.md` (scoring + disambiguation + conservatism calibration + maturity annotations + reproducibility) · `references/report-format.md` (report template) · `references/anti-patterns.md` (25 anti-patterns)
 
 **Implementation**: `references/agents-md-guide.md` · `references/platform-adaptation.md` (cross-platform config) · `references/ci-cd-patterns.md` · `references/linting-strategy.md` · `references/testing-patterns.md` · `references/review-practices.md` · `references/adversarial-verification.md` (verification + prompt template + platform guide)
 

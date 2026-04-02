@@ -162,7 +162,7 @@ harness-engineering-guide/
 │   ├── adversarial-verification.md    ← 对抗性验证（模式 + prompt 模板 + 平台实现指南）
 │   ├── anti-patterns.md               ← 25 个反模式及快速诊断表
 │   ├── checklist.md                   ← 8 维度 45 项审计清单
-│   ├── scoring-rubric.md              ← 评分方法论、维度消歧、成熟度标注
+│   ├── scoring-rubric.md              ← 评分方法论、维度消歧、保守性校准、成熟度标注
 │   ├── report-format.md               ← 审计报告模板和命名规范
 │   ├── control-theory.md              ← 控制论基础
 │   ├── improvement-patterns.md        ← 快速改进、战略投资、关键指标、常见痛点
