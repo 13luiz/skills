@@ -4,7 +4,7 @@
 
 ## 什么是 Harness Engineering？
 
-**Agent = Model + Harness（治具）。** Harness 是围绕模型的一切：工具访问、上下文管理、验证、错误恢复和状态持久化。
+**Agent = Model + Harness。** Harness 是围绕模型的一切：工具访问、上下文管理、验证、错误恢复和状态持久化。
 
 从控制论的角度，每个有效的 harness 都实现了四个要素：
 
@@ -227,8 +227,8 @@ pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Persist
 
 | 英文 | 中文 | 说明 |
 |------|------|------|
-| Harness | Harness（治具） | 首次使用时标注中文，后续使用英文 |
-| Harness Engineering | Harness 工程 | 不翻译为"治具工程" |
+| Harness | Harness | 首次使用时标注中文，后续使用英文 |
+| Harness Engineering | Harness 工程 | |
 | Adversarial Verification | 对抗性验证 | "对抗性"强调系统性对抗，区别于一般性"对抗" |
 | Entropy Management | 熵管理 | |
 | Progressive Disclosure | 渐进式披露 | |
