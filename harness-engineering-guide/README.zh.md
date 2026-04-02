@@ -136,7 +136,7 @@ ESLint (JS/TS)、import-linter (Python)、depguard (Go)、clippy + Cargo workspa
 - 结构化日志框架检测
 - 指标/追踪配置检测
 - AGENTS.md 质量分析（行数、文档链接、命令引用）
-- 测试文件抽样与断言模式检测（最多 20 个文件；检查 `describe`/`it`/`test`/`expect`/`assert` 等模式，而非仅行数）
+- 测试文件比例制抽样与断言模式检测（按 20% 比例抽样，下限 20 上限 50；检查 `describe`/`it`/`test`/`expect`/`assert` 等模式）及 per-directory 文件分布输出，供 LLM 进行分层分析
 - Init 脚本内容深度检查（区分空壳和真实脚本）
 - 技术债务密度扫描（TODO/FIXME/HACK）
 - Monorepo 自动检测和包发现

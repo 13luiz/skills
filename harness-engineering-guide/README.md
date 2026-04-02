@@ -137,7 +137,7 @@ Content-level analysis beyond file existence:
 - Structured logging framework detection
 - Metrics/tracing configuration detection
 - AGENTS.md quality analysis (line count, doc links, command refs)
-- Test file sampling with assertion pattern detection (up to 20 files; checks for `describe`/`it`/`test`/`expect`/`assert` patterns beyond raw line count)
+- Test file sampling with assertion pattern detection (proportional: 20% of files, min 20, max 50; checks for `describe`/`it`/`test`/`expect`/`assert` patterns beyond raw line count) and per-directory distribution for LLM stratified analysis
 - Init script content depth check (distinguishes stubs from real scripts)
 - Tech debt density scanning (TODO/FIXME/HACK)
 - Monorepo auto-detection and package discovery

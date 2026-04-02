@@ -217,15 +217,29 @@ function Invoke-Dim4Scan {
         Measure-Object).Count
 
     $testFilesSampled = 0; $testFilesNonempty = 0; $testFilesWithAssertions = 0
+    $sampleLimit = [Math]::Max(20, [Math]::Min(50, [Math]::Floor($script:testFilesCount / 5)))
     $sampleFiles = Get-ChildItem -Path . -Recurse -Depth 5 -File -ErrorAction SilentlyContinue |
         Where-Object { $_.FullName -notmatch '[\\/]\.git[\\/]' -and ($_.Name -match '\.(test|spec)\.' -or $_.Name -match '(_test\.|test_)') } |
-        Select-Object -First 20
+        Select-Object -First $sampleLimit
     foreach ($tf in $sampleFiles) {
         $testFilesSampled++
         $lc = (Get-Content $tf.FullName -ErrorAction SilentlyContinue | Measure-Object).Count
         if ($lc -gt 10) { $testFilesNonempty++ }
         if (Select-String -Path $tf.FullName -Pattern 'describe\(|it\(|test\(|expect\(|assert|should|assertEqual|assert_eq!|#\[test\]|@Test|def test_|func Test' -Quiet -ErrorAction SilentlyContinue) {
             $testFilesWithAssertions++
+        }
+    }
+
+    # Per-directory test file distribution (structural signal for LLM stratified analysis)
+    $testDirDistribution = @()
+    foreach ($td in $script:testDirs) {
+        if (Test-Path $td -PathType Container) {
+            $tdCount = (Get-ChildItem -Path $td -Recurse -Depth 5 -File -ErrorAction SilentlyContinue |
+                Where-Object { $_.Name -match '\.(test|spec)\.' -or $_.Name -match '(_test\.|test_)' } |
+                Measure-Object).Count
+            if ($tdCount -gt 0) {
+                $testDirDistribution += [ordered]@{ dir = $td; file_count = $tdCount }
+            }
         }
     }
 
@@ -257,6 +271,7 @@ function Invoke-Dim4Scan {
         test_dirs                  = @($script:testDirs)
         test_files_count           = $script:testFilesCount
         test_files_nonempty_sample = [ordered]@{ sampled = $testFilesSampled; nonempty = $testFilesNonempty; with_assertions = $testFilesWithAssertions }
+        test_dir_distribution      = @($testDirDistribution)
         ci_runs_test               = $ciContent.ci_runs_test
         has_feature_tracker        = $script:hasFeatureTracker
         coverage_thresholds        = $covResult

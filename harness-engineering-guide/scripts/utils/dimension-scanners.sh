@@ -281,7 +281,9 @@ scan_dim4() {
     \) -print 2>/dev/null | wc -l | tr -d ' ')
 
   TEST_FILES_NONEMPTY=0; TEST_FILES_SAMPLED=0; TEST_FILES_WITH_ASSERTIONS=0
-  local sample_limit=20
+  local sample_limit=$(( TEST_FILES_COUNT / 5 ))
+  [ "$sample_limit" -lt 20 ] && sample_limit=20
+  [ "$sample_limit" -gt 50 ] && sample_limit=50
   while IFS= read -r tf && [ "$TEST_FILES_SAMPLED" -lt "$sample_limit" ]; do
     [ -z "$tf" ] && continue
     local lc
@@ -293,6 +295,22 @@ scan_dim4() {
   done < <(find . -maxdepth 5 -path "./.git" -prune -o \( \
     -name "*.test.*" -o -name "*.spec.*" -o -name "*_test.*" -o -name "test_*" \
     \) -print 2>/dev/null | head -$sample_limit)
+
+  # Per-directory test file distribution (structural signal for LLM stratified analysis)
+  TEST_DIR_DISTRIBUTION="["
+  local td_first=true
+  for td in "${TEST_DIRS[@]+"${TEST_DIRS[@]}"}"; do
+    [ -d "$td" ] || continue
+    local td_count
+    td_count=$(find "$td" -maxdepth 5 -type f \( \
+      -name "*.test.*" -o -name "*.spec.*" -o -name "*_test.*" -o -name "test_*" \
+      \) 2>/dev/null | wc -l | tr -d ' ')
+    [ "$td_count" -eq 0 ] && continue
+    $td_first || TEST_DIR_DISTRIBUTION+=","
+    TEST_DIR_DISTRIBUTION+="{\"dir\":\"$td\",\"file_count\":$td_count}"
+    td_first=false
+  done
+  TEST_DIR_DISTRIBUTION+="]"
 
   HAS_FEATURE_TRACKER=false
   for name in features.json feature-checklist.json; do
@@ -327,6 +345,7 @@ scan_dim4() {
   "test_dirs": $(json_array "${TEST_DIRS[@]+"${TEST_DIRS[@]}"}"),
   "test_files_count": $TEST_FILES_COUNT,
   "test_files_nonempty_sample": {"sampled": $TEST_FILES_SAMPLED, "nonempty": $TEST_FILES_NONEMPTY, "with_assertions": $TEST_FILES_WITH_ASSERTIONS},
+  "test_dir_distribution": $TEST_DIR_DISTRIBUTION,
   "ci_runs_test": $CI_RUNS_TEST,
   "has_feature_tracker": $HAS_FEATURE_TRACKER,
   "coverage_thresholds": {"has_threshold": $cov_threshold, "has_coverage_tool": $cov_tool, "ci_has_coverage": $ci_cov}
