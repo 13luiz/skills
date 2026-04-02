@@ -1,6 +1,6 @@
 # harness-audit.ps1 — Harness engineering audit scanner
 # Responsibility: CLI argument parsing, scoring, output formatting (JSON/Markdown/Blueprint).
-# All detection logic lives in utils/dimension-scanners.ps1.
+# All detection logic lives in dimension-scanners.ps1.
 #
 # Usage: pwsh harness-audit.ps1 [-RepoRoot <path>] [-Quick] [-Profile <type>] [-Stage <stage>]
 #        [-Monorepo] [-Output <dir>] [-Format <fmt>] [-Blueprint] [-Persist]
@@ -19,7 +19,7 @@ param(
 $ErrorActionPreference = "Stop"
 $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 
-. "$ScriptDir/utils/dimension-scanners.ps1"
+. "$ScriptDir/dimension-scanners.ps1"
 
 Push-Location $RepoRoot
 $RepoAbs = (Get-Location).Path

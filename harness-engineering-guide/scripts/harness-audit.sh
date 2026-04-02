@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # harness-audit.sh -- Harness engineering audit scanner
 # Responsibility: CLI argument parsing, scoring, output formatting (JSON/Markdown/Blueprint).
-# All detection logic lives in utils/dimension-scanners.sh.
+# All detection logic lives in dimension-scanners.sh.
 #
 # Usage: bash harness-audit.sh [repo_root] [options]
 # Options:
@@ -16,7 +16,7 @@
 set -euo pipefail
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
-source "$SCRIPT_DIR/utils/dimension-scanners.sh"
+source "$SCRIPT_DIR/dimension-scanners.sh"
 
 # ===== Parse arguments =====
 REPO=""
