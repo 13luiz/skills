@@ -127,6 +127,7 @@ Content-level analysis beyond file existence:
 - **Persist mode**: save blueprint to `harness-system/MASTER.md` for cross-session reuse
 - **Quick mode**: 15 vital-sign items for fast triage (`--quick` / `-Quick`)
 - **Multiple output formats**: JSON, Markdown, Blueprint
+- **Data validation**: Automated consistency checks for data files (stages.json, profiles.json, checklist-items.json)
 
 ### Multi-Platform Templates
 - **CI**: GitHub Actions, GitLab CI, Azure DevOps
@@ -149,6 +150,8 @@ harness-engineering-guide/
 ├── scripts/
 │   ├── harness-audit.sh               ← CLI + scoring + output formatting (Bash)
 │   ├── harness-audit.ps1              ← CLI + scoring + output formatting (PowerShell)
+│   ├── validate-data-consistency.sh   ← Data integrity validation (Bash)
+│   ├── validate-data-consistency.ps1  ← Data integrity validation (PowerShell)
 │   └── utils/
 │       ├── dimension-scanners.sh      ← All 8 dimension detection logic (Bash)
 │       └── dimension-scanners.ps1     ← All 8 dimension detection logic (PowerShell)
@@ -221,6 +224,24 @@ pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Profile backend-api -Sta
 pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Blueprint
 pwsh scripts/harness-audit.ps1 -RepoRoot /path/to/repo -Persist
 ```
+
+## Data Validation
+
+Validate data file consistency before committing changes:
+
+```bash
+# Bash
+bash scripts/validate-data-consistency.sh
+
+# PowerShell
+pwsh scripts/validate-data-consistency.ps1
+```
+
+Validates:
+- All stage active_items reference valid IDs in checklist-items.json
+- All profile skip_items/critical_items reference valid IDs
+- All profile weights sum to 1.0 (±0.001 tolerance)
+- Quick Audit has exactly 15 items
 
 ## Key References
 
