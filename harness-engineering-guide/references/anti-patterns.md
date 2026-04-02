@@ -8,7 +8,7 @@ Common anti-patterns found in harness engineering. Flag these during audit (Mode
 
 Anti-patterns are classified by whether the harness can **eliminate** or only **reduce** the problem:
 
-- **Preventable** — The harness can eliminate the root cause or its symptoms through mechanical constraints: CI gates, lint rules, permission scoping, structural enforcement. Applies to items #1–6, #8–13, #15, #17–22, #25.
+- **Preventable** — The harness can eliminate the root cause or its symptoms through mechanical constraints: CI gates, lint rules, permission scoping, structural enforcement. Applies to items #1–6, #8–13, #15, #17–22, #25–26.
 - **Mitigable** — The problem originates from inherent LLM limitations or human/organizational behavior that the harness can detect and reduce but cannot fully eliminate. The harness lowers frequency and blast radius through defense-in-depth (circuit breakers, structured checkpoints, documentation gates, awareness policies), but residual risk remains. Applies to items #7, #14, #16, #23, #24.
 
 | # | Anti-Pattern | Classification | Rationale |
@@ -48,6 +48,10 @@ For mitigable anti-patterns, communicate residual risk honestly — do not promi
 
 12. **Lint but don't block** — CI runs the linter and reports violations but doesn't fail the build. Agents see green checks and assume compliance. A gate that doesn't block is advisory noise, not a constraint.
 13. **Coverage theater** — High coverage numbers (80%+) achieved via trivial assertions (`expect(true).toBe(true)`) or excessive mocking that tests the mock, not the code. Coverage without meaningful assertions is a vanity metric.
+
+## Observability Anti-Patterns
+
+26. **Ad-hoc print debugging** — Using `print()`/`console.log()`/`println!()` for application logging instead of a structured logging framework. Unstructured output provides no log levels for filtering, no correlation IDs for request tracing, and no structured fields for querying. Agents cannot parse or act on free-form print output. Enforce via lint rules (`no-console` in ESLint, `no-print-used` in pylint, `forbid_fmt_print` clippy lint) and require a logging framework (winston, slog, tracing, log4j, etc.).
 
 ## Context & Knowledge Anti-Patterns
 
@@ -93,3 +97,4 @@ When reviewing a codebase, check for these red flags:
 | Same tool called 10+ times in a single turn | #23 | Add per-tool call count limits + circuit breaker |
 | Agent references code/files it hasn't read recently | #24 | Streaming audit batches; restart at ~80% context |
 | Multiple subagents writing to the same file | #25 | Directory isolation per agent; sequential merge |
+| Application uses `print()` / `console.log()` for logging | #26 | Adopt structured logging framework; add lint ban on print |

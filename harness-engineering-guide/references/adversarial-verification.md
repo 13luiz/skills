@@ -2,6 +2,22 @@
 
 How to build verification systems where the verifier actively tries to break the implementation, rather than confirming it works. Based on production patterns from Claude Code's three-layer verification architecture.
 
+## Table of Contents
+
+- Core Principle: Distrust by Default
+- Three-Layer Verification Architecture
+- Anti-Rationalization Engineering
+- Permission Isolation
+- Structural Nudges and Trigger Mechanisms
+- Type-Specialized Verification Strategies
+- Output Format Enforcement
+- False Positive Defense (Before Issuing FAIL)
+- Progressive Rollout for Verification Systems
+- Adversarial Probe Seeds
+- Verification Agent System Prompt Template
+- Platform Implementation Guide (Claude Code, Cursor, Codex)
+- End-to-End Example: API Feature Verification
+
 ---
 
 ## Core Principle: Distrust by Default

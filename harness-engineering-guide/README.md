@@ -1,6 +1,6 @@
 # Harness Engineering Guide
 
-A comprehensive skill for auditing, designing, and implementing environment constraints and feedback loops for AI coding agents. Supports **Quick Audit** (15 vital-sign items) and **Full Audit** (45 items) across **10 project profiles**, **11 language ecosystems**, **3 lifecycle stages**, **25 anti-patterns**, and **6 platform adapters**.
+A comprehensive skill for auditing, designing, and implementing environment constraints and feedback loops for AI coding agents. Supports **Quick Audit** (15 vital-sign items) and **Full Audit** (45 items) across **10 project profiles**, **11 language ecosystems**, **3 lifecycle stages**, **26 anti-patterns**, and **6 platform adapters**.
 
 ## What is Harness Engineering?
 
@@ -183,7 +183,7 @@ harness-engineering-guide/
 ├── examples/                          ← Golden reference audit reports (committed)
 ├── references/                        ← Deep-dive reference docs (20 files)
 │   ├── adversarial-verification.md    ← Adversarial verification (patterns + prompt template + platform guide)
-│   ├── anti-patterns.md               ← 25 anti-patterns with quick diagnostic table
+│   ├── anti-patterns.md               ← 26 anti-patterns with quick diagnostic table
 │   ├── checklist.md                   ← 8-dimension, 45-item audit checklist
 │   ├── scoring-rubric.md              ← Scoring, disambiguation, maturity annotations, conservatism calibration
 │   ├── report-format.md               ← Audit report template and naming conventions

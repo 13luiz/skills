@@ -224,4 +224,4 @@ Quick diagnostic table mapping symptoms to dimension gaps and fixes:
 
 ## Anti-Patterns to Avoid
 
-See `references/anti-patterns.md` for the full catalog (25 anti-patterns with quick diagnostic table). Prioritize fixing: Encyclopedia AGENTS.md (#6), lint but don't block (#12), no crash recovery (#18), and agent self-modifying config (#22).
+See `references/anti-patterns.md` for the full catalog (26 anti-patterns with quick diagnostic table). Prioritize fixing: Encyclopedia AGENTS.md (#6), lint but don't block (#12), no crash recovery (#18), and agent self-modifying config (#22).

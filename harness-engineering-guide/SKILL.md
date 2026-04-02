@@ -63,7 +63,7 @@ The user can also explicitly request Quick or Full mode regardless of the gate r
 *Items marked `[Q]` are included in Quick Audit mode (15 vital-sign items).*
 
 ### Dim 1: Architecture Documentation (15%) — GOAL STATE
-- `1.1` `[Q]` **agent-instruction-file** — AGENTS.md/CLAUDE.md exists and concise (<150 lines)
+- `1.1` `[Q]` **agent-instruction-file** — AGENTS.md/CLAUDE.md exists and concise (<150 lines; PARTIAL up to 2×)
 - `1.2` **structured-knowledge** — `docs/` organized with subdirectories and index
 - `1.3` `[Q]` **architecture-docs** — ARCHITECTURE.md with domain boundaries and dependency rules
 - `1.4` **progressive-disclosure** — Short entry point → deeper docs
@@ -99,7 +99,7 @@ The user can also explicitly request Quick or Full mode regardless of the gate r
 - `5.2` **doc-freshness** — Automated freshness checks
 - `5.3` **machine-readable-refs** — llms.txt, curated reference docs
 - `5.4` **tech-composability** — Stable, well-known technologies
-- `5.5` **cache-friendly-design** — AGENTS.md <150 lines (monorepo: up to 300); structured state files
+- `5.5` **cache-friendly-design** — AGENTS.md <150 lines, PARTIAL up to 2× (monorepo: <300, PARTIAL up to 500); structured state files
 
 ### Dim 6: Entropy Management (10%) — FEEDBACK LOOP
 - `6.1` `[Q]` **golden-principles** — Core engineering principles documented
@@ -152,7 +152,7 @@ Process items by `script_role` (see `data/checklist-items.json` § `_meta.assess
 
 #### Streaming Audit Protocol (Full Audit context management)
 
-When auditing large or mature repos (29+ items), process dimensions in batches to prevent context overflow and omissions:
+When auditing Growth or Mature stage repos (29+ items), process dimensions in batches to prevent context overflow and omissions:
 
 | Batch | Dimensions | Reference Files Needed |
 |-------|-----------|----------------------|
@@ -176,7 +176,7 @@ When auditing large or mature repos (29+ items), process dimensions in batches t
 
 Covers 15 `[Q]`-marked items — the highest-leverage check per dimension. Produces a streamlined report in ~30 minutes.
 
-**Step 0: Profile** — Detect project type and report language (stage is not needed — Quick Audit uses a fixed item set).
+**Step 0: Profile** — Detect project type and report language. Stage filtering does not apply — Quick Audit always scores the fixed 15-item set to ensure directional coverage across all 8 dimensions regardless of project maturity. For early-stage projects, items outside the Bootstrap active set (e.g., 1.3, 3.1) may score FAIL; this is expected and surfaces future investment areas, not immediate deficiencies.
 
 **Step 1: Scan** — Run `bash scripts/harness-audit.sh <repo> --quick --profile <type>` (or `pwsh scripts/harness-audit.ps1 -Quick`). For manual scan, check only items marked `[Q]` in the Quick Reference above.
 
@@ -230,7 +230,7 @@ Understand context: team size, tech stack (`data/ecosystems.json`), project type
 
 Read as needed — do not load all at once.
 
-**Audit & Scoring**: `references/checklist.md` (45-item criteria) · `references/scoring-rubric.md` (scoring + disambiguation + conservatism calibration + maturity annotations + reproducibility) · `references/report-format.md` (report template) · `references/anti-patterns.md` (25 anti-patterns)
+**Audit & Scoring**: `references/checklist.md` (45-item criteria) · `references/scoring-rubric.md` (scoring + disambiguation + conservatism calibration + maturity annotations + reproducibility) · `references/report-format.md` (report template) · `references/anti-patterns.md` (26 anti-patterns)
 
 **Implementation**: `references/agents-md-guide.md` · `references/platform-adaptation.md` (cross-platform config) · `references/ci-cd-patterns.md` · `references/linting-strategy.md` · `references/testing-patterns.md` · `references/review-practices.md` · `references/adversarial-verification.md` (verification + prompt template + platform guide)
 
